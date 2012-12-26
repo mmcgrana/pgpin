@@ -46,6 +46,6 @@ Results:
  1          |
 (1 row)
 
-$ datapins destroy --id 5ab73e4c-4f8f-11e2-92cd-1040f386e726
+$ datapins-web destroy --id 5ab73e4c-4f8f-11e2-92cd-1040f386e726
 Destroying datapin... done
 ```
