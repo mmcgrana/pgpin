@@ -7,17 +7,21 @@ $ datapins
 Usage: datapins <command> [<args>]
 
 Commands:
-  list     List datapins
-  create   Create a new datapin
-  destroy  Destroy a datapin
-  help     Get help for a command
-....
+  resources  List available resources
+  list       List datapins
+  create     Create a new datapin
+  destroy    Destroy a datapin
+  help       Get help for a command
 
-List dataclips:
+$ datapins resources
+ Id                       | Name                   | Attachments
+--------------------------+------------------------+----------------------
+resource1822@heroku.com   | laughing-loudly-2742   | shogun:green
 
-````
-$ datapins list
+$ datapins create --resource 
+```
 
+Create a new datapin
 Creating datapins... done
 https://datapins.heroku.com/
 

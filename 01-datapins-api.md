@@ -17,7 +17,13 @@ $ curl -ns https://api.heroku.com/resources
   {
     "id": "resource132@heroku.com",
     "name": "boiling-fortress-9685",
-    "attachment_name": "shogun :: black"
+    "attachements": [
+      {
+        "app_name": "shogun",
+        "config_var": "HEROKU_POSTGRESQL_BLACK_URL"
+      },
+      ...
+    ]
   },
   ...
 ]
