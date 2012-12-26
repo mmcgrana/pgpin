@@ -17,4 +17,8 @@ $ cat > clip.js <<EOF
 }
 EOF
 $ curl -ns -X POST https://$HOST/v1/clips -H "Content-Type: application/json" -d @clip.js
+{
+  "id": "b91376ba-4f83-11e2-8025-1040f386e726",
+  ...
+}
 ```
