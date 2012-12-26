@@ -1,3 +1,3 @@
 ## Web
 
-A web interface to Datapins is available at [datapins.herokuapp.com](https://datapins.herokuapp.com).
+A web interface to Datapins is available at [datapins-web.herokuapp.com](https://datapins.herokuapp.com).
