@@ -39,3 +39,27 @@ $ curl -ns -X POST https://$HOST/v1/clips -H "Content-Type: application/json" -d
   ...
 }
 ```
+
+Get a clip:
+
+```console
+$ export ID=b91376ba-4f83-11e2-8025-1040f386e726
+$ curl -ns https://$HOST/v1/clips/$ID
+{
+  "id": "b91376ba-4f83-11e2-8025-1040f386e726",
+  ...
+}
+```
+
+Update a clip:
+
+```console
+$ export ID=b91376ba-4f83-11e2-8025-1040f386e726
+$ cat > clip.js <<EOF
+{
+  "sql": select count(id) from posts"
+}
+$ curl -ns -X PUT https://$HOST/v1/clips/$ID -H "Content-Type: application/json" -d @clips.js
+{
+  "id": "b91376ba-4f83-11e2-8025-1040f386e726"
+}
