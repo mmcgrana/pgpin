@@ -39,10 +39,6 @@ $ curl -ns https://$HOST/v1/clips
     "results_json": "...",
     "results_at": "2012/05/24 06:02:33 -0000"
   },
-  {
-    "id": "5e072982-4f84-11e2-99b2-1040f386e726",
-    ...
-  },
   ...
 ]
 ```
@@ -52,8 +48,9 @@ Create a clip:
 ```console
 $ cat > clip.js <<EOF
 {
-  "heroku_resource_id": "resource232@heroku.com",
-   "sql": "select count(*) from posts"
+  "resource_id": "resource232@heroku.com",
+  "name": "posts count",
+  "sql": "select count(*) from posts"
 }
 EOF
 $ curl -ns -X POST https://$HOST/v1/clips -H "Content-Type: application/json" -d @clip.js
