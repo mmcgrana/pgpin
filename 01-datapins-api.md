@@ -35,9 +35,10 @@ $ curl -ns https://$HOST/v1/clips
     "resource_id": "resource274@heroku.com",
     "name": "posts count",
     "sql", "select count(*) from posts",
-    
     "created_at": "2012/05/24 06:02:31 -0000",
-    "user_id": "user248@heroku.com"
+    "user_id": "user248@heroku.com",
+    "results_json": "...",
+    "results_at": "2012/05/24 06:02:33 -0000"
   },
   {
     "id": "5e072982-4f84-11e2-99b2-1040f386e726",
