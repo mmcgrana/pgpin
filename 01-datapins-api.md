@@ -1,9 +1,9 @@
-Datapins offers a JSON-over-HTTP API at api.dataclips.heroku.com.
+Datapins offers a JSON-over-HTTP API at datapins-api.herokuapp.com.
 
 The API authenticates users with Heroku API tokens or OAuth keys. To try the API with curl, set up your ~/.netrc:
 
 ```console
-$ export HOST=api.dataclips.heroku.com
+$ export HOST=datapins-api.herokuapp.com
 $ cat ~/.netrc | grep -A 2 "machine api.heroku.com" | sed "s/api.heroku.com/$HOST/" >> ~/.netrc
 ```
 
