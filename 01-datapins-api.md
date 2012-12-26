@@ -1,6 +1,6 @@
 ## API
 
-Datapins offers a JSON-over-HTTP API at datapins-api.herokuapp.com.
+Datapins offers a JSON API at datapins-api.herokuapp.com.
 
 The API authenticates users with Heroku API tokens or OAuth keys. To try the API with curl, set up your ~/.netrc:
 
