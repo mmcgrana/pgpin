@@ -12,10 +12,12 @@ $ cat ~/.netrc | grep -A 2 "machine api.heroku.com" | sed "s/api.heroku.com/$HOS
 Get resources on which you can create clips:
 
 ```console
-$ curl -ns https://$HOST/v1/resources
+$ curl -ns https://api.heroku.com/resources
 [
   {
     "id": "resource132@heroku.com",
+    "name": "boiling-fortress-9685",
+    "type": "heroku-postgresql:crane",
     ...
   },
   ...
@@ -29,7 +31,13 @@ $ curl -ns https://$HOST/v1/clips
 [
   {
     "id": "57238976-4f84-11e2-80d7-1040f386e726",
-    ...
+    "slug": "c8fd878a4f8a11e2b0ee1040f386e726",
+    "resource_id": "resource274@heroku.com",
+    "name": "posts count",
+    "sql", "select count(*) from posts",
+    
+    "created_at": "2012/05/24 06:02:31 -0000",
+    "user_id": "user248@heroku.com"
   },
   {
     "id": "5e072982-4f84-11e2-99b2-1040f386e726",
@@ -63,20 +71,6 @@ $ curl -ns https://$HOST/v1/clips/$ID
 {
   "id": "b91376ba-4f83-11e2-8025-1040f386e726",
   ...
-}
-```
-
-Update a clip:
-
-```console
-$ export ID=b91376ba-4f83-11e2-8025-1040f386e726
-$ cat > clip.js <<EOF
-{
-  "sql": select count(id) from posts"
-}
-$ curl -ns -X PUT https://$HOST/v1/clips/$ID -H "Content-Type: application/json" -d @clips.js
-{
-  "id": "b91376ba-4f83-11e2-8025-1040f386e726"
 }
 ```
 
