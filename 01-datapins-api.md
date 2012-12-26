@@ -12,7 +12,7 @@ $ cat ~/.netrc | grep -A 2 "machine api.heroku.com" | sed "s/api.heroku.com/$HOS
 Get the Heroku resources against which you can create clips:
 
 ```console
-$ curl -ns https://api.heroku.com/resources
+$ curl -ns https://$HOST/v1/resources
 [
   {
     "id": "resource132@heroku.com",
