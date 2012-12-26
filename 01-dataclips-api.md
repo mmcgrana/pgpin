@@ -1,4 +1,4 @@
-Dataclips offers an HTTP over JSON API:
+Dataclips offers a JSON-over-HTTP API at api.dataclips.heroku.com:
 
 ```console
 $ export HOST=api.dataclips.heroku.com
@@ -7,7 +7,7 @@ $ export HOST=api.dataclips.heroku.com
 Dataclips authenticates users via Heroku API tokens or OAuth keys. To use the Dataclips API with curl, copy your api.heroku.com netrc entry to api.dataclips.heroku.com:
 
 ```console
-$ cat ~/.netrc | grep -A 2 "machine api.heroku.com" | sed 's/api.heroku.com/api.dataclips.heroku.com/' >> ~/.netrc
+$ cat ~/.netrc | grep -A 2 "machine api.heroku.com" | sed "s/api.heroku.com/$HOST/" >> ~/.netrc
 ```
 
 ```
