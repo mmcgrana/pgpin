@@ -1,3 +1,5 @@
+### CLI
+
 ```console
 $ datapins
 ....
