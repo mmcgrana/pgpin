@@ -55,8 +55,14 @@ $ cat > clip.js <<EOF
 EOF
 $ curl -ns -X POST https://$HOST/v1/clips -H "Content-Type: application/json" -d @clip.js
 {
-  "id": "b91376ba-4f83-11e2-8025-1040f386e726",
-  ...
+  "id": "57238976-4f84-11e2-80d7-1040f386e726",
+  "resource_id": "resource274@heroku.com",
+  "name": "posts count",
+  "sql", "select count(*) from posts",
+  "created_at": "2012/05/24 06:02:31 -0000",
+  "user_id": "user248@heroku.com",
+  "results_json": null,
+  "results_at": null
 }
 ```
 
@@ -66,8 +72,14 @@ Get a clip:
 $ export ID=b91376ba-4f83-11e2-8025-1040f386e726
 $ curl -ns https://$HOST/v1/clips/$ID
 {
-  "id": "b91376ba-4f83-11e2-8025-1040f386e726",
-  ...
+  "id": "57238976-4f84-11e2-80d7-1040f386e726",
+  "resource_id": "resource274@heroku.com",
+  "name": "posts count",
+  "sql", "select count(*) from posts",
+  "created_at": "2012/05/24 06:02:31 -0000",
+  "user_id": "user248@heroku.com",
+  "results_json": "...",
+  "results_at": "2012/05/24 06:02:33 -0000"
 }
 ```
 
@@ -77,6 +89,13 @@ Destroy a clip:
 $ export ID=b91376ba4f83-11e2-8025-1040f386e726
 $ curl -ns -X DELETE https://$HOST/v1/clips/$ID
 {
-  "id": "b91376ba-4f83-11e2-8025-1040f386e726",
-  ...
+  "id": "57238976-4f84-11e2-80d7-1040f386e726",
+  "resource_id": "resource274@heroku.com",
+  "name": "posts count",
+  "sql", "select count(*) from posts",
+  "created_at": "2012/05/24 06:02:31 -0000",
+  "user_id": "user248@heroku.com",
+  "results_json": "...",
+  "results_at": "2012/05/24 06:02:33 -0000"
+}
 ```
