@@ -111,5 +111,5 @@ Check the status of the Datapins service:
 ```console
 $ curl -x https://$HOST/v1/status
 {
-  "status": "ok"
+  "message": "ok"
 }
