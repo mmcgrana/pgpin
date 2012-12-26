@@ -9,7 +9,7 @@ $ export HOST=datapins-api.herokuapp.com
 $ cat ~/.netrc | grep -A 2 "machine api.heroku.com" | sed "s/api.heroku.com/$HOST/" >> ~/.netrc
 ```
 
-Get the Heroku resources against which you can create clips:
+Get the Heroku resources against which you can create pins:
 
 ```console
 $ curl -ns https://$HOST/v1/resources
@@ -29,10 +29,10 @@ $ curl -ns https://$HOST/v1/resources
 ]
 ```
 
-Get clips:
+Get pins:
 
 ```console
-$ curl -ns https://$HOST/v1/clips
+$ curl -ns https://$HOST/v1/pins
 [
   {
     "id": "57238976-4f84-11e2-80d7-1040f386e726",
@@ -48,17 +48,17 @@ $ curl -ns https://$HOST/v1/clips
 ]
 ```
 
-Create a clip:
+Create a pin:
 
 ```console
-$ cat > clip.js <<EOF
+$ cat > pin.js <<EOF
 {
   "resource_id": "resource232@heroku.com",
   "name": "posts count",
   "sql": "select count(*) from posts"
 }
 EOF
-$ curl -ns -X POST https://$HOST/v1/clips -H "Content-Type: application/json" -d @clip.js
+$ curl -ns -X POST https://$HOST/v1/pins -H "Content-Type: application/json" -d @pin.js
 {
   "id": "57238976-4f84-11e2-80d7-1040f386e726",
   "resource_id": "resource274@heroku.com",
@@ -71,11 +71,11 @@ $ curl -ns -X POST https://$HOST/v1/clips -H "Content-Type: application/json" -d
 }
 ```
 
-Get a clip:
+Get a pin:
 
 ```console
 $ export ID=b91376ba-4f83-11e2-8025-1040f386e726
-$ curl -ns https://$HOST/v1/clips/$ID
+$ curl -ns https://$HOST/v1/pins/$ID
 {
   "id": "57238976-4f84-11e2-80d7-1040f386e726",
   "resource_id": "resource274@heroku.com",
@@ -88,11 +88,11 @@ $ curl -ns https://$HOST/v1/clips/$ID
 }
 ```
 
-Destroy a clip:
+Destroy a pin:
 
 ```console
 $ export ID=b91376ba4f83-11e2-8025-1040f386e726
-$ curl -ns -X DELETE https://$HOST/v1/clips/$ID
+$ curl -ns -X DELETE https://$HOST/v1/pins/$ID
 {
   "id": "57238976-4f84-11e2-80d7-1040f386e726",
   "resource_id": "resource274@heroku.com",
