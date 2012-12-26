@@ -12,7 +12,7 @@ Commands:
   create     Create a new datapin
   show       Show dataping metadata
   destroy    Destroy a datapin
-  help       Get help for a command
+  status     Check service status
 
 $ datapins-cli resources
  Id                       | Name                   | Attachments
@@ -46,6 +46,9 @@ Results:
  1          |
 (1 row)
 
-$ datapins-web destroy --id 5ab73e4c-4f8f-11e2-92cd-1040f386e726
+$ datapins-cli destroy --id 5ab73e4c-4f8f-11e2-92cd-1040f386e726
 Destroying datapin... done
+
+$ datapins-cli status
+ok
 ```
