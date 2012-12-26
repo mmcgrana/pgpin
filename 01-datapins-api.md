@@ -9,7 +9,7 @@ $ export HOST=datapins-api.herokuapp.com
 $ cat ~/.netrc | grep -A 2 "machine api.heroku.com" | sed "s/api.heroku.com/$HOST/" >> ~/.netrc
 ```
 
-Get resources on which you can create clips:
+Get the Heroku resources against which you can create clips:
 
 ```console
 $ curl -ns https://api.heroku.com/resources
