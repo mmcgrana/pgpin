@@ -1,4 +1,4 @@
-## Datapins
+# Datapins
 
 Share your data.
 

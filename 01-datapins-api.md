@@ -1,4 +1,4 @@
-### API
+## API
 
 Datapins offers a JSON-over-HTTP API at datapins-api.herokuapp.com.
 
