@@ -3,7 +3,7 @@
 Get overview help:
 
 ```console
-$ datapins
+$ datapins-cli
 Usage: datapins-cli <command> [<args>]
 
 Commands:
