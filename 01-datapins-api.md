@@ -31,7 +31,6 @@ $ curl -ns https://$HOST/v1/clips
 [
   {
     "id": "57238976-4f84-11e2-80d7-1040f386e726",
-    "slug": "c8fd878a4f8a11e2b0ee1040f386e726",
     "resource_id": "resource274@heroku.com",
     "name": "posts count",
     "sql", "select count(*) from posts",
