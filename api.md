@@ -36,14 +36,7 @@ $ curl -ns https://$HOST/v1/pins
 [
   {
     "id": "57238976-4f84-11e2-80d7-1040f386e726",
-    "resource_id": "resource274@heroku.com",
-    "name": "posts count",
-    "sql", "select count(*) from posts",
-    "created_at": "2012/05/24 06:02:31 -0000",
-    "user_id": "user248@heroku.com",
-    "results_fields_json": ["?column"],
-    "results_rows_json":   [[1]],
-    "results_at": "2012/05/24 06:02:33 -0000"
+    "name": "posts count"
   },
   ...
 ]
