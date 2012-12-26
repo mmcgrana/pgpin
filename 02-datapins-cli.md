@@ -1,10 +1,23 @@
 ## CLI
 
+Get overview help:
+
 ```console
 $ datapins
+Usage: datapins <command> [<args>]
+
+Commands:
+  list     List datapins
+  create   Create a new datapin
+  destroy  Destroy a datapin
+  help     Get help for a command
 ....
 
-$ datapins:create --resource 'laughing-loudly-2748' --query 'select 1'
+List dataclips:
+
+````
+$ datapins list
+
 Creating datapins... done
 https://datapins.heroku.com/
 
