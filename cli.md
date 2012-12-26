@@ -21,9 +21,9 @@ resource1822@heroku.com   | laughing-loudly-2742   | shogun:green
 ...
 
 $ datapins-cli list
- Id
--------------------------------------+
-4c15dbdc-4f8f-11e2-80dc-1040f386e726 |
+ Id                                  | Name             
+-------------------------------------+------------------
+4c15dbdc-4f8f-11e2-80dc-1040f386e726 | cips count
 ...
 
 $ datapins-cli create --resource "resource1822@heroku.com" --name "post count" --sql "select count(*) from posts"
