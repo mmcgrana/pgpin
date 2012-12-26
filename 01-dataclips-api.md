@@ -63,3 +63,14 @@ $ curl -ns -X PUT https://$HOST/v1/clips/$ID -H "Content-Type: application/json"
 {
   "id": "b91376ba-4f83-11e2-8025-1040f386e726"
 }
+```
+
+Destroy a clip:
+
+```console
+$ export ID=b91376ba4f83-11e2-8025-1040f386e726
+$ curl -ns -X DELETE https://$HOST/v1/clips/$ID
+{
+  "id": "b91376ba-4f83-11e2-8025-1040f386e726",
+  ...
+```
