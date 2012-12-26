@@ -7,6 +7,19 @@ $ export HOST=api.dataclips.heroku.com
 $ cat ~/.netrc | grep -A 2 "machine api.heroku.com" | sed "s/api.heroku.com/$HOST/" >> ~/.netrc
 ```
 
+Get resources on which you can create clips:
+
+```console
+$ curl -ns https://$HOST/v1/resources
+[
+  {
+    "id": "resource132@heroku.com",
+    ...
+  },
+  ...
+]
+```
+
 Get clips:
 
 ```console
