@@ -105,3 +105,11 @@ $ curl -ns -X DELETE https://$HOST/v1/pins/$ID
   "results_at": "2012/05/24 06:02:33 -0000"
 }
 ```
+
+Check the status of the Datapins service:
+
+```console
+$ curl -x https://$HOST/v1/status
+{
+  "status": "ok"
+}
