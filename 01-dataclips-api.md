@@ -1,4 +1,4 @@
-The Dataclips API is served from api.dataclips.heroku.com:
+Dataclips offers an HTTP over JSON API:
 
 ```console
 $ export HOST=api.dataclips.heroku.com
