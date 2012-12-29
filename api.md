@@ -35,7 +35,7 @@ Get pins:
 $ curl -ns https://$HOST/v1/pins
 [
   {
-    "id": "57238976-4f84-11e2-80d7-1040f386e726",
+    "id": "be193c3048eb7c508abb9617493937c5",
     "name": "posts count"
   },
   ...
@@ -54,7 +54,7 @@ $ cat > pin.js <<EOF
 EOF
 $ curl -ns -X POST https://$HOST/v1/pins -H "Content-Type: application/json" -d @pin.js
 {
-  "id": "57238976-4f84-11e2-80d7-1040f386e726",
+  "id": "be193c3048eb7c508abb9617493937c5",
   "resource_id": "resource274@heroku.com",
   "name": "posts count",
   "sql", "select count(*) from posts",
@@ -70,10 +70,10 @@ $ curl -ns -X POST https://$HOST/v1/pins -H "Content-Type: application/json" -d 
 Get a pin:
 
 ```console
-$ export ID=b91376ba-4f83-11e2-8025-1040f386e726
+$ export ID=be193c3048eb7c508abb9617493937c5
 $ curl -ns https://$HOST/v1/pins/$ID
 {
-  "id": "57238976-4f84-11e2-80d7-1040f386e726",
+  "id": "be193c3048eb7c508abb9617493937c5",
   "resource_id": "resource274@heroku.com",
   "name": "posts count",
   "sql", "select count(*) from posts",
@@ -87,10 +87,10 @@ $ curl -ns https://$HOST/v1/pins/$ID
 Destroy a pin:
 
 ```console
-$ export ID=b91376ba4f83-11e2-8025-1040f386e726
+$ export ID=be193c3048eb7c508abb9617493937c5
 $ curl -ns -X DELETE https://$HOST/v1/pins/$ID
 {
-  "id": "57238976-4f84-11e2-80d7-1040f386e726",
+  "id": "be193c3048eb7c508abb9617493937c5",
   "resource_id": "resource274@heroku.com",
   "name": "posts count",
   "sql", "select count(*) from posts",
