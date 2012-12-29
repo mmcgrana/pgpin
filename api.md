@@ -58,9 +58,11 @@ $ curl -ns -X POST https://$HOST/v1/pins -H "Content-Type: application/json" -d 
   "resource_id": "resource274@heroku.com",
   "name": "posts count",
   "sql", "select count(*) from posts",
-  "created_at": "2012/05/24 06:02:31 -0000",
   "user_id": "user248@heroku.com",
-  "results_json": null,
+  "created_at": "2012/05/24 06:02:31 -0000",
+  "results_fields_json": null,
+  "results_rows_json": null,
+  "error_message": null,
   "results_at": null
 }
 ```
