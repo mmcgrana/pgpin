@@ -79,7 +79,9 @@ $ curl -ns https://$HOST/v1/pins/$ID
   "sql", "select count(*) from posts",
   "created_at": "2012/05/24 06:02:31 -0000",
   "user_id": "user248@heroku.com",
-  "results_json": "...",
+  "results_fields_json": "...",
+  "results_rows_json": "...",
+  "error_message": null
   "results_at": "2012/05/24 06:02:33 -0000"
 }
 ```
@@ -96,7 +98,9 @@ $ curl -ns -X DELETE https://$HOST/v1/pins/$ID
   "sql", "select count(*) from posts",
   "created_at": "2012/05/24 06:02:31 -0000",
   "user_id": "user248@heroku.com",
-  "results_json": "...",
+  "results_fields_json": "...",
+  "results_rows_json": "...",
+  "error_message": null
   "results_at": "2012/05/24 06:02:33 -0000"
 }
 ```
