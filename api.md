@@ -137,6 +137,6 @@ Bodies for all error responses are of the form:
 
 ```
 {
-  "message": "message text here"
+  "message": "message text"
 }
 ```
