@@ -2,12 +2,18 @@
 
 Datapins offers a JSON API at datapins-api-production.herokuapp.com.
 
+
+### Authentication
+
 The API authenticates users with Heroku API tokens or OAuth keys. To try the API with curl, set up your ~/.netrc:
 
 ```console
 $ export HOST=datapins-api-production.herokuapp.com
 $ cat ~/.netrc | grep -A 2 "machine api.heroku.com" | sed "s/api.heroku.com/$HOST/" >> ~/.netrc
 ```
+
+
+### Endpoints
 
 Get the Heroku resources against which you can create pins:
 
@@ -112,3 +118,24 @@ $ curl -x https://$HOST/v1/status
 {
   "message": "ok"
 }
+
+All endpoints return 200 on success.
+
+
+### Errors
+
+Non-200 status codes indicate an error:
+
+* 400: Invalid body
+* 401: Authorization required
+* 403: Invalid field
+* 404: Not found
+* 500: Internal server error or unanticipated user error
+
+Bodies for all error responses are of the form:
+
+```
+{
+  "message": "message text here"
+}
+```
