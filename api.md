@@ -118,6 +118,7 @@ $ curl -x https://$HOST/v1/status
 {
   "message": "ok"
 }
+```
 
 All endpoints return 200 on success.
 
