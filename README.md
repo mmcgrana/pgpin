@@ -1,15 +1,27 @@
 ## pgpin
 
-pgpin is a toy clone of [Heroku Dataclips](https://dataclips.heroku.com)
-written to experiment with app development in Go.
+pgpin is a toy clone of [Heroku Dataclips](https://dataclips.heroku.com),
+written as an example Go app with an API, CLI, and web interface.
 
-Like Dataclips, pgpin let's you construct SQL queries, view the
-results, and share the results as a web page using a secret URL.
+Like Dataclips, pgpin lets you construct SQL queries, continuously
+refreshes query results in the background, stores queries for later
+review, shows most recent query view results on the web, and allows
+sharing of results with colleagues using secret URLs. It's like gist
+for SQL queries.
 
-Pgpin includes an API (`pgpin-api`), a web interface (`pgpin-web`),
-and CLI (`pgpin`).
+For more info on the Go example code within pgpin, please see the
+blog post [An example Go app: pgpin](https://mmcgrana.github.io/posts/2014-06-example-go-app-pgpin.html).
 
-### CLI
+For using, developing, and deploying pgpin, please see below.
+
+### Usage
+
+
+### Development
+
+
+### Deployment
+
 
 Get overview help:
 
