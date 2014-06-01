@@ -17,6 +17,7 @@
 * Rename database
 * Soft deletes
 * Cross-check against pliny
+* Cross-check against design guide
 * Publish blog post
 * Share on Twitter
 * Share on golang-nuts
@@ -24,6 +25,7 @@
 * JSON schema
 * Implement pgpin
 * Implement pgpin-web
+* API versioning
 
 ## Topics
 

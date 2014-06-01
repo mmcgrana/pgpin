@@ -6,7 +6,7 @@ import (
 )
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "Usage: datapins-api [web|worker]")
+	fmt.Fprintln(os.Stderr, "Usage: datapins-api [web|worker|scratch]")
 	os.Exit(1)
 }
 
