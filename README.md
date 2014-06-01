@@ -28,8 +28,8 @@ To start using the CLI, configure it with a `PGPIN_API_URL`:
 
 ```console
 $ PGPIN_DEPLOY=you
-$ PGPIN_API_KEY=heroku config:get -a pgpin-api-$PGPIN_DEPLOY
-$ export PGPIN_API_URL="https://$PGPIN_API_KEY@pgpin-api-$PGPIN_DEPLOY.herokuapp.com"
+$ PGPIN_AUTH=heroku config:get AUTH -a pgpin-api-$PGPIN_DEPLOY
+$ export PGPIN_API_URL="https://$PGPIN_AUTH@pgpin-api-$PGPIN_DEPLOY.herokuapp.com"
 ```
 
 Verify we can connect to the API:

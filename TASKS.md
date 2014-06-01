@@ -33,6 +33,7 @@
 * Review standard hooks
 * Graceful HTTP shutdown
 * Investigate http.RequestHandler
+* HTTP basic auth
 
 ## Topics
 

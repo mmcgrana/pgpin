@@ -4,13 +4,13 @@
 
 set -ex
 
-API_TOKEN=$(openssl rand -base64 18)
-API_URL="https://$API_TOKEN@pgpin-api-$DEPLOY.herokuapp.com"
+API_AUTH="client:"$(openssl rand -base64 18)
+API_URL="https://$API_AUTH@pgpin-api-$DEPLOY.herokuapp.com"
 
 cd pgpin-api
 heroku create pgpin-api-$DEPLOY -r $DEPLOY
 heroku config:add -a pgpin-api-$DEPLOY BUILDPACK_URL=https://github.com/kr/heroku-buildpack-go.git
-heroku config:add -a pgpin-api-$DEPLOY API_TOKEN=$API_TOKEN
+heroku config:add -a pgpin-api-$DEPLOY API_AUTH=$API_AUTH
 heroku addons:add heroku-postgresql:basic -a pgpin-api-$DEPLOY
 cat db/* | heroku pg:psql -a pgpin-api-$DEPLOY
 git push $DEPLOY master

@@ -1,7 +1,9 @@
 package main
 
 import (
+	
 	"code.google.com/p/gorilla/mux"
+	"encoding/json"
 	"fmt"
 	"github.com/darkhelmet/env"
 	"net/http"
@@ -96,12 +98,6 @@ func webErr(resp http.ResponseWriter, err error) {
 	}
 }
 
-func webWrapAuth(f http.HandlerFunc) http.HandlerFunc {
-	return func(res http.ResponseWriter, req *http.Request) {	
-		f(res, req)
-	}
-}
-
 func webRouterHandler() http.HandlerFunc {
 	router := mux.NewRouter()
 	router.HandleFunc("/pins", webPinList).Methods("GET")
@@ -115,15 +111,10 @@ func webRouterHandler() http.HandlerFunc {
 	}
 }
 
-func webTrap() {
-	log("web.trap.set")
-	trap := make(chan os.Signal)
-	go func() {
-		<- trap
-		log("web.exit")
-		os.Exit(0)
-	}()
-	signal.Notify(trap, syscall.SIGINT, syscall.SIGTERM)
+func webWrapAuth(f http.HandlerFunc) http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {	
+		f(res, req)
+	}
 }
 
 type webStatusingResponseWriter struct {
@@ -147,6 +138,17 @@ func webWrapLogging(f http.HandlerFunc) http.HandlerFunc {
 		elapsed := float64(time.Since(start)) / 1000000.0
 		log("web.request.finish method=%s path=%s status=%d elapsed=%f", method, path, wres.status, elapsed)
 	}
+}
+
+func webTrap() {
+	log("web.trap.set")
+	trap := make(chan os.Signal)
+	go func() {
+		<- trap
+		log("web.exit")
+		os.Exit(0)
+	}()
+	signal.Notify(trap, syscall.SIGINT, syscall.SIGTERM)
 }
 
 func web() {
