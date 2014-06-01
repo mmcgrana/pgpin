@@ -13,7 +13,7 @@ import (
 func webPinList(resp http.ResponseWriter, req *http.Request) {
 	pins, err := dataPinList()
 	if err != nil {
-		writeErr(resp, err)
+		webErr(resp, err)
 		return
 	}
 	writeJson(resp, 200, pins)
@@ -24,12 +24,12 @@ func webPinCreate(resp http.ResponseWriter, req *http.Request) {
 	err := readJson(req, &pinReq)
 	if err != nil {
 		err = pgpinError{Id: "bad-request", Message: "malformed JSON body"}
-		writeErr(resp, err)
+		webErr(resp, err)
 		return
 	}
 	pin, err := dataPinCreate(pinReq.DbId, pinReq.Name, pinReq.Query)
 	if err != nil {
-		writeErr(resp, err)
+		webErr(resp, err)
 		return
 	}
 	writeJson(resp, 200, pin)
@@ -39,7 +39,7 @@ func webPinGet(resp http.ResponseWriter, req *http.Request) {
 	id := param(req, "id")
 	pin, err := dataPinGet(id)
 	if err != nil {
-		writeErr(resp, err)
+		webErr(resp, err)
 		return
 	}
 	writeJson(resp, 200, pin)
@@ -49,32 +49,32 @@ func webPinDestroy(resp http.ResponseWriter, req *http.Request) {
 	id := param(req, "id")
 	pin, err := dataPinGet(id)
 	if err != nil {
-		writeErr(resp, err)
+		webErr(resp, err)
 		return
 	}
 	err = dataPinDelete(pin)
 	if err != nil {
-		writeErr(resp, err)
+		webErr(resp, err)
 		return
 	}
 	writeJson(resp, 200, pin)
 }
 
-func webApiStatus(resp http.ResponseWriter, req *http.Request) {
+func webStatus(resp http.ResponseWriter, req *http.Request) {
 	err := dataTest()
 	if err != nil {
-		writeErr(resp, err)
+		webErr(resp, err)
 		return
 	}
 	writeJson(resp, 200, &map[string]string{"message": "ok"})
 }
 
-func notFound(resp http.ResponseWriter, req *http.Request) {
+func webNotFound(resp http.ResponseWriter, req *http.Request) {
 	err := pgpinError{Id: "not-found", Message: "not found"}
-	writeErr(resp, err)
+	webErr(resp, err)
 }
 
-func writeErr(resp http.ResponseWriter, err error) {
+func webErr(resp http.ResponseWriter, err error) {
 	fmt.Println("error:", err)
 	switch err.(type) {
 	case pgpinError:
@@ -84,9 +84,9 @@ func writeErr(resp http.ResponseWriter, err error) {
 	}
 }
 
-func wrapAuth(f http.HandlerFunc) http.HandlerFunc {
-	return func(res http.ResponseWriter, req *http.Request) {
-		
+func webWrapAuth(f http.HandlerFunc) http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {	
+		f(res, req)
 	}
 }
 
@@ -96,8 +96,8 @@ func webRouter() *mux.Router {
 	router.HandleFunc("/pins", webPinCreate).Methods("POST")
 	router.HandleFunc("/pins/{id}", webPinGet).Methods("GET")
 	router.HandleFunc("/pins/{id}", webPinDestroy).Methods("DELETE")
-	router.HandleFunc("/api-status", webApiStatus).Methods("GET")
-	router.NotFoundHandler = http.HandlerFunc(notFound)
+	router.HandleFunc("/status", webStatus).Methods("GET")
+	router.NotFoundHandler = http.HandlerFunc(webNotFound)
 	return router
 }
 
@@ -117,7 +117,7 @@ func web() {
 	dataInit()
 	log("web.start")
 	handler := routerHandlerFunc(webRouter())
-	handler = wrapAuth(handler)
+	handler = webWrapAuth(handler)
 	handler = wrapLogging(handler)
 	sigs := webTrap()
 	port := env.Int("PORT")
