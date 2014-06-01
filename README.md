@@ -12,69 +12,158 @@ for SQL queries.
 For more info on the Go example code within pgpin, please see the
 blog post [An example Go app: pgpin](https://mmcgrana.github.io/posts/2014-06-example-go-app-pgpin.html).
 
-For using, developing, and deploying pgpin, please see below.
+For pgpin usage and for deploying and developing the service, please
+see below.
+
+* [Usage](#usage)
+* [Deploying](#deploying)
+* [Developing](#developing)
 
 ### Usage
 
+We'll use the CLI interface to show basic usage of pgpin. Similar
+functionality is available on the web interface and the [API](api-docs).
 
-### Development
+To start using the CLI, configure it with a `PGPIN_API_URL`:
 
+```console
+$ PGPIN_DEPLOY=you
+$ PGPIN_API_KEY=heroku config:get -a pgpin-api-$PGPIN_DEPLOY
+$ export PGPIN_API_URL="https://$PGPIN_API_KEY@pgpin-api-$PGPIN_DEPLOY.herokuapp.com"
+```
 
-### Deployment
+Verify we can connect to the API:
 
+```console
+$ pgpin api-status
+ok
+```
 
 Get overview help:
 
 ```console
-$ datapins-cli
-Usage: datapins-cli <command> [<args>]
+$ pgpin help
+Usage: pgpin <command> [options] [arguments]
 
 Commands:
-  resources  List available resources
-  list       List datapins
-  create     Create a new datapin
-  show       Show dataping metadata
-  destroy    Destroy a datapin
-  status     Check service status
+  pins        List pins
+  pin-create  Create new pin
+  pin-destroy Destroy a pin
+  pin-show    Show pin details
+  dbs         List databases
+  db-add      Add database to registry
+  db-remove   Remove database from registry
+  db-show     Show database details
+  api-status  Check API status
+  help        Show help
+```
 
-$ datapins-cli resources
- Id                       | Name                   | Attachments
---------------------------+------------------------+----------------------
-resource1822@heroku.com   | laughing-loudly-2742   | shogun:green
-...
+To start, we'll need to add a database against which we can make
+pins:
 
-$ datapins-cli list
- Id                                  | Name             
--------------------------------------+------------------
-4c15dbdc-4f8f-11e2-80dc-1040f386e726 | cips count
-...
+```console
+$ pgpin db-add --name test-database --url "postgres://user:pass@host:1234/database"
+33d03fe9ac28
+```
 
-$ datapins-cli create --resource "resource1822@heroku.com" --name "post count" --sql "select count(*) from posts"
-Creating datapin... done
-Id: 5ab73e4c-4f8f-11e2-92cd-1040f386e726
+See that it's indeed registered, and check the registered details:
 
-$ datapins-cli show --id 5ab73e4c-4f8f-11e2-92cd-1040f386e726
-Id:          5ab73e4c-4f8f-11e2-92cd-1040f386e726
-Resource Id: resource1822@heroku.com
-Name:        post count
-Created At:  2012/05/24 06:02:31 -0000
-Results At:  2012/05/24 06:02:33 -0000
+```console
+$ pgpin dbs
+33d03fe9ac28 test-database
 
-Sql:
-select count(*) from posts
+$ pgpin db-show test-database
+Id:         33d03fe9ac28
+Name:       test-database
+Added At:   2014-06-01T17:55:03Z
+Url:        postgres://user:pass@host:1234/database
+```
+
+Now let's create a pin against this database:
+
+```console
+$ pgpin pin-create --name test-pin --db test-database --query "select count(*) from users"
+0b8b725f5750
+```
+
+The pin is persisted by the pgpin service:
+
+```console
+$ pgpin pins
+0b8b725f5750 test-pin
+```
+
+See the details of your pin, including query results:
+
+```console
+$ pgpin pin-show test-pin
+Id:         0b8b725f5750
+Name:       test-pin
+Db Id:      33d03fe9ac28
+Created At: 2014-06-01T17:55:36Z
+Results At: 2014-06-01T18:08:48Z
+
+Query:
+select count(*) from users
 
 Results:
  (?column?) |
 ------------+
  1          |
-(1 row)
-
-$ datapins-cli destroy --id 5ab73e4c-4f8f-11e2-92cd-1040f386e726
-Destroying datapin... done
-
-$ datapins-cli status
-ok
 ```
+
+We can remove our test pin and database with:
+
+```console
+$ pgpin pin-rm test-pin
+0b8b725f5750
+
+$ pgpin db-rm test-database
+33d03fe9ac28
+```
+
+### Deploying
+
+Deploy an instance of `pgping-api` and `pgpin-web` to Heroku with:
+
+```console
+$ export DEPLOY=you
+$ bin/deploy-setup
+```
+
+This will give apps e.g. `pgping-api-you` and `pgpin-web-you`.
+
+Tear these apps down with:
+
+```console
+$ bin/deploy-teardown
+```
+
+### Developing
+
+A [Vagrant](http://www.vagrantup.com/) development environment is
+provided. Install a recent version of Vagrant and Virtualbox and
+run:
+
+```console
+$ vagrant up
+```
+
+
+-----
+
+{
+  "id": "be193c3048eb7c508abb9617493937c5",
+  "resource_id": "resource274@heroku.com",
+  "name": "posts count",
+  "sql", "select count(*) from posts",
+  "created_at": "2012/05/24 06:02:31 -0000",
+  "user_id": "user248@heroku.com",
+  "results_fields_json": "...",
+  "results_rows_json": "...",
+  "error_message": null
+  "results_at": "2012/05/24 06:02:33 -0000"
+}
 
 ## API
 
@@ -218,4 +307,3 @@ Bodies for all error responses are of the form:
   "message": "message text"
 }
 ```
-
