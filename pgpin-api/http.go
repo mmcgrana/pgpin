@@ -24,21 +24,13 @@ func (w *statusCapturingResponseWriter) WriteHeader(s int) {
 	w.ResponseWriterFlusher.WriteHeader(s)
 }
 
-func newStatusCapturingResponseWriter(w http.ResponseWriter) statusCapturingResponseWriter {
-	wf, ok := w.(ResponseWriterFlusher)
-	if !ok {
-		panic("unflushable")
-	}
-	return statusCapturingResponseWriter{-1, wf}
-}
-
 func wrapLogging(f http.HandlerFunc) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		start := time.Now()
 		method := req.Method
 		path := req.URL.Path
 		log("web.request.start method=%s path=%s", method, path)
-		wres := newStatusCapturingResponseWriter(res)
+		wres := statusCapturingResponseWriter{-1, res.(ResponseWriterFlusher)}
 		f(&wres, req)
 		elapsed := float64(time.Since(start)) / 1000000.0
 		log("web.request.finish method=%s path=%s status=%d elapsed=%f", method, path, wres.status, elapsed)
