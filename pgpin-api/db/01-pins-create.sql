@@ -1,13 +1,12 @@
 CREATE TABLE pins (
-    id                   char(32) PRIMARY KEY,
-    resource_id          text NOT NULL,
-    name                 text NOT NULL,
-    sql                  text NOT NULL,
-    user_id              text NOT NULL,
-    created_at           timestamptz NOT NULL,
-    resource_url         text NOT NULL,
-    results_fields_json  text,
-    results_rows_json    text,
-    results_at           timestamptz,
-    deleted_at           timestamptz
+    id                 char(12) PRIMARY KEY,
+    name               text NOT NULL,
+    db_id              char(12),
+    query              text NOT NULL,
+    created_at         timestamptz NOT NULL,
+    query_started_at   timestamptz,
+    query_finished_at  timestamptz,
+    result_fields_json text,
+    result_rows_json   text,
+    result_error       text
 );

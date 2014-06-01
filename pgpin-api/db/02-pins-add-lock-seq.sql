@@ -1,2 +1,0 @@
-ALTER TABLE pins
-ADD lock_seq int NOT NULL DEFAULT 1;
