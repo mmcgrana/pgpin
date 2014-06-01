@@ -153,3 +153,40 @@ Bodies for all error responses are of the form:
   "message": "message text"
 }
 ```
+
+export ENDPOINT=http://localhost:5000/vi
+
+cat > /tmp/pin1.js <<EOF
+{
+  "resource_id": "resource1680172@heroku.com",
+  "name": "pins count",
+  "sql": "select count(*) from pins"
+}
+EOF
+
+curl -ns -X GET    $ENDPOINT/resources
+
+curl -ns -X GET    $ENDPOINT/pins
+
+curl -ns -X POST   $ENDPOINT/pins -H "Content-Type: application/json" -d @/tmp/pin1.js
+
+curl -ns -X GET    $ENDPOINT/pins/(found)
+
+curl -ns -X GET    $ENDPOINT/pins/(not-found)
+
+curl -ns -X DELETE $ENDPOINT/pins/(found)
+
+curl -ns -X DELETE $ENDPOINT/pins(not-found)
+
+cat > /tmp/pin2.js <<EOF
+{
+  "resource_id": "wat",
+  "name": "posts count",
+  "sql": "select count(*) from posts"
+}
+EOF
+
+curl -ns -X POST   $ENDPOINT/pins -H "Content-Type: application/json" -d @/tmp/pin2.js
+
+curl -ns -X GET    $ENDPOING/status
+

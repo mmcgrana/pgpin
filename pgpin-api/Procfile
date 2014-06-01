@@ -1,2 +1,2 @@
-web:    datapins-api web
-worker: datapins-api worker
+web:    pgpin-api web
+worker: pgpin-api worker
