@@ -1,7 +1,6 @@
 package main
 
 import (
-	"code.google.com/p/gorilla/mux"
 	"encoding/base64"
 	"encoding/json"
 	"net/http"
@@ -50,11 +49,11 @@ func getAuth(r *http.Request) (string, string, bool) {
 	return pair[0], pair[1], true
 }
 
-func readJson(req *http.Request, reqD interface{}) error {
+func httpReadJson(req *http.Request, reqD interface{}) error {
 	return json.NewDecoder(req.Body).Decode(reqD)
 }
 
-func writeJson(resp http.ResponseWriter, status int, respD interface{}) {
+func httpWriteJson(resp http.ResponseWriter, status int, respD interface{}) {
 	b, err := json.MarshalIndent(respD, "", "  ")
 	if err != nil {
 		panic(err)
@@ -63,18 +62,4 @@ func writeJson(resp http.ResponseWriter, status int, respD interface{}) {
 	resp.WriteHeader(status)
 	resp.Write(b)
 	resp.Write([]byte("\n"))
-}
-
-func param(req *http.Request, name string) string {
-	s := mux.Vars(req)[name]
-	if s != "" {
-		return s
-	}
-	return req.FormValue(name)
-}
-
-func routerHandlerFunc(router *mux.Router) http.HandlerFunc {
-	return func(res http.ResponseWriter, req *http.Request) {
-		router.ServeHTTP(res, req)
-	}
 }

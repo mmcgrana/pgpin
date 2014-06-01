@@ -16,12 +16,12 @@ func webPinList(resp http.ResponseWriter, req *http.Request) {
 		webErr(resp, err)
 		return
 	}
-	writeJson(resp, 200, pins)
+	httpWriteJson(resp, 200, pins)
 }
 
 func webPinCreate(resp http.ResponseWriter, req *http.Request) {
 	pinReq := pin{}
-	err := readJson(req, &pinReq)
+	err := httpReadJson(req, &pinReq)
 	if err != nil {
 		err = pgpinError{Id: "bad-request", Message: "malformed JSON body"}
 		webErr(resp, err)
@@ -32,21 +32,21 @@ func webPinCreate(resp http.ResponseWriter, req *http.Request) {
 		webErr(resp, err)
 		return
 	}
-	writeJson(resp, 200, pin)
+	httpWriteJson(resp, 200, pin)
 }
 
 func webPinGet(resp http.ResponseWriter, req *http.Request) {
-	id := param(req, "id")
+	id := mux.Vars(req)["id"]
 	pin, err := dataPinGet(id)
 	if err != nil {
 		webErr(resp, err)
 		return
 	}
-	writeJson(resp, 200, pin)
+	httpWriteJson(resp, 200, pin)
 }
 
 func webPinDestroy(resp http.ResponseWriter, req *http.Request) {
-	id := param(req, "id")
+	id := mux.Vars(req)["id"]
 	pin, err := dataPinGet(id)
 	if err != nil {
 		webErr(resp, err)
@@ -57,7 +57,7 @@ func webPinDestroy(resp http.ResponseWriter, req *http.Request) {
 		webErr(resp, err)
 		return
 	}
-	writeJson(resp, 200, pin)
+	httpWriteJson(resp, 200, pin)
 }
 
 func webStatus(resp http.ResponseWriter, req *http.Request) {
@@ -66,7 +66,7 @@ func webStatus(resp http.ResponseWriter, req *http.Request) {
 		webErr(resp, err)
 		return
 	}
-	writeJson(resp, 200, &map[string]string{"message": "ok"})
+	httpWriteJson(resp, 200, &map[string]string{"message": "ok"})
 }
 
 func webNotFound(resp http.ResponseWriter, req *http.Request) {
@@ -78,9 +78,9 @@ func webErr(resp http.ResponseWriter, err error) {
 	fmt.Println("error:", err)
 	switch err.(type) {
 	case pgpinError:
-		writeJson(resp, 500, err)
+		httpWriteJson(resp, 500, err)
 	default:
-		writeJson(resp, 500, &map[string]string{"id": "internal-error", "message": "internal server error"})
+		httpWriteJson(resp, 500, &map[string]string{"id": "internal-error", "message": "internal server error"})
 	}
 }
 
@@ -90,7 +90,7 @@ func webWrapAuth(f http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
-func webRouter() *mux.Router {
+func webRouterHandler() http.HandlerFunc {
 	router := mux.NewRouter()
 	router.HandleFunc("/pins", webPinList).Methods("GET")
 	router.HandleFunc("/pins", webPinCreate).Methods("POST")
@@ -98,7 +98,9 @@ func webRouter() *mux.Router {
 	router.HandleFunc("/pins/{id}", webPinDestroy).Methods("DELETE")
 	router.HandleFunc("/status", webStatus).Methods("GET")
 	router.NotFoundHandler = http.HandlerFunc(webNotFound)
-	return router
+	return func(res http.ResponseWriter, req *http.Request) {
+		router.ServeHTTP(res, req)
+	}
 }
 
 func webTrap() {
@@ -115,7 +117,7 @@ func webTrap() {
 func web() {
 	dataInit()
 	log("web.start")
-	handler := routerHandlerFunc(webRouter())
+	handler := webRouterHandler()
 	handler = webWrapAuth(handler)
 	handler = httpWrapLogging(handler)
 	webTrap()
