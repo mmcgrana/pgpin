@@ -14,37 +14,27 @@ import (
 
 type pinSlim struct {
 	Id         string `json:"id"`
-	ResourceId string `json:"resource_id"`
 	Name       string `json:"name"`
 }
 
 type pin struct {
 	Id                string     `json:"id"`
-	ResourceId        string     `json:"resource_id"`
 	Name              string     `json:"name"`
-	Sql               string     `json:"sql"`
-	UserId            string     `json:"user_id"`
+	DbId              string     `json:"db_id"`
+	Query             string     `json:"query"`
 	CreatedAt         time.Time  `json:"created_at"`
-	ResourceUrl       *string    `json:"-"`
-	ResultsFieldsJson *string    `json:"results_fields_json"`
-	ResultsRowsJson   *string    `json:"results_rows_json"`
-	ErrorMessage      *string    `json:"error_message"`
 	QueryStartedAt    *time.Time `json:"query_started_at"`
 	QueryFinishedAt   *time.Time `json:"query_finished_at"`
-	DeletedAt         *time.Time `json:"-"`
-	LockSeq           int        `json:"-"`
+	ResultsFieldsJson *string    `json:"results_fields_json"`
+	ResultsRowsJson   *string    `json:"results_rows_json"`
+	ResultsError      *string    `json:"results_error"`
 }
 
-type attachment struct {
-	AppName   string `json:"app_name"`
-	ConfigVar string `json:"config_var"`
-}
-
-type resource struct {
+type db struct {
 	Id          string       `json:"id"`
 	Name        string       `json:"name"`
-	Url         string       `json:"-"`
-	Attachments []attachment `json:"attachments"`
+	Url         string       `json:"url"`
+	AddedAt     *time.Time   `json:"added_at"`
 }
 
 type notFoundError struct {

@@ -11,10 +11,14 @@ func logInit() {
 	logMutex = &sync.Mutex{}
 }
 
-func log(s string, args ...interface{}) {
-	line := fmt.Sprintf(s, args...)
+func log(k string, args ...interface{}) {
+	var line string
+	if len(args) == 0 {
+		line = k
+	} else {
+		line = fmt.Sprintf(k + " " + args[0], args[1:]...)
+	}
 	logMutex.Lock()
 	defer logMutex.Unlock()
 	fmt.Println(line)
 }
-
