@@ -1,9 +1,11 @@
 package main
 
 import (
+	"crypto/rand"
 	"database/sql"
 	"fmt"
 	"github.com/bmizerany/pq"
+	"github.com/darkhelmet/env"
 	"regexp"
 	"time"
 )
@@ -35,6 +37,17 @@ type db struct {
 	RemovedAt *time.Time `json:"removed_at"`
 }
 
+func dataRandId() string {
+	num := 6
+	bytes := make([]byte, num)
+	_, err := rand.Read(bytes)
+	if err != nil {
+		panic(err)
+	}
+	return fmt.Sprintf("%x", bytes)
+}
+
+
 func dataMustParseDatabaseUrl(s string) string {
 	conf, err := pq.ParseURL(s)
 	if err != nil {
@@ -47,7 +60,7 @@ var conn *sql.DB
 
 func dataInit() {
 	log("data.init")
-	conf := dataMustParseDatabaseUrl(mustGetenv("DATABASE_URL"))
+	conf := dataMustParseDatabaseUrl(env.String("DATABASE_URL"))
 	connNew, err := sql.Open("postgres", conf)
 	if err != nil {
 		panic(err)
@@ -100,7 +113,7 @@ func dataPinCreate(dbId string, name string, query string) (*pin, error) {
 		return nil, err
 	}
 	pin := pin{}
-	pin.Id = randId()
+	pin.Id = dataRandId()
 	pin.DbId = dbId
 	pin.Name = name
 	pin.Query = query

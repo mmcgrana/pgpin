@@ -3,6 +3,7 @@ package main
 import (
 	"code.google.com/p/gorilla/mux"
 	"fmt"
+	"github.com/darkhelmet/env"
 	"net/http"
 	"os"
 	"os/signal"
@@ -65,7 +66,7 @@ func webApiStatus(resp http.ResponseWriter, req *http.Request) {
 		writeErr(resp, err)
 		return
 	}
-	writeJson(resp, 200, &stringMap{"message": "ok"})
+	writeJson(resp, 200, &map[string]string{"message": "ok"})
 }
 
 func notFound(resp http.ResponseWriter, req *http.Request) {
@@ -79,7 +80,7 @@ func writeErr(resp http.ResponseWriter, err error) {
 	case pgpinError:
 		writeJson(resp, 500, err)
 	default:
-		writeJson(resp, 500, &stringMap{"id": "internal-error", "message": "internal server error"})
+		writeJson(resp, 500, &map[string]string{"id": "internal-error", "message": "internal server error"})
 	}
 }
 
@@ -119,7 +120,7 @@ func web() {
 	handler = wrapAuth(handler)
 	handler = wrapLogging(handler)
 	sigs := webTrap()
-	port := confPort()
+	port := env.Int("PORT")
 	log("web.serve port=%d", port)
 	httpServeGraceful(handler, port, sigs)
 	log("web.exit")
