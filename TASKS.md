@@ -3,12 +3,12 @@
 * Keyd logging, https://github.com/tv42/jog, https://github.com/heroku/slog
 * Limit query duration
 * Try other types, including bytes
-* Inline actual JSON
+* Inline JSON instead of text
+* JSON data type instead of text
 * Encrypt resource URL
 * Encrypt other sensitive fields
-* Multiple workers
+* Multiple workers/ concurrent workers
 * Operational metrics
-* Concurrent queries within workers
 * Exception logging and actionable reporting
 * Request Ids
 * Limit result rows
