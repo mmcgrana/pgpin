@@ -5,31 +5,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
-	"time"
 )
 
-type httpStatusingResponseWriter struct {
-	status int
-	http.ResponseWriter
-}
-
-func (w *httpStatusingResponseWriter) WriteHeader(s int) {
-	w.status = s
-	w.ResponseWriter.WriteHeader(s)
-}
-
-func httpWrapLogging(f http.HandlerFunc) http.HandlerFunc {
-	return func(res http.ResponseWriter, req *http.Request) {
-		start := time.Now()
-		method := req.Method
-		path := req.URL.Path
-		log("web.request.start method=%s path=%s", method, path)
-		wres := httpStatusingResponseWriter{-1, res}
-		f(&wres, req)
-		elapsed := float64(time.Since(start)) / 1000000.0
-		log("web.request.finish method=%s path=%s status=%d elapsed=%f", method, path, wres.status, elapsed)
-	}
-}
 
 type authenticator func(string, string) bool
 

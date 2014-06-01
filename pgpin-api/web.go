@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 func webPinList(resp http.ResponseWriter, req *http.Request) {
@@ -114,12 +115,35 @@ func webTrap() {
 	signal.Notify(trap, syscall.SIGINT, syscall.SIGTERM)
 }
 
+type webStatusingResponseWriter struct {
+	status int
+	http.ResponseWriter
+}
+
+func (w *webStatusingResponseWriter) WriteHeader(s int) {
+	w.status = s
+	w.ResponseWriter.WriteHeader(s)
+}
+
+func webWrapLogging(f http.HandlerFunc) http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {
+		start := time.Now()
+		method := req.Method
+		path := req.URL.Path
+		log("web.request.start method=%s path=%s", method, path)
+		wres := webStatusingResponseWriter{-1, res}
+		f(&wres, req)
+		elapsed := float64(time.Since(start)) / 1000000.0
+		log("web.request.finish method=%s path=%s status=%d elapsed=%f", method, path, wres.status, elapsed)
+	}
+}
+
 func web() {
 	dataInit()
 	log("web.start")
 	handler := webRouterHandler()
 	handler = webWrapAuth(handler)
-	handler = httpWrapLogging(handler)
+	handler = webWrapLogging(handler)
 	webTrap()
 	port := env.Int("PORT")
 	log("web.serve port=%d", port)	
