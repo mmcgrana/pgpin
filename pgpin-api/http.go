@@ -9,19 +9,14 @@ import (
 	"time"
 )
 
-type ResponseWriterFlusher interface {
-	http.ResponseWriter
-	http.Flusher
-}
-
-type statusCapturingResponseWriter struct {
+type httpStatusingResponseWriter struct {
 	status int
-	ResponseWriterFlusher
+	ResponseWriter
 }
 
-func (w *statusCapturingResponseWriter) WriteHeader(s int) {
+func (w *httpStatusingResponseWriter) WriteHeader(s int) {
 	w.status = s
-	w.ResponseWriterFlusher.WriteHeader(s)
+	w.ResponseWriter.WriteHeader(s)
 }
 
 func wrapLogging(f http.HandlerFunc) http.HandlerFunc {
