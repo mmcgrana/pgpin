@@ -111,12 +111,6 @@ func webRouterHandler() http.HandlerFunc {
 	}
 }
 
-func webWrapAuth(f http.HandlerFunc) http.HandlerFunc {
-	return func(res http.ResponseWriter, req *http.Request) {	
-		f(res, req)
-	}
-}
-
 type webStatusingResponseWriter struct {
 	status int
 	http.ResponseWriter
@@ -155,7 +149,6 @@ func web() {
 	dataInit()
 	log("web.start")
 	handler := webRouterHandler()
-	handler = webWrapAuth(handler)
 	handler = webWrapLogging(handler)
 	webTrap()
 	port := env.Int("PORT")
