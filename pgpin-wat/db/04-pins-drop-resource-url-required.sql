@@ -1,0 +1,2 @@
+ALTER TABLE pins
+ALTER COLUMN resource_url DROP NOT NULL;

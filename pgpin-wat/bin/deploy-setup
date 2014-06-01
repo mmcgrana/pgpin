@@ -1,0 +1,14 @@
+#!/bin/bash
+
+[ -z "$DEPLOY" ] && echo "Need to set DEPLOY" && exit 1;
+
+set -e
+set -x
+
+export APP=datapins-api-$DEPLOY
+heroku create $APP -r $DEPLOY
+heroku config:add -a $APP BUILDPACK_URL=https://github.com/kr/heroku-buildpack-go.git
+heroku addons:add heroku-postgresql:basic -a $APP --config DATABASE_URL
+cat db/* | heroku pg:psql -a $APP
+git push $DEPLOY master
+heroku scale web=1 worker=1 -a $APP

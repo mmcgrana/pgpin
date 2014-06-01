@@ -1,0 +1,2 @@
+web:    datapins-api web
+worker: datapins-api worker

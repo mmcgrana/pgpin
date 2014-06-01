@@ -1,0 +1,8 @@
+#!/bin/bash
+
+[ -z "$DEPLOY" ] && echo "Need to set DEPLOY" && exit 1;
+
+set -e
+set -x
+
+heroku destroy -a datapins-api-$DEPLOY
