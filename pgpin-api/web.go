@@ -7,14 +7,9 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 )
 
-func getPins(resp http.ResponseWriter, req *http.Request) {
-	token, ok := getAuth(resp, req)
-	if !ok {
-		return
-	}
+func webPinList(resp http.ResponseWriter, req *http.Request) {
 	pins, err := dataPinList()
 	if err != nil {
 		writeErr(resp, err)
@@ -23,19 +18,15 @@ func getPins(resp http.ResponseWriter, req *http.Request) {
 	writeJson(resp, 200, pins)
 }
 
-func createPin(resp http.ResponseWriter, req *http.Request) {
-	token, ok := getToken(resp, req)
-	if !ok {
-		return
-	}
+func webPinCreate(resp http.ResponseWriter, req *http.Request) {
 	pinReq := pin{}
-	ok = readJson(resp, req, &pinReq)
-	if !ok {
-		err := pgpinError{Id: "bad-request", Message: "malformed JSON body"}
+	err := readJson(req, &pinReq)
+	if err != nil {
+		err = pgpinError{Id: "bad-request", Message: "malformed JSON body"}
 		writeErr(resp, err)
 		return
 	}
-	pin, err := dataCreatePin(token, pinReq.ResourceId, pinReq.Name, pinReq.Sql)
+	pin, err := dataPinCreate(pinReq.DbId, pinReq.Name, pinReq.Query)
 	if err != nil {
 		writeErr(resp, err)
 		return
@@ -43,13 +34,9 @@ func createPin(resp http.ResponseWriter, req *http.Request) {
 	writeJson(resp, 200, pin)
 }
 
-func getPin(resp http.ResponseWriter, req *http.Request) {
-	token, ok := getToken(resp, req)
-	if !ok {
-		return
-	}
+func webPinGet(resp http.ResponseWriter, req *http.Request) {
 	id := param(req, "id")
-	pin, err := dataGetPin(token, id)
+	pin, err := dataPinGet(id)
 	if err != nil {
 		writeErr(resp, err)
 		return
@@ -57,18 +44,14 @@ func getPin(resp http.ResponseWriter, req *http.Request) {
 	writeJson(resp, 200, pin)
 }
 
-func deletePin(resp http.ResponseWriter, req *http.Request) {
-	token, ok := getToken(resp, req)
-	if !ok {
-		return
-	}
+func webPinDestroy(resp http.ResponseWriter, req *http.Request) {
 	id := param(req, "id")
-	pin, err := dataGetPin(token, id)
+	pin, err := dataPinGet(id)
 	if err != nil {
 		writeErr(resp, err)
 		return
 	}
-	err = dataDeletePin(pin)
+	err = dataPinDelete(pin)
 	if err != nil {
 		writeErr(resp, err)
 		return
@@ -76,13 +59,12 @@ func deletePin(resp http.ResponseWriter, req *http.Request) {
 	writeJson(resp, 200, pin)
 }
 
-func getStatus(resp http.ResponseWriter, req *http.Request) {
+func webApiStatus(resp http.ResponseWriter, req *http.Request) {
 	err := dataTest()
 	if err != nil {
 		writeErr(resp, err)
 		return
 	}
-	time.Sleep(time.Second * 5)
 	writeJson(resp, 200, &stringMap{"message": "ok"})
 }
 
@@ -93,28 +75,27 @@ func notFound(resp http.ResponseWriter, req *http.Request) {
 
 func writeErr(resp http.ResponseWriter, err error) {
 	fmt.Println("error:", err)
-	switch e := err.(type) {
-	case malformedError:
-		writeJson(resp, 400, &stringMap{"message": e.Error()})
-	case notAuthorizedError:
-		writeJson(resp, 401, &stringMap{"message": e.Error()})
-	case invalidError:
-		writeJson(resp, 403, &stringMap{"message": e.Error()})
-	case notFoundError:
-		writeJson(resp, 404, &stringMap{"message": e.Error()})
+	switch err.(type) {
+	case pgpinError:
+		writeJson(resp, 500, err)
 	default:
-		writeJson(resp, 500, &stringMap{"message": "internal server error"})
+		writeJson(resp, 500, &stringMap{"id": "internal-error", "message": "internal server error"})
 	}
 }
 
-func router() *mux.Router {
+func wrapAuth(f http.HandlerFunc) http.HandlerFunc {
+	return func(res http.ResponseWriter, req *http.Request) {
+		
+	}
+}
+
+func webRouter() *mux.Router {
 	router := mux.NewRouter()
-	router.HandleFunc("/v1/resources", getResources).Methods("GET")
-	router.HandleFunc("/v1/pins", getPins).Methods("GET")
-	router.HandleFunc("/v1/pins", createPin).Methods("POST")
-	router.HandleFunc("/v1/pins/{id}", getPin).Methods("GET")
-	router.HandleFunc("/v1/pins/{id}", deletePin).Methods("DELETE")
-	router.HandleFunc("/v1/status", getStatus).Methods("GET")
+	router.HandleFunc("/pins", webPinList).Methods("GET")
+	router.HandleFunc("/pins", webPinCreate).Methods("POST")
+	router.HandleFunc("/pins/{id}", webPinGet).Methods("GET")
+	router.HandleFunc("/pins/{id}", webPinDestroy).Methods("DELETE")
+	router.HandleFunc("/api-status", webApiStatus).Methods("GET")
 	router.NotFoundHandler = http.HandlerFunc(notFound)
 	return router
 }
@@ -134,7 +115,8 @@ func webTrap() chan os.Signal {
 func web() {
 	dataInit()
 	log("web.start")
-	handler := routerHandlerFunc(router())
+	handler := routerHandlerFunc(webRouter())
+	handler = wrapAuth(handler)
 	handler = wrapLogging(handler)
 	sigs := webTrap()
 	port := confPort()

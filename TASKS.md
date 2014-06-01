@@ -26,6 +26,8 @@
 * Implement pgpin
 * Implement pgpin-web
 * API versioning
+* Error specialization
+* API authorization
 
 ## Topics
 

@@ -143,20 +143,17 @@ func dataPinGet(id string) (*pin, error) {
 }
 
 func dataPinUpdate(pin *pin) (error) {
-	res, err := conn.Exec("UPDATE pins SET db_id=$1, name=$2, query=$3, created_at=$4, query_started_at=$5, query_finished_at=$6, results_fields_json=$7, results_rows_json=$8, results_error=$9, deleted_at=$10 WHERE id=$11",
+	_, err := conn.Exec("UPDATE pins SET db_id=$1, name=$2, query=$3, created_at=$4, query_started_at=$5, query_finished_at=$6, results_fields_json=$7, results_rows_json=$8, results_error=$9, deleted_at=$10 WHERE id=$11",
 		pin.DbId, pin.Name, pin.Query, pin.CreatedAt, pin.QueryStartedAt, pin.QueryFinishedAt, pin.ResultsFieldsJson, pin.ResultsRowsJson, pin.ResultsError, pin.DeletedAt, pin.Id)
-	if err != nil {
-		return err
-	}
-	rows, err := res.RowsAffected()
-	if err != nil {
-		return err
-	}
-	return nil
+	return err
 }
 
 func dataPinDelete(pin *pin) error {
 	deletedAt := time.Now()
 	pin.DeletedAt = &deletedAt
 	return dataPinUpdate(pin)
+}
+
+func dataPinDbUrl(pin *pin) (string, error) {
+	return "postgres://user:pass@host.com:1234/database", nil
 }

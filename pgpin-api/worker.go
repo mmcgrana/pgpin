@@ -24,7 +24,7 @@ func workerPoll() (*pin, error) {
 
 func workerQuery(p *pin) error {
 	log("worker.query.start pin_id=%s", p.Id)
-	resourceConf, err := pq.ParseURL(*p.ResourceUrl)
+	dbUrl, err := dataPinDbUrl(p)
 	if err != nil {
 		return err
 	}
@@ -36,20 +36,19 @@ func workerQuery(p *pin) error {
 		return err
 	}
 	log("worker.query.open pin_id=%s", p.Id)
-	resourceDb, err := sql.Open("postgres", resourceConf)
+	resourceDb, err := sql.Open("postgres", dataMustParseDatabaseUrl(dbUrl))
 	if err != nil {
 		return err
 	}
 	log("worker.query.exec pin_id=%s", p.Id)
-	buffer, err := tablebuffer.Get(resourceDb, p.Sql)
+	buffer, err := tablebuffer.Get(resourceDb, p.Query)
 	finishedAt := time.Now()
 	p.QueryFinishedAt = &finishedAt
-	p.ResourceUrl = nil
 	if err != nil {
 		if pgerr, ok := err.(pq.PGError); ok {
 			log("worker.query.usererror pin_id=%s", p.Id)
 			msg := pgerr.Get('M')
-			p.ErrorMessage = &msg
+			p.ResultsError = &msg
 			err = dataPinUpdate(p)
 			if err != nil {
 				return err

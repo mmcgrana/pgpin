@@ -116,9 +116,9 @@ Results:
 We can remove our test pin and database with:
 
 ```console
-$ pgpin pin-rm test-pin
+$ pgpin pin-destroy test-pin
 
-$ pgpin db-rm test-database
+$ pgpin db-remove test-database
 ```
 
 ### Deploying
