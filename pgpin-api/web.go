@@ -10,35 +10,12 @@ import (
 	"time"
 )
 
-func getToken(resp http.ResponseWriter, req *http.Request) (string, bool) {
-	_, token, ok := getAuth(req)
-	if !ok {
-		err := notAuthorizedError{Message: "authorization required"}
-		writeErr(resp, err)
-		return "", false
-	}
-	return token, true
-}
-
-func getResources(resp http.ResponseWriter, req *http.Request) {
-	token, ok := getToken(resp, req)
-	if !ok {
-		return
-	}
-	resources, err := dataGetResources(token)
-	if err != nil {
-		writeErr(resp, err)
-		return
-	}
-	writeJson(resp, 200, resources)
-}
-
 func getPins(resp http.ResponseWriter, req *http.Request) {
-	token, ok := getToken(resp, req)
+	token, ok := getAuth(resp, req)
 	if !ok {
 		return
 	}
-	pins, err := dataGetPins(token)
+	pins, err := dataPinList()
 	if err != nil {
 		writeErr(resp, err)
 		return
@@ -54,7 +31,7 @@ func createPin(resp http.ResponseWriter, req *http.Request) {
 	pinReq := pin{}
 	ok = readJson(resp, req, &pinReq)
 	if !ok {
-		err := malformedError{Message: "invalid body"}
+		err := pgpinError{Id: "bad-request", Message: "malformed JSON body"}
 		writeErr(resp, err)
 		return
 	}
@@ -110,7 +87,7 @@ func getStatus(resp http.ResponseWriter, req *http.Request) {
 }
 
 func notFound(resp http.ResponseWriter, req *http.Request) {
-	err := notFoundError{Message: "not found"}
+	err := pgpinError{Id: "not-found", Message: "not found"}
 	writeErr(resp, err)
 }
 

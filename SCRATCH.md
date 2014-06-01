@@ -190,3 +190,4 @@ curl -ns -X POST   $ENDPOINT/pins -H "Content-Type: application/json" -d @/tmp/p
 
 curl -ns -X GET    $ENDPOING/status
 
+

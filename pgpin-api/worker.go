@@ -12,7 +12,7 @@ import (
 )
 
 func workerPoll() (*pin, error) {
-	pin, err := dataGetPinInternal("WHERE query_started_at IS NULL AND deleted_at IS NULL")
+	pin, err := dataPinGetInternal("WHERE query_started_at IS NULL AND deleted_at IS NULL")
 	if err != nil {
 		return nil, err
 	} else if pin != nil {
@@ -31,7 +31,7 @@ func workerQuery(p *pin) error {
 	log("worker.query.reserve pin_id=%s", p.Id)
 	startedAt := time.Now()
 	p.QueryStartedAt = &startedAt
-	err = dataUpdatePin(p)
+	err = dataPinUpdate(p)
 	if err != nil {
 		return err
 	}
@@ -50,7 +50,7 @@ func workerQuery(p *pin) error {
 			log("worker.query.usererror pin_id=%s", p.Id)
 			msg := pgerr.Get('M')
 			p.ErrorMessage = &msg
-			err = dataUpdatePin(p)
+			err = dataPinUpdate(p)
 			if err != nil {
 				return err
 			}
@@ -78,7 +78,7 @@ func workerQuery(p *pin) error {
 	log("worker.query.commit pin_id=%s", p.Id)
 	p.ResultsFieldsJson = &resultsFieldsJson
 	p.ResultsRowsJson = &resultsRowsJson
-	err = dataUpdatePin(p)
+	err = dataPinUpdate(p)
 	if err != nil {
 		return err
 	}

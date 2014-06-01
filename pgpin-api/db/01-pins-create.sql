@@ -8,5 +8,6 @@ CREATE TABLE pins (
     query_finished_at   timestamptz,
     results_fields_json text,
     results_rows_json   text,
-    results_error       text
+    results_error       text,
+    deleted_at          timestamptz
 );

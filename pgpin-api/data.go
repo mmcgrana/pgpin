@@ -2,19 +2,15 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/bmizerany/pq"
-	"net/http"
 	"regexp"
-	"strings"
 	"time"
 )
 
 type pinSlim struct {
-	Id         string `json:"id"`
-	Name       string `json:"name"`
+	Id   string `json:"id"`
+	Name string `json:"name"`
 }
 
 type pin struct {
@@ -28,41 +24,15 @@ type pin struct {
 	ResultsFieldsJson *string    `json:"results_fields_json"`
 	ResultsRowsJson   *string    `json:"results_rows_json"`
 	ResultsError      *string    `json:"results_error"`
+	DeletedAt         *time.Time `json:"deleted_at"`
 }
 
 type db struct {
-	Id          string       `json:"id"`
-	Name        string       `json:"name"`
-	Url         string       `json:"url"`
-	AddedAt     *time.Time   `json:"added_at"`
-}
-
-type notFoundError struct {
-	Message string
-}
-func (e notFoundError) Error() string {
-    return e.Message
-}
-
-type notAuthorizedError struct {
-	Message string
-}
-func (e notAuthorizedError) Error() string {
-	return e.Message
-}
-
-type malformedError struct {
-	Message string
-}
-func (e malformedError) Error() string {
-	return e.Message
-}
-
-type invalidError struct {
-	Message string
-}
-func (e invalidError) Error() string {
-	return e.Message
+	Id        string     `json:"id"`
+	Name      string     `json:"name"`
+	Url       string     `json:"url"`
+	AddedAt   *time.Time `json:"added_at"`
+	RemovedAt *time.Time `json:"removed_at"`
 }
 
 func dataMustParseDatabaseUrl(s string) string {
@@ -73,126 +43,30 @@ func dataMustParseDatabaseUrl(s string) string {
 	return conf
 }
 
-var db *sql.DB
+var conn *sql.DB
 
 func dataInit() {
-	log("data.init.start")
-	dbConf := dataMustParseDatabaseUrl(mustGetenv("DATABASE_URL"))
-	dbNew, err := sql.Open("postgres", dbConf)
+	log("data.init")
+	conf := dataMustParseDatabaseUrl(mustGetenv("DATABASE_URL"))
+	connNew, err := sql.Open("postgres", conf)
 	if err != nil {
 		panic(err)
 	}
-	db = dbNew
-	log("data.init.finish")
+	conn = connNew
 }
 
 func dataTest() error {
+	log("data.test")
 	var r int
-	err := db.QueryRow("SELECT 1").Scan(&r)
+	err := conn.QueryRow("SELECT 1").Scan(&r)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func dataGetUserId(token string) (string, error) {
-	log("data.get_user_id.start")
-	resp, err := http.Get("https://:" + token + "@api.heroku.com/account")
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode == 401 {
-		return "", notAuthorizedError{Message: "not authorized"}
-	} else if resp.StatusCode != 200 {
-		return "", errors.New(fmt.Sprintf("status code %d", resp.StatusCode))
-	}
-	var val map[string]interface{}
-	err = json.NewDecoder(resp.Body).Decode(&val)
-	if err != nil {
-		return "", err
-	}
-	log("data.get_user_id.finish")
-	return val["id"].(string), nil
-}
-
-func dataGetResources(token string) ([]resource, error) {
-	log("data.get_resources.start")
-	resp, err := http.Get("https://:" + token + "@api.heroku.com/resources")
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode == 401 {
-		return nil, notAuthorizedError{Message: "not authorized"}
-	} else if resp.StatusCode != 200 {
-		return nil, errors.New(fmt.Sprintf("status code %d", resp.StatusCode))
-	}
-	var vals []map[string]interface{}
-	err = json.NewDecoder(resp.Body).Decode(&vals)
-	if err != nil {
-		return nil, err
-	}
-	resources := []resource{}
-	for _, val := range vals {
-		id := val["id"].(string)
-		name := val["name"].(string)
-		url := val["value"].(string)
-		attachments := []attachment{}
-		for _, a := range val["attachments"].([]interface{}) {
-			at := a.(map[string]interface{})
-			appName := at["app"].(map[string]interface{})["name"].(string)
-			configVar := at["config_var"].(string)
-			attachment := attachment{appName, configVar}
-			attachments = append(attachments, attachment)
-		}
-		resource := resource{id, name, url, attachments}
-		resources = append(resources, resource)
-	}
-	log("data.get_resources.finish")
-	return resources, nil
-}
-
-func dataGetResource(token string, resourceId string) (*resource, error) {
-	resources, err := dataGetResources(token)
-	if err != nil {
-		return nil, err
-	}
-	for _, resource := range resources {
-		if resource.Id == resourceId {
-			return &resource, nil
-		}
-	}
-	return nil, notFoundError{Message: "resource not found"}
-}
-
-func dataGetUserIdAndResource(token string, resourceId string) (string, *resource, error) {
-	userId, err := dataGetUserId(token)
-	if err != nil {
-		return "", nil, err
-	}
-	resources, err := dataGetResources(token)
-	if err != nil {
-		return "", nil, err
-	}
-	for _, resource := range resources {
-		if resource.Id == resourceId {
-			return userId, &resource, nil
-		}
-	}
-	return "", nil, notFoundError{Message: "resource not found"}
-}
-
-func dataGetPins(token string) ([]pinSlim, error) {
-	resources, err := dataGetResources(token)
-	if err != nil {
-		return nil, err
-	}
-	resourceIds := []string{}
-	for _, resource := range resources {
-		resourceIds = append(resourceIds, resource.Id)
-	}
-	res, err := db.Query("SELECT id, resource_id, name FROM pins WHERE deleted_at IS NULL and resource_id in ('" + strings.Join(resourceIds, "','") + "')")
+func dataPinList() ([]pinSlim, error) {
+	res, err := conn.Query("SELECT id, name FROM pins where deleted_at IS NULL")
 	if err != nil {
 		return nil, err
 	}
@@ -200,7 +74,7 @@ func dataGetPins(token string) ([]pinSlim, error) {
 	pins := []pinSlim{}
 	for res.Next() {
 		pin := pinSlim{}
-		err = res.Scan(&pin.Id, &pin.ResourceId, &pin.Name)
+		err = res.Scan(&pin.Id, &pin.Name)
 		if err != nil {
 			return nil, err
 		}
@@ -213,42 +87,34 @@ var emptyRegexp = regexp.MustCompile("\\A\\s*\\z")
 
 func dataValidateNonempty(f string, s string) error {
 	if emptyRegexp.MatchString(s) {
-		return invalidError{Message: fmt.Sprintf("field %s must be nonempty", f)}
+		return &pgpinError{Id: "invalid", Message: fmt.Sprintf("field %s must be nonempty", f)}
 	}
 	return nil
 }
 
-func dataCreatePin(token, resourceId, name, sql string) (*pin, error) {
+func dataPinCreate(dbId string, name string, query string) (*pin, error) {
 	if err := dataValidateNonempty("name", name); err != nil {
 		return nil, err
 	}
-	if err := dataValidateNonempty("sql", sql); err != nil {
+	if err := dataValidateNonempty("query", query); err != nil {
 		return nil, err
-	}
-	userId, resource, err := dataGetUserIdAndResource(token, resourceId)
-	if resource == nil {
-		return nil, notFoundError{Message: "resource not found"}
 	}
 	pin := pin{}
 	pin.Id = randId()
-	pin.ResourceId = resourceId
+	pin.DbId = dbId
 	pin.Name = name
-	pin.Sql = sql
-	pin.UserId = userId
+	pin.Query = query
 	pin.CreatedAt = time.Now()
-	pin.ResourceUrl = &resource.Url
-	pin.LockSeq = 1
-	_, err = db.Exec("INSERT into pins (id, resource_id, name, sql, user_id, created_at, resource_url, lock_seq) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)",
-		pin.Id, pin.ResourceId, pin.Name, pin.Sql, pin.UserId, pin.CreatedAt, pin.ResourceUrl, pin.LockSeq)
+	_, err := conn.Exec("INSERT INTO pins (id, db_id, name, query, created_at) VALUES ($1, $2, $3, $4, $5)",
+		pin.Id, pin.DbId, pin.Name, pin.Query, pin.CreatedAt)
 	if err != nil {
 		return nil, err
 	}
 	return &pin, nil
 }
 
-func dataGetPinInternal(queryFrag string, queryVals ...interface{}) (*pin, error) {
-	res, err := db.Query(`SELECT id, resource_id, name, sql, user_id, created_at, resource_url, results_fields_json, results_rows_json, error_message, query_started_at, query_finished_at, deleted_at, lock_seq
-    	                  FROM pins `+queryFrag+` LIMIT 1`, queryVals...)
+func dataPinGetInternal(queryFrag string, queryVals ...interface{}) (*pin, error) {
+	res, err := conn.Query(`SELECT id, db_id, name, query, created_at, query_started_at, query_finished_at, results_fields_json, results_rows_json, results_error FROM pins WHERE deleted_at IS NULL AND`+queryFrag+` LIMIT 1`, queryVals...)
 	if err != nil {
 		return nil, err
 	}
@@ -258,34 +124,27 @@ func dataGetPinInternal(queryFrag string, queryVals ...interface{}) (*pin, error
 		return nil, nil
 	}
 	pin := pin{}
-	err = res.Scan(&pin.Id, &pin.ResourceId, &pin.Name, &pin.Sql, &pin.UserId, &pin.CreatedAt, &pin.ResourceUrl, &pin.ResultsFieldsJson, &pin.ResultsRowsJson, &pin.ErrorMessage, &pin.QueryStartedAt, &pin.QueryFinishedAt, &pin.DeletedAt, &pin.LockSeq)
+	err = res.Scan(&pin.Id, &pin.DbId, &pin.Name, &pin.Query, &pin.CreatedAt, &pin.QueryStartedAt, &pin.QueryFinishedAt, &pin.ResultsFieldsJson, &pin.ResultsRowsJson, &pin.ResultsError)
 	if err != nil {
 		return nil, err
 	}
 	return &pin, nil
 }
 
-func dataGetPin(token string, id string) (*pin, error) {
-	pin, err := dataGetPinInternal("WHERE id=$1 AND deleted_at IS NULL", id)
+func dataPinGet(id string) (*pin, error) {
+	pin, err := dataPinGetInternal("id=$1", id)
 	if err != nil {
 		return nil, err
 	}
 	if pin == nil {
-		return nil, notFoundError{Message: "pin not found"}
-	}
-	resource, err := dataGetResource(token, pin.ResourceId)
-	if err != nil {
-		return nil, err
-	}
-	if resource == nil {
-		return nil, notFoundError{Message: "resource not found"}
+		return nil, &pgpinError{Id: "not-found", Message: "pin not found"}
 	}
 	return pin, nil
 }
 
-func dataUpdatePin(pin *pin) (error) {
-	res, err := db.Exec("UPDATE pins SET resource_id=$1, name=$2, sql=$3, user_id=$4, created_at=$5, resource_url=$6, results_fields_json=$7, results_rows_json=$8, error_message=$9, query_started_at=$10, query_finished_at=$11, deleted_at=$12, lock_seq=$13 WHERE id=$14 and lock_seq=$15",
-		pin.ResourceId, pin.Name, pin.Sql, pin.UserId, pin.CreatedAt, pin.ResourceUrl, pin.ResultsFieldsJson, pin.ResultsRowsJson, pin.ErrorMessage, pin.QueryStartedAt, pin.QueryFinishedAt, pin.DeletedAt, pin.LockSeq+1, pin.Id, pin.LockSeq)
+func dataPinUpdate(pin *pin) (error) {
+	res, err := conn.Exec("UPDATE pins SET db_id=$1, name=$2, query=$3, created_at=$4, query_started_at=$5, query_finished_at=$6, results_fields_json=$7, results_rows_json=$8, results_error=$9, deleted_at=$10 WHERE id=$11",
+		pin.DbId, pin.Name, pin.Query, pin.CreatedAt, pin.QueryStartedAt, pin.QueryFinishedAt, pin.ResultsFieldsJson, pin.ResultsRowsJson, pin.ResultsError, pin.DeletedAt, pin.Id)
 	if err != nil {
 		return err
 	}
@@ -293,15 +152,11 @@ func dataUpdatePin(pin *pin) (error) {
 	if err != nil {
 		return err
 	}
-	if rows != 1 {
-		return errors.New("optimistic lock error")
-	}
-	pin.LockSeq += 1
 	return nil
 }
 
-func dataDeletePin(pin *pin) (error) {
+func dataPinDelete(pin *pin) error {
 	deletedAt := time.Now()
 	pin.DeletedAt = &deletedAt
-	return dataUpdatePin(pin)
+	return dataPinUpdate(pin)
 }
