@@ -26,10 +26,6 @@ func getAuth(r *http.Request) (string, string, bool) {
 	return pair[0], pair[1], true
 }
 
-func httpReadJson(req *http.Request, reqD interface{}) error {
-	return json.NewDecoder(req.Body).Decode(reqD)
-}
-
 func httpWriteJson(resp http.ResponseWriter, status int, respD interface{}) {
 	b, err := json.MarshalIndent(respD, "", "  ")
 	if err != nil {

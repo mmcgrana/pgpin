@@ -22,7 +22,7 @@ func webPinList(resp http.ResponseWriter, req *http.Request) {
 
 func webPinCreate(resp http.ResponseWriter, req *http.Request) {
 	pinReq := pin{}
-	err := httpReadJson(req, &pinReq)
+	err := json.NewDecoder(req.Body).Decode(&pinReq)
 	if err != nil {
 		err = pgpinError{Id: "bad-request", Message: "malformed JSON body"}
 		webErr(resp, err)
