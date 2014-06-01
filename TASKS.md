@@ -32,6 +32,7 @@
 * Clean out log helpers
 * Review standard hooks
 * Graceful HTTP shutdown
+* Investigate http.RequestHandler
 
 ## Topics
 

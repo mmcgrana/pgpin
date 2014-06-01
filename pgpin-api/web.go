@@ -117,7 +117,7 @@ func web() {
 	log("web.start")
 	handler := routerHandlerFunc(webRouter())
 	handler = webWrapAuth(handler)
-	handler = wrapLogging(handler)
+	handler = httpWrapLogging(handler)
 	webTrap()
 	port := env.Int("PORT")
 	log("web.serve port=%d", port)	

@@ -11,7 +11,7 @@ import (
 
 type httpStatusingResponseWriter struct {
 	status int
-	ResponseWriter
+	http.ResponseWriter
 }
 
 func (w *httpStatusingResponseWriter) WriteHeader(s int) {
@@ -19,13 +19,13 @@ func (w *httpStatusingResponseWriter) WriteHeader(s int) {
 	w.ResponseWriter.WriteHeader(s)
 }
 
-func wrapLogging(f http.HandlerFunc) http.HandlerFunc {
+func httpWrapLogging(f http.HandlerFunc) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		start := time.Now()
 		method := req.Method
 		path := req.URL.Path
 		log("web.request.start method=%s path=%s", method, path)
-		wres := statusCapturingResponseWriter{-1, res.(ResponseWriterFlusher)}
+		wres := httpStatusingResponseWriter{-1, res}
 		f(&wres, req)
 		elapsed := float64(time.Since(start)) / 1000000.0
 		log("web.request.finish method=%s path=%s status=%d elapsed=%f", method, path, wres.status, elapsed)
