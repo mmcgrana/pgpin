@@ -7,7 +7,7 @@ import (
 
 var logMutex *sync.Mutex
 
-func logInit() {
+func init() {
 	logMutex = &sync.Mutex{}
 }
 

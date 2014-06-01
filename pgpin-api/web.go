@@ -155,7 +155,6 @@ func webTrap() chan os.Signal {
 }
 
 func web() {
-	logInit()
 	dataInit()
 	log("key=web.start")
 	handler := routerHandlerFunc(router())

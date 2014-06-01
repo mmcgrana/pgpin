@@ -1,6 +1,6 @@
 ## Todo
 
-* Keyd logging
+* Keyd logging, https://github.com/tv42/jog, https://github.com/heroku/slog
 * Limit query duration
 * Try other types, including bytes
 * Inline actual JSON

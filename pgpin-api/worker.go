@@ -108,7 +108,6 @@ func workerTrapped(sigs chan os.Signal) bool {
 }
 
 func worker() {
-	logInit()
 	dataInit()
 	log("key=worker.start")
 	sigs := workerTrap()
