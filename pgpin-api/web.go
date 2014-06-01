@@ -101,16 +101,15 @@ func webRouter() *mux.Router {
 	return router
 }
 
-func webTrap() chan os.Signal {
-	traps := make(chan os.Signal)
-	sigs := make(chan os.Signal)
+func webTrap() {
+	log("web.trap.set")
+	trap := make(chan os.Signal)
 	go func() {
-		s := <- traps
-		log("web.trap")
-		sigs <- s
+		<- trap
+		log("web.exit")
+		os.Exit(0)
 	}()
-	signal.Notify(traps, syscall.SIGINT, syscall.SIGTERM)
-	return sigs
+	signal.Notify(trap, syscall.SIGINT, syscall.SIGTERM)
 }
 
 func web() {
@@ -119,9 +118,11 @@ func web() {
 	handler := routerHandlerFunc(webRouter())
 	handler = webWrapAuth(handler)
 	handler = wrapLogging(handler)
-	sigs := webTrap()
+	webTrap()
 	port := env.Int("PORT")
-	log("web.serve port=%d", port)
-	httpServeGraceful(handler, port, sigs)
-	log("web.exit")
+	log("web.serve port=%d", port)	
+	err := http.ListenAndServe(fmt.Sprintf(":%d", port), handler)
+	if err != nil {
+		panic(err)
+	}
 }

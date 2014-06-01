@@ -4,12 +4,8 @@ import (
 	"code.google.com/p/gorilla/mux"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
-	"net"
 	"net/http"
-	"os"
 	"strings"
-	"sync/atomic"
 	"time"
 )
 
@@ -94,42 +90,4 @@ func routerHandlerFunc(router *mux.Router) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		router.ServeHTTP(res, req)
 	}
-}
-
-func wrapReqCount(h http.HandlerFunc, reqCountPtr *int64) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		atomic.AddInt64(reqCountPtr, 1)
-		h(w, r)
-		atomic.AddInt64(reqCountPtr, -1)
-	}
-}
-
-
-func httpServeGraceful(handler http.HandlerFunc, port int, sigs chan os.Signal) {
-	var reqCount int64 = 0
-	handler = wrapReqCount(handler, &reqCount)
-	server := &http.Server{Handler: handler}
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
-	if err != nil {
-		panic(err)
-	}
-	stop := make(chan bool, 1)
-	go func() {
-		<-sigs
-		err = listener.Close()
-		if err != nil {
-			panic(err)
-		}
-		for {
-			reqCountCurrent := atomic.LoadInt64(&reqCount)
-			if reqCountCurrent > 0 {
-				time.Sleep(time.Millisecond * 50)
-			} else {
-				stop <- true
-				return
-			}
-		}
-	}()
-	go server.Serve(listener)
-	<-stop
 }
