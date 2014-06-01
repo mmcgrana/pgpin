@@ -1,0 +1,30 @@
+#!/bin/bash
+
+[ -z "$DEPLOY" ] && echo "Need to set DEPLOY" && exit 1;
+
+set -ex
+
+API_TOKEN=$(openssl rand -base64 18)
+API_URL="https://$API_TOKEN@pgpin-api-$DEPLOY.herokuapp.com"
+
+cd pgpin-api
+heroku create pgpin-api-$DEPLOY -r $DEPLOY
+heroku config:add -a pgpin-api-$DEPLOY BUILDPACK_URL=https://github.com/kr/heroku-buildpack-go.git
+heroku config:add -a pgpin-api-$DEPLOY API_TOKEN=$API_TOKEN
+heroku addons:add heroku-postgresql:basic -a pgpin-api-$DEPLOY
+cat db/* | heroku pg:psql -a pgpin-api-$DEPLOY
+git push $DEPLOY master
+heroku scale web=1 worker=1 -a pgpin-api-$DEPLOY
+cd ..
+
+cd pgpin-web
+heroku create pgpin-web-$DEPLOY
+heroku config:add -a pgpin-web-$DEPLOY BUILDPACK_URL=https://github.com/kr/heroku-buildpack-go.git
+heroku config:add -a pgpin-web-$DEPLOY API_URL=$API_URL
+git push $DEPLOY master
+heroku scale web=1 -a pgpin-web-$DEPLOY
+cd ..
+
+echo
+echo "PGPIN_API_URL=$API_URL"
+echo

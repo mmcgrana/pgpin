@@ -97,11 +97,12 @@ See the details of your pin, including query results:
 
 ```console
 $ pgpin pin-show test-pin
-Id:         0b8b725f5750
-Name:       test-pin
-Db Id:      33d03fe9ac28
-Created At: 2014-06-01T17:55:36Z
-Results At: 2014-06-01T18:08:48Z
+Id:                0b8b725f5750
+Name:              test-pin
+Db Id:             33d03fe9ac28
+Created At:        2014-06-01T17:55:36Z
+Query Started At:  2014-06-01T17:55:36Z
+Query Finished At: 2014-06-01T18:08:48Z
 
 Query:
 select count(*) from users
@@ -109,17 +110,15 @@ select count(*) from users
 Results:
  (?column?) |
 ------------+
- 1          |
+ 127        |
 ```
 
 We can remove our test pin and database with:
 
 ```console
 $ pgpin pin-rm test-pin
-0b8b725f5750
 
 $ pgpin db-rm test-database
-33d03fe9ac28
 ```
 
 ### Deploying

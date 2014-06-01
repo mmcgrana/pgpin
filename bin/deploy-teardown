@@ -1,0 +1,8 @@
+#!/bin/bash
+
+[ -z "$DEPLOY" ] && echo "Need to set DEPLOY" && exit 1;
+
+set -ex
+
+heroku destroy -a pgpin-api-$DEPLOY
+heroku destroy -a pgpin-web-$DEPLOY
