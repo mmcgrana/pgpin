@@ -11,13 +11,24 @@ import (
 	"time"
 )
 
+func webRespond(resp http.ResponseWriter, status int, data interface{}) {
+	b, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	resp.Header().Set("Content-Type", "application/json; charset=utf-8")
+	resp.WriteHeader(status)
+	resp.Write(b)
+	resp.Write([]byte("\n"))
+}
+
 func webPinList(resp http.ResponseWriter, req *http.Request) {
 	pins, err := dataPinList()
 	if err != nil {
 		webErr(resp, err)
 		return
 	}
-	httpWriteJson(resp, 200, pins)
+	webRespond(resp, 200, pins)
 }
 
 func webPinCreate(resp http.ResponseWriter, req *http.Request) {
@@ -33,7 +44,7 @@ func webPinCreate(resp http.ResponseWriter, req *http.Request) {
 		webErr(resp, err)
 		return
 	}
-	httpWriteJson(resp, 200, pin)
+	webRespond(resp, 200, pin)
 }
 
 func webPinGet(resp http.ResponseWriter, req *http.Request) {
@@ -43,7 +54,7 @@ func webPinGet(resp http.ResponseWriter, req *http.Request) {
 		webErr(resp, err)
 		return
 	}
-	httpWriteJson(resp, 200, pin)
+	webRespond(resp, 200, pin)
 }
 
 func webPinDestroy(resp http.ResponseWriter, req *http.Request) {
@@ -58,7 +69,7 @@ func webPinDestroy(resp http.ResponseWriter, req *http.Request) {
 		webErr(resp, err)
 		return
 	}
-	httpWriteJson(resp, 200, pin)
+	webRespond(resp, 200, pin)
 }
 
 func webStatus(resp http.ResponseWriter, req *http.Request) {
@@ -67,7 +78,7 @@ func webStatus(resp http.ResponseWriter, req *http.Request) {
 		webErr(resp, err)
 		return
 	}
-	httpWriteJson(resp, 200, &map[string]string{"message": "ok"})
+	webRespond(resp, 200, &map[string]string{"message": "ok"})
 }
 
 func webNotFound(resp http.ResponseWriter, req *http.Request) {
@@ -79,9 +90,9 @@ func webErr(resp http.ResponseWriter, err error) {
 	fmt.Println("error:", err)
 	switch err.(type) {
 	case pgpinError:
-		httpWriteJson(resp, 500, err)
+		webRespond(resp, 500, err)
 	default:
-		httpWriteJson(resp, 500, &map[string]string{"id": "internal-error", "message": "internal server error"})
+		webRespond(resp, 500, &map[string]string{"id": "internal-error", "message": "internal server error"})
 	}
 }
 

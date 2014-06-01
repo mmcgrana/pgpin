@@ -7,7 +7,6 @@ import (
 	"strings"
 )
 
-
 type authenticator func(string, string) bool
 
 func getAuth(r *http.Request) (string, string, bool) {
@@ -24,15 +23,4 @@ func getAuth(r *http.Request) (string, string, bool) {
 		return "", "", false
 	}
 	return pair[0], pair[1], true
-}
-
-func httpWriteJson(resp http.ResponseWriter, status int, respD interface{}) {
-	b, err := json.MarshalIndent(respD, "", "  ")
-	if err != nil {
-		panic(err)
-	}
-	resp.Header().Set("Content-Type", "application/json; charset=utf-8")
-	resp.WriteHeader(status)
-	resp.Write(b)
-	resp.Write([]byte("\n"))
 }

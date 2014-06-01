@@ -47,7 +47,6 @@ func dataRandId() string {
 	return fmt.Sprintf("%x", bytes)
 }
 
-
 func dataMustParseDatabaseUrl(s string) string {
 	conf, err := pq.ParseURL(s)
 	if err != nil {
