@@ -16,38 +16,38 @@ func workerPoll() (*pin, error) {
 	if err != nil {
 		return nil, err
 	} else if pin != nil {
-		log("key=worker.poll.found pin_id=%s", pin.Id)
+		log("worker.poll.found pin_id=%s", pin.Id)
 		return pin, nil
 	}
 	return nil, nil
 }
 
 func workerQuery(p *pin) error {
-	log("key=worker.query.start pin_id=%s", p.Id)
+	log("worker.query.start pin_id=%s", p.Id)
 	resourceConf, err := pq.ParseURL(*p.ResourceUrl)
 	if err != nil {
 		return err
 	}
-	log("key=worker.query.reserve pin_id=%s", p.Id)
+	log("worker.query.reserve pin_id=%s", p.Id)
 	startedAt := time.Now()
 	p.QueryStartedAt = &startedAt
 	err = dataUpdatePin(p)
 	if err != nil {
 		return err
 	}
-	log("key=worker.query.open pin_id=%s", p.Id)
+	log("worker.query.open pin_id=%s", p.Id)
 	resourceDb, err := sql.Open("postgres", resourceConf)
 	if err != nil {
 		return err
 	}
-	log("key=worker.query.exec pin_id=%s", p.Id)
+	log("worker.query.exec pin_id=%s", p.Id)
 	buffer, err := tablebuffer.Get(resourceDb, p.Sql)
 	finishedAt := time.Now()
 	p.QueryFinishedAt = &finishedAt
 	p.ResourceUrl = nil
 	if err != nil {
 		if pgerr, ok := err.(pq.PGError); ok {
-			log("key=worker.query.usererror pin_id=%s", p.Id)
+			log("worker.query.usererror pin_id=%s", p.Id)
 			msg := pgerr.Get('M')
 			p.ErrorMessage = &msg
 			err = dataUpdatePin(p)
@@ -58,7 +58,7 @@ func workerQuery(p *pin) error {
 		}
 		return err
 	}
-	log("key=worker.query.read pin_id=%s", p.Id)
+	log("worker.query.read pin_id=%s", p.Id)
 	resultsFieldsJsonB, _ := json.Marshal(buffer.ColumnNames)
 	resultsFieldsJson := string(resultsFieldsJsonB)
 	resultsRows := make([][]interface{}, len(buffer.Rows))
@@ -75,14 +75,14 @@ func workerQuery(p *pin) error {
 	}
 	resultsRowsJsonB, _ := json.Marshal(resultsRows)
 	resultsRowsJson := string(resultsRowsJsonB)
-	log("key=worker.query.commit pin_id=%s", p.Id)
+	log("worker.query.commit pin_id=%s", p.Id)
 	p.ResultsFieldsJson = &resultsFieldsJson
 	p.ResultsRowsJson = &resultsRowsJson
 	err = dataUpdatePin(p)
 	if err != nil {
 		return err
 	}
-	log("key=worker.query.finish pin_id=%s", p.Id)
+	log("worker.query.finish pin_id=%s", p.Id)
 	return nil
 }
 
@@ -91,7 +91,7 @@ func workerTrap() chan os.Signal {
 	sigs := make(chan os.Signal, 1)
 	go func() {
 		s := <- traps
-		log("key=worker.trap")
+		log("worker.trap")
 		sigs <- s
 	}()
 	signal.Notify(traps, syscall.SIGINT, syscall.SIGTERM)
@@ -109,11 +109,11 @@ func workerTrapped(sigs chan os.Signal) bool {
 
 func worker() {
 	dataInit()
-	log("key=worker.start")
+	log("worker.start")
 	sigs := workerTrap()
 	for {
 		if workerTrapped(sigs) {
-			log("key=worker.exit")
+			log("worker.exit")
 			return
 		}
 		pin, err := workerPoll()

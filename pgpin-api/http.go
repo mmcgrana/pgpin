@@ -41,11 +41,11 @@ func wrapLogging(f http.HandlerFunc) http.HandlerFunc {
 		start := time.Now()
 		method := req.Method
 		path := req.URL.Path
-		log("key=web.request.start method=%s path=%s", method, path)
+		log("web.request.start method=%s path=%s", method, path)
 		wres := newStatusCapturingResponseWriter(res)
 		f(&wres, req)
 		elapsed := float64(time.Since(start)) / 1000000.0
-		log("key=web.request.finish method=%s path=%s status=%d elapsed=%f", method, path, wres.status, elapsed)
+		log("web.request.finish method=%s path=%s status=%d elapsed=%f", method, path, wres.status, elapsed)
 	}
 }
 

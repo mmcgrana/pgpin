@@ -76,14 +76,14 @@ func dataMustParseDatabaseUrl(s string) string {
 var db *sql.DB
 
 func dataInit() {
-	log("key=data.init.start")
+	log("data.init.start")
 	dbConf := dataMustParseDatabaseUrl(mustGetenv("DATABASE_URL"))
 	dbNew, err := sql.Open("postgres", dbConf)
 	if err != nil {
 		panic(err)
 	}
 	db = dbNew
-	log("key=data.init.finish")
+	log("data.init.finish")
 }
 
 func dataTest() error {
@@ -96,7 +96,7 @@ func dataTest() error {
 }
 
 func dataGetUserId(token string) (string, error) {
-	log("key=data.get_user_id.start")
+	log("data.get_user_id.start")
 	resp, err := http.Get("https://:" + token + "@api.heroku.com/account")
 	if err != nil {
 		return "", err
@@ -112,12 +112,12 @@ func dataGetUserId(token string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	log("key=data.get_user_id.finish")
+	log("data.get_user_id.finish")
 	return val["id"].(string), nil
 }
 
 func dataGetResources(token string) ([]resource, error) {
-	log("key=data.get_resources.start")
+	log("data.get_resources.start")
 	resp, err := http.Get("https://:" + token + "@api.heroku.com/resources")
 	if err != nil {
 		return nil, err
@@ -149,7 +149,7 @@ func dataGetResources(token string) ([]resource, error) {
 		resource := resource{id, name, url, attachments}
 		resources = append(resources, resource)
 	}
-	log("key=data.get_resources.finish")
+	log("data.get_resources.finish")
 	return resources, nil
 }
 
@@ -230,7 +230,7 @@ func dataCreatePin(token, resourceId, name, sql string) (*pin, error) {
 		return nil, notFoundError{Message: "resource not found"}
 	}
 	pin := pin{}
-	pin.Id = randUuid()
+	pin.Id = randId()
 	pin.ResourceId = resourceId
 	pin.Name = name
 	pin.Sql = sql

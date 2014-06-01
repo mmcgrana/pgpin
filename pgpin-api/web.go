@@ -147,7 +147,7 @@ func webTrap() chan os.Signal {
 	sigs := make(chan os.Signal)
 	go func() {
 		s := <- traps
-		log("key=web.trap")
+		log("web.trap")
 		sigs <- s
 	}()
 	signal.Notify(traps, syscall.SIGINT, syscall.SIGTERM)
@@ -156,12 +156,12 @@ func webTrap() chan os.Signal {
 
 func web() {
 	dataInit()
-	log("key=web.start")
+	log("web.start")
 	handler := routerHandlerFunc(router())
 	handler = wrapLogging(handler)
 	sigs := webTrap()
 	port := confPort()
-	log("key=web.serve port=%d", port)
+	log("web.serve port=%d", port)
 	httpServeGraceful(handler, port, sigs)
-	log("key=web.exit")
+	log("web.exit")
 }

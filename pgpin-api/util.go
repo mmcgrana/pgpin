@@ -30,8 +30,8 @@ func randBytes(l int) []byte {
 	return b
 }
 
-func randUuid() string {
-	uuid := randBytes(16)
+func randId() string {
+	uuid := randBytes(8)
 	return fmt.Sprintf("%x", uuid)
 }
 
