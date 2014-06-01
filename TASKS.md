@@ -28,6 +28,8 @@
 * API versioning
 * Error specialization
 * API authorization
+* Clean out http helpers, maybe remove graceful
+* Clean out log helpers
 
 ## Topics
 
