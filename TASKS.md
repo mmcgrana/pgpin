@@ -15,7 +15,6 @@
 * Limit result size
 * Rename pin
 * Rename database
-* Soft deletes
 * Cross-check against pliny
 * Cross-check against design guide
 * Publish blog post
