@@ -37,6 +37,7 @@
 * Graceful stop worker
 * Investigate goji request logging
 * Godeps
+* Validate unique in DB, other constraints
 
 ## Topics
 

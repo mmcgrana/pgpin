@@ -6,36 +6,10 @@ import (
 	"fmt"
 	"github.com/bmizerany/pq"
 	"github.com/darkhelmet/env"
-	"regexp"
 	"time"
 )
 
-type pinSlim struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
-}
-
-type pin struct {
-	Id                string     `json:"id"`
-	Name              string     `json:"name"`
-	DbId              string     `json:"db_id"`
-	Query             string     `json:"query"`
-	CreatedAt         time.Time  `json:"created_at"`
-	QueryStartedAt    *time.Time `json:"query_started_at"`
-	QueryFinishedAt   *time.Time `json:"query_finished_at"`
-	ResultsFieldsJson *string    `json:"results_fields_json"`
-	ResultsRowsJson   *string    `json:"results_rows_json"`
-	ResultsError      *string    `json:"results_error"`
-	DeletedAt         *time.Time `json:"-"`
-}
-
-type db struct {
-	Id        string     `json:"id"`
-	Name      string     `json:"name"`
-	Url       string     `json:"url"`
-	AddedAt   *time.Time `json:"added_at"`
-	RemovedAt *time.Time `json:"removed_at"`
-}
+// Data helpers.
 
 func dataRandId() string {
 	num := 6
@@ -54,6 +28,8 @@ func dataMustParseDatabaseUrl(s string) string {
 	}
 	return conf
 }
+
+// DB connection.
 
 var conn *sql.DB
 
@@ -77,6 +53,60 @@ func DataTest() error {
 	return nil
 }
 
+// Db types and functions.
+
+type dbSlim struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+}
+
+type db struct {
+	Id        string     `json:"id"`
+	Name      string     `json:"name"`
+	Url       string     `json:"url"`
+	AddedAt   *time.Time `json:"added_at"`
+	RemovedAt *time.Time `json:"removed_at"`
+}
+
+func dataDbList() ([]dbSlim, error) {
+	res, err := conn.Query("SELECT id, name FROM dbs where removed_at IS NULL")
+	if err != nil {
+		return nil, err
+	}
+	defer res.Close()
+	dbs := []dbSlim{}
+	for res.Next() {
+		db := dbSlim{}
+		err = res.Scan(&db.Id, &db.Name)
+		if err != nil {
+			return nil, err
+		}
+		dbs = append(dbs, db)
+	}
+	return dbs, nil
+}
+
+// Pin types and functions.
+
+type pinSlim struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+}
+
+type pin struct {
+	Id                string     `json:"id"`
+	Name              string     `json:"name"`
+	DbId              string     `json:"db_id"`
+	Query             string     `json:"query"`
+	CreatedAt         time.Time  `json:"created_at"`
+	QueryStartedAt    *time.Time `json:"query_started_at"`
+	QueryFinishedAt   *time.Time `json:"query_finished_at"`
+	ResultsFieldsJson *string    `json:"results_fields_json"`
+	ResultsRowsJson   *string    `json:"results_rows_json"`
+	ResultsError      *string    `json:"results_error"`
+	DeletedAt         *time.Time `json:"-"`
+}
+
 func dataPinList() ([]pinSlim, error) {
 	res, err := conn.Query("SELECT id, name FROM pins where deleted_at IS NULL")
 	if err != nil {
@@ -93,32 +123,6 @@ func dataPinList() ([]pinSlim, error) {
 		pins = append(pins, pin)
 	}
 	return pins, nil
-}
-
-var emptyRegexp = regexp.MustCompile("\\A\\s*\\z")
-
-func dataValidateNonempty(f string, s string) error {
-	if emptyRegexp.MatchString(s) {
-		return &pgpinError{
-			Id:         "invalid",
-			Message:    fmt.Sprintf("field %s must be nonempty", f),
-			HttpStatus: 400,
-		}
-	}
-	return nil
-}
-
-var slugRegexp = regexp.MustCompile("\\A[a-z0-9-]+\\z")
-
-func dataValidateSlug(f string, s string) error {
-	if !slugRegexp.MatchString(s) {
-		return &pgpinError{
-			Id:         "invalid",
-			Message:    fmt.Sprintf("field %s must be of the form [a-z0-9-]+", f),
-			HttpStatus: 400,
-		}
-	}
-	return nil
 }
 
 func dataPinCreate(dbId string, name string, query string) (*pin, error) {
