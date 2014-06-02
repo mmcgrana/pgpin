@@ -258,5 +258,9 @@ func dataPinDelete(id string) (*pin, error) {
 }
 
 func dataPinDbUrl(pin *pin) (string, error) {
-	return "postgres://postgres:secret@127.0.0.1:5432/pgpin", nil
+	db, err := dataDbGet(pin.DbId)
+	if err != nil {
+		return "", err
+	}
+	return db.Url, nil
 }

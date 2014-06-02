@@ -105,7 +105,7 @@ func webPinList(resp http.ResponseWriter, req *http.Request) {
 func webPinCreate(resp http.ResponseWriter, req *http.Request) {
 	pin := &pin{}
 	err := webRead(req, pin)
-	if err != nil {
+	if err == nil {
 		pin, err = dataPinCreate(pin.DbId, pin.Name, pin.Query)
 	}
 	webRespond(resp, 201, pin, err)
