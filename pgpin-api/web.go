@@ -71,29 +71,29 @@ func webLogging(inner http.Handler) http.Handler {
 
 // Db endpoints.
 
-// func webDbList(resp http.ResponseWriter, req *http.Request) {
-// 	dbs, err := dataDbList()
-// 	webRespond(resp, 200, dbs, err)
-// }
-//
-// func webDbAdd(resp http.ResponseWriter, req *http.Request) {
-// 	db := &db{}
-// 	err := webRead(req, db)
-// 	if err == nil {
-// 		db, err = dataDbAdd(db.Name, db.Url)
-// 	}
-// 	webRespond(resp, 200, db, err)
-// }
-//
-// func webDbGet(c web.C, resp http.ResponseWriter, req *http.Request) {
-// 	db, err := dataDbGet(c.URLParams["id"])
-// 	webRespond(resp, 200, db, err)
-// }
-//
-// func webDbRemove(c web.C, resp http.ResponseWriter, req *http.Request) {
-// 	db, err := dataDbRemove(c.URLParams["id"])
-// 	webRespond(resp, 200, db, err)
-// }
+func webDbList(resp http.ResponseWriter, req *http.Request) {
+	dbs, err := dataDbList()
+	webRespond(resp, 200, dbs, err)
+}
+
+func webDbAdd(resp http.ResponseWriter, req *http.Request) {
+	db := &db{}
+	err := webRead(req, db)
+	if err == nil {
+		db, err = dataDbAdd(db.Name, db.Url)
+	}
+	webRespond(resp, 200, db, err)
+}
+
+func webDbGet(c web.C, resp http.ResponseWriter, req *http.Request) {
+	db, err := dataDbGet(c.URLParams["id"])
+	webRespond(resp, 200, db, err)
+}
+
+func webDbRemove(c web.C, resp http.ResponseWriter, req *http.Request) {
+	db, err := dataDbRemove(c.URLParams["id"])
+	webRespond(resp, 200, db, err)
+}
 
 // Pin endpoints.
 
@@ -143,6 +143,7 @@ func webNotFound(resp http.ResponseWriter, req *http.Request) {
 func webStart() {
 	log("web.start")
 	DataStart()
+	goji.Use(webLogging)
 	// goji.Get("/dbs", webDbList)
 	// goji.Post("/dbs", webDbAdd)
 	// goji.Get("/dbs/:id", webDbGet)
@@ -153,7 +154,6 @@ func webStart() {
 	goji.Delete("/pins/:id", webPinDelete)
 	goji.Get("/status", webStatus)
 	goji.NotFound(webNotFound)
-	goji.Use(webLogging)
 	port := env.Int("PORT")
 	log("web.serve", "port=%d", port)
 	goji.Serve()
