@@ -90,7 +90,7 @@ func workerTrap() chan os.Signal {
 	traps := make(chan os.Signal, 1)
 	sigs := make(chan os.Signal, 1)
 	go func() {
-		s := <- traps
+		s := <-traps
 		log("worker.trap")
 		sigs <- s
 	}()

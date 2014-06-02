@@ -18,7 +18,7 @@ func log(k string, args ...interface{}) {
 	} else {
 		first := args[0].(string)
 		rest := args[1:]
-		line = fmt.Sprintf(k + " " + first, rest...)
+		line = fmt.Sprintf(k+" "+first, rest...)
 	}
 	logMutex.Lock()
 	defer logMutex.Unlock()

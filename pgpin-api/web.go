@@ -136,7 +136,7 @@ func webTrap() {
 	log("web.trap.set")
 	trap := make(chan os.Signal)
 	go func() {
-		<- trap
+		<-trap
 		log("web.exit")
 		os.Exit(0)
 	}()
@@ -150,7 +150,7 @@ func webStart() {
 	handler = webWrapLogging(handler)
 	webTrap()
 	port := env.Int("PORT")
-	log("web.serve", "port=%d", port)	
+	log("web.serve", "port=%d", port)
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), handler)
 	if err != nil {
 		panic(err)
