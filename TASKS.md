@@ -26,7 +26,6 @@
 * Implement pgpin-web
 * API versioning
 * API authorization
-* Clean out log helpers
 * Review standard hooks
 * HTTP basic auth
 * Validation library
