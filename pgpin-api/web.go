@@ -105,8 +105,8 @@ func webRouterHandler() http.HandlerFunc {
 	router.HandleFunc("/pins/{id}", webPinDestroy).Methods("DELETE")
 	router.HandleFunc("/status", webStatus).Methods("GET")
 	router.NotFoundHandler = http.HandlerFunc(webNotFound)
-	return func(res http.ResponseWriter, req *http.Request) {
-		router.ServeHTTP(res, req)
+	return func(w http.ResponseWriter, r *http.Request) {
+		router.ServeHTTP(w, r)
 	}
 }
 
