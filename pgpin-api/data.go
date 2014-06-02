@@ -44,6 +44,7 @@ func dataRandId() string {
 	if err != nil {
 		panic(err)
 	}
+	return fmt.Sprintf("%x", bytes)
 }
 
 func dataMustParseDatabaseUrl(s string) string {
