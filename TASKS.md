@@ -25,7 +25,6 @@
 * Implement pgpin
 * Implement pgpin-web
 * API versioning
-* Error specialization
 * API authorization
 * Clean out log helpers
 * Review standard hooks
@@ -44,6 +43,7 @@
 * Better url validation
 * Validate names are unique
 * Generic not found vs. e.g. db not found
+* Testing
 
 ## Topics
 
