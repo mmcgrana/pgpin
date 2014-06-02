@@ -82,7 +82,7 @@ func webDbAdd(resp http.ResponseWriter, req *http.Request) {
 	if err == nil {
 		db, err = dataDbAdd(db.Name, db.Url)
 	}
-	webRespond(resp, 200, db, err)
+	webRespond(resp, 201, db, err)
 }
 
 func webDbGet(c web.C, resp http.ResponseWriter, req *http.Request) {
@@ -108,7 +108,7 @@ func webPinCreate(resp http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		pin, err = dataPinCreate(pin.DbId, pin.Name, pin.Query)
 	}
-	webRespond(resp, 200, pin, err)
+	webRespond(resp, 201, pin, err)
 }
 
 func webPinGet(c web.C, resp http.ResponseWriter, req *http.Request) {
