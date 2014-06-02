@@ -3,5 +3,5 @@ CREATE TABLE dbs (
     name       text NOT NULL,
     url        text NOT NULL,
     added_at   timestamptz NOT NULL,
-    removed_at timestamptz NOT NULL
+    removed_at timestamptz
 );

@@ -38,6 +38,12 @@
 * Investigate goji request logging
 * Godeps
 * Validate unique in DB, other constraints
+* pg conn application_name
+* pg conn timeouts
+* Dry up data stuff
+* Better url validation
+* Validate names are unique
+* Generic not found vs. e.g. db not found
 
 ## Topics
 

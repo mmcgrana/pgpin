@@ -12,6 +12,65 @@ Content-Length: 22
 }
 ```
 
+Add a database:
+
+```console
+$ cat > /tmp/db-input.json <<EOF
+{
+  "name": "pins",
+  "url": "postgres://postgres:secret@127.0.0.1:5432/pgpin"
+}
+EOF
+
+$ curl -i -X POST $PGPIN_API_URL/dbs -H "Content-Type: application/json" -d @/tmp/db-input.json
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Date: Mon, 02 Jun 2014 18:53:57 GMT
+Content-Length: 175
+
+{
+  "id": "9b79ebc9a4d4",
+  "name": "pins",
+  "url": "postgres://postgres:secret@127.0.0.1:5432/pgpin",
+  "added_at": "2014-06-02T18:53:57.585750287Z"
+}
+```
+
+Review db details:
+
+```console
+curl -i -X GET $PGPIN_API_URL/dbs/9b79ebc9a4d4
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Date: Mon, 02 Jun 2014 20:13:13 GMT
+Content-Length: 149
+
+{
+  "id": "9b79ebc9a4d4",
+  "name": "pins",
+  "url": "postgres://postgres:secret@127.0.0.1:5432/pgpin",
+  "added_at": "2014-06-02T18:53:57.58575Z"
+}
+```
+
+List dbs:
+
+```console
+$ curl -i -X GET $PGPIN_API_URL/dbs
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Date: Mon, 02 Jun 2014 18:58:28 GMT
+Content-Length: 112
+
+[
+  {
+    "id": "9b79ebc9a4d4",
+    "name": "pins"
+  },
+  ...
+]
+```
+
 Create a pin:
 
 ```console

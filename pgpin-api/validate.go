@@ -30,3 +30,7 @@ func dataValidateSlug(f string, s string) error {
 	}
 	return nil
 }
+
+func dataValidatePgUrl(f string, s string) error {
+	return dataValidateNonempty(f, s)
+}

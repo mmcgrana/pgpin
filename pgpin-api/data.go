@@ -64,8 +64,8 @@ type db struct {
 	Id        string     `json:"id"`
 	Name      string     `json:"name"`
 	Url       string     `json:"url"`
-	AddedAt   *time.Time `json:"added_at"`
-	RemovedAt *time.Time `json:"removed_at"`
+	AddedAt   time.Time  `json:"added_at"`
+	RemovedAt *time.Time `json:"-"`
 }
 
 func dataDbList() ([]dbSlim, error) {
@@ -84,6 +84,64 @@ func dataDbList() ([]dbSlim, error) {
 		dbs = append(dbs, db)
 	}
 	return dbs, nil
+}
+
+func dataDbAdd(name string, url string) (*db, error) {
+	if err := dataValidateSlug("name", name); err != nil {
+		return nil, err
+	}
+	if err := dataValidatePgUrl("url", url); err != nil {
+		return nil, err
+	}
+	db := db{}
+	db.Id = dataRandId()
+	db.Name = name
+	db.Url = url
+	db.AddedAt = time.Now()
+	_, err := conn.Exec("INSERT INTO dbs (id, name, url, added_at) VALUES ($1, $2, $3, $4)",
+		db.Id, db.Name, db.Url, db.AddedAt)
+	if err != nil {
+		return nil, err
+	}
+	return &db, nil
+}
+
+func dataDbGet(id string) (*db, error) {
+	res, err := conn.Query(`SELECT id, name, url, added_at FROM dbs WHERE id=$1 AND removed_at IS NULL LIMIT 1`, id)
+	if err != nil {
+		return nil, err
+	}
+	defer res.Close()
+	ok := res.Next()
+	if !ok {
+		return nil, &pgpinError{
+			Id:         "not-found",
+			Message:    "db not found",
+			HttpStatus: 404,
+		}
+	}
+	db := db{}
+	err = res.Scan(&db.Id, &db.Name, &db.Url, &db.AddedAt)
+	if err != nil {
+		return nil, err
+	}
+	return &db, nil
+}
+
+func dataDbUpdate(db *db) (*db, error) {
+	_, err := conn.Exec("UPDATE dbs SET name=$1, url=$2, added_at=$3, removed_at=$4 WHERE id=$5",
+		db.Name, db.Url, db.AddedAt, db.RemovedAt, db.Id)
+	return db, err
+}
+
+func dataDbRemove(id string) (*db, error) {
+	db, err := dataDbGet(id)
+	if err != nil {
+		return nil, err
+	}
+	removedAt := time.Now()
+	db.RemovedAt = &removedAt
+	return dataDbUpdate(db)
 }
 
 // Pin types and functions.
