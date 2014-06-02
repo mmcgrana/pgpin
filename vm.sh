@@ -6,7 +6,6 @@ set -ex
 touch /home/vagrant/.profile
 chown vagrant:vagrant /home/vagrant/.profile
 
-
 # Go
 apt-get update
 apt-get install -y build-essential git-core mercurial bzr
@@ -20,7 +19,6 @@ cat >> /home/vagrant/.profile <<EOF
 export GOPATH=\$HOME
 export PATH=\$HOME/bin:/opt/go/bin:\$PATH
 EOF
-
 
 # Postgres
 cat > /etc/apt/sources.list.d/pgdg.list <<EOF
@@ -36,9 +34,8 @@ sudo -u postgres psql -U postgres -d postgres -c "alter user postgres with passw
 sudo -u postgres createdb pgpin
 
 cat >> /home/vagrant/.profile <<EOF
-DATABASE_URL=postgres://postgres:secret@127.0.0.1:5432/pgpin
+export DATABASE_URL=postgres://postgres:secret@127.0.0.1:5432/pgpin
 EOF
-
 
 # Goreman
 sudo -u vagrant -i go get github.com/mattn/goreman

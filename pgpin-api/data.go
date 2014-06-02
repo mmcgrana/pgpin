@@ -44,7 +44,6 @@ func dataRandId() string {
 	if err != nil {
 		panic(err)
 	}
-	return fmt.Sprintf("%x", bytes)
 }
 
 func dataMustParseDatabaseUrl(s string) string {
@@ -65,6 +64,7 @@ func dataStart() {
 		panic(err)
 	}
 	conn = connNew
+	fmt.Printf("$+v\n", conn)
 }
 
 func dataTest() error {

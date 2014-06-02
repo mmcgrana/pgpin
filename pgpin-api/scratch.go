@@ -5,5 +5,6 @@ import (
 )
 
 func scratchStart() {
-	fmt.Println(dataRandId())
+	dataStart()
+	fmt.Println(dataTest())
 }
