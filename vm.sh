@@ -20,6 +20,8 @@ export GOPATH=\$HOME
 export PATH=\$HOME/bin:/opt/go/bin:\$PATH
 EOF
 
+chown -r vagrant:vagrant /home/vagrant/src
+
 # Postgres
 cat > /etc/apt/sources.list.d/pgdg.list <<EOF
 deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main
