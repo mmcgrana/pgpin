@@ -162,6 +162,7 @@ $ goreman start
 To run tests:
 
 ```console
+$ go get github.com/stretchr/testify/assert
 $ export DATABASE_URL=$TEST_DATABASE_URL
 $ cat db/* | psql $DATABASE_URL
 $ go test

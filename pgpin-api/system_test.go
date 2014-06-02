@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/darkhelmet/env"
+	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -36,14 +37,10 @@ func TestStatus(t *testing.T) {
 	must(err)
 	res := httptest.NewRecorder()
 	webStatus(res, req)
-	if res.Code != 200 {
-		t.Errorf("Got status %d, want 200", res.Code)
-	}
-	s := &status{}
-	err = json.NewDecoder(res.Body).Decode(s)
-	if s.Message != "ok" {
-		t.Errorf("Got message %s, want ok")
-	}
+	assert.Equal(t, 200, res.Code)
+	status := &status{}
+	must(json.NewDecoder(res.Body).Decode(status))
+	assert.Equal(t, "ok", status.Message)
 }
 
 func TestAddDb(t *testing.T) {
@@ -58,16 +55,8 @@ func TestAddDb(t *testing.T) {
 	}
 	db := &db{}
 	must(json.NewDecoder(res.Body).Decode(db))
-	if !(db.Name == "pins") {
-		t.Errorf("Got name %s, want pins", db.Name)
-	}
-	if !(db.Url == "postgres://u:p@h:1234/d") {
-		t.Errorf("Wrong Url %s", db.Url)
-	}
-	if !(len(db.Id) == 12) {
-		t.Errorf("Expeced 12-char Id, got %s", db.Id)
-	}
-	if !(db.AddedAt.After(time.Now().Add(-5*time.Second))) {
-		t.Errorf("Expected recent time, got %v", db.AddedAt)
-	}
+	assert.Equal(t, "pins", db.Name)
+	assert.Equal(t, "postgres://u:p@h:1234/d", db.Url)
+	assert.NotEmpty(t, db.Id)
+	assert.WithinDuration(t, time.Now(), db.AddedAt, 3*time.Second)
 }
