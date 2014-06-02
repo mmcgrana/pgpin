@@ -237,6 +237,10 @@ func dataPinGet(id string) (*pin, error) {
 	return pin, nil
 }
 
+func dataPinForQuery() (*pin, error) {
+	return dataPinGetInternal("query_started_at IS NULL AND deleted_at IS NULL")
+}
+
 func dataPinUpdate(pin *pin) (*pin, error) {
 	_, err := conn.Exec("UPDATE pins SET db_id=$1, name=$2, query=$3, created_at=$4, query_started_at=$5, query_finished_at=$6, results_fields_json=$7, results_rows_json=$8, results_error=$9, deleted_at=$10 WHERE id=$11",
 		pin.DbId, pin.Name, pin.Query, pin.CreatedAt, pin.QueryStartedAt, pin.QueryFinishedAt, pin.ResultsFieldsJson, pin.ResultsRowsJson, pin.ResultsError, pin.DeletedAt, pin.Id)

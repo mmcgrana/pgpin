@@ -9,7 +9,7 @@ import (
 )
 
 func workerPoll() (*pin, error) {
-	pin, err := dataPinGetInternal("query_started_at IS NULL AND deleted_at IS NULL")
+	pin, err := dataPinForQuery()
 	if err != nil {
 		return nil, err
 	} else if pin != nil {
