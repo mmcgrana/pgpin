@@ -27,7 +27,6 @@
 * API versioning
 * Error specialization
 * API authorization
-* Clean out http helpers
 * Clean out log helpers
 * Review standard hooks
 * HTTP basic auth
