@@ -43,16 +43,6 @@ func dataStart() {
 	dataConn = conn
 }
 
-func dataTest() error {
-	log("data.test")
-	var r int
-	err := dataConn.QueryRow("SELECT 1").Scan(&r)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 // Db operations.
 
 func dataDbList() ([]dbSlim, error) {

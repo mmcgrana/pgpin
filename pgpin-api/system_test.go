@@ -2,10 +2,10 @@ package main
 
 import (
 	"encoding/json"
-	"env"
+	"github.com/darkhelmet/env"
 	"net/http"
 	"net/http/httptest"
-	"os"
+	"strings"
 	"testing"
 )
 
@@ -20,7 +20,6 @@ func init() {
 		panic("Doesn't look like a test database")
 	}
 	dataStart()
-	dataConn
 }
 
 func TestStatus(t *testing.T) {

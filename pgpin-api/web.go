@@ -128,7 +128,7 @@ type status struct {
 }
 
 func webStatus(resp http.ResponseWriter, req *http.Request) {
-	err := dataTest()
+	err := dataConn.Ping()
 	ok := &status{Message: "ok"}
 	webRespond(resp, 200, ok, err)
 }
