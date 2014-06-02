@@ -190,6 +190,9 @@ func dataPinCreate(dbId string, name string, query string) (*pin, error) {
 	if err := dataValidateNonempty("query", query); err != nil {
 		return nil, err
 	}
+	if _, err := dataDbGet(dbId); err != nil {
+		return nil, err
+	}
 	pin := pin{}
 	pin.Id = dataRandId()
 	pin.DbId = dbId

@@ -1,6 +1,5 @@
 ## Todo
 
-* Validate DB is present when creating pin
 * Can't destroy DB with existing pins
 * Rename pin
 * Refresh results periodically
