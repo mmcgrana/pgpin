@@ -33,7 +33,7 @@ func webPinCreate(resp http.ResponseWriter, req *http.Request) {
 	pinReq := pin{}
 	err := json.NewDecoder(req.Body).Decode(&pinReq)
 	if err != nil {
-		err = pgpinError{
+		err = &pgpinError{
 			Id:         "bad-request",
 			Message:    "malformed JSON body",
 			HttpStatus: 400,
@@ -84,7 +84,7 @@ func webStatus(resp http.ResponseWriter, req *http.Request) {
 }
 
 func webNotFound(resp http.ResponseWriter, req *http.Request) {
-	err := pgpinError{
+	err := &pgpinError{
 		Id:         "not-found",
 		Message:    "not found",
 		HttpStatus: 404,
