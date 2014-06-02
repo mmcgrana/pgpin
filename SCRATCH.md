@@ -1,193 +1,108 @@
-{
-  "id": "be193c3048eb7c508abb9617493937c5",
-  "resource_id": "resource274@heroku.com",
-  "name": "posts count",
-  "sql", "select count(*) from posts",
-  "created_at": "2012/05/24 06:02:31 -0000",
-  "user_id": "user248@heroku.com",
-  "results_fields_json": "...",
-  "results_rows_json": "...",
-  "error_message": null
-  "results_at": "2012/05/24 06:02:33 -0000"
-}
-
-## API
-
-Datapins offers a JSON API at datapins-api-production.herokuapp.com.
-
-
-### Authentication
-
-The API authenticates users with Heroku API tokens or OAuth keys. To try the API with curl, set up your ~/.netrc:
+Check API status:
 
 ```console
-$ export HOST=datapins-api-production.herokuapp.com
-$ cat ~/.netrc | grep -A 2 "machine api.heroku.com" | sed "s/api.heroku.com/$HOST/" >> ~/.netrc
-```
+$ curl -i -X GET $PGPIN_API_URL/status
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Date: Mon, 02 Jun 2014 17:02:13 GMT
+Content-Length: 22
 
-
-### Endpoints
-
-Get the Heroku resources against which you can create pins:
-
-```console
-$ curl -ns https://$HOST/v1/resources
-[
-  {
-    "id": "resource132@heroku.com",
-    "name": "boiling-fortress-9685",
-    "attachements": [
-      {
-        "app_name": "shogun",
-        "config_var": "HEROKU_POSTGRESQL_BLACK_URL"
-      },
-      ...
-    ]
-  },
-  ...
-]
-```
-
-Get pins:
-
-```console
-$ curl -ns https://$HOST/v1/pins
-[
-  {
-    "id": "be193c3048eb7c508abb9617493937c5",
-    "name": "posts count"
-  },
-  ...
-]
-```
-
-Create a pin:
-
-```console
-$ cat > pin.js <<EOF
-{
-  "resource_id": "resource232@heroku.com",
-  "name": "posts count",
-  "sql": "select count(*) from posts"
-}
-EOF
-$ curl -ns -X POST https://$HOST/v1/pins -H "Content-Type: application/json" -d @pin.js
-{
-  "id": "be193c3048eb7c508abb9617493937c5",
-  "resource_id": "resource274@heroku.com",
-  "name": "posts count",
-  "sql", "select count(*) from posts",
-  "user_id": "user248@heroku.com",
-  "created_at": "2012/05/24 06:02:31 -0000",
-  "results_fields_json": null,
-  "results_rows_json": null,
-  "error_message": null,
-  "results_at": null
-}
-```
-
-Get a pin:
-
-```console
-$ export ID=be193c3048eb7c508abb9617493937c5
-$ curl -ns https://$HOST/v1/pins/$ID
-{
-  "id": "be193c3048eb7c508abb9617493937c5",
-  "resource_id": "resource274@heroku.com",
-  "name": "posts count",
-  "sql", "select count(*) from posts",
-  "created_at": "2012/05/24 06:02:31 -0000",
-  "user_id": "user248@heroku.com",
-  "results_fields_json": "...",
-  "results_rows_json": "...",
-  "error_message": null
-  "results_at": "2012/05/24 06:02:33 -0000"
-}
-```
-
-Destroy a pin:
-
-```console
-$ export ID=be193c3048eb7c508abb9617493937c5
-$ curl -ns -X DELETE https://$HOST/v1/pins/$ID
-{
-  "id": "be193c3048eb7c508abb9617493937c5",
-  "resource_id": "resource274@heroku.com",
-  "name": "posts count",
-  "sql", "select count(*) from posts",
-  "created_at": "2012/05/24 06:02:31 -0000",
-  "user_id": "user248@heroku.com",
-  "results_fields_json": "...",
-  "results_rows_json": "...",
-  "error_message": null
-  "results_at": "2012/05/24 06:02:33 -0000"
-}
-```
-
-Check the status of the Datapins service:
-
-```console
-$ curl -x https://$HOST/v1/status
 {
   "message": "ok"
 }
 ```
 
-All endpoints return 200 on success.
+Create a pin:
 
-
-### Errors
-
-Non-200 status codes indicate an error:
-
-* 400: Invalid body
-* 401: Authorization required
-* 403: Invalid field
-* 404: Not found
-* 500: Internal server error or unanticipated user error
-
-Bodies for all error responses are of the form:
-
-```
+```console
+$ cat > /tmp/pin-input.json <<EOF
 {
-  "message": "message text"
-}
-```
-
-export ENDPOINT=http://localhost:5000/vi
-
-cat > /tmp/pin1.js <<EOF
-{
-  "resource_id": "resource1680172@heroku.com",
+  "db_id": "bf8029eb5b07",
   "name": "pins count",
-  "sql": "select count(*) from pins"
+  "query": "select count(*) from pins"
 }
 EOF
 
-curl -ns -X GET    $ENDPOINT/resources
+$ curl -i -X POST $PGPIN_API_URL/pins -H "Content-Type: application/json" -d @/tmp/pin-input.json
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Date: Mon, 02 Jun 2014 17:04:32 GMT
+Content-Length: 332
 
-curl -ns -X GET    $ENDPOINT/pins
-
-curl -ns -X POST   $ENDPOINT/pins -H "Content-Type: application/json" -d @/tmp/pin1.js
-
-curl -ns -X GET    $ENDPOINT/pins/(found)
-
-curl -ns -X GET    $ENDPOINT/pins/(not-found)
-
-curl -ns -X DELETE $ENDPOINT/pins/(found)
-
-curl -ns -X DELETE $ENDPOINT/pins(not-found)
-
-cat > /tmp/pin2.js <<EOF
 {
-  "resource_id": "wat",
-  "name": "posts count",
-  "sql": "select count(*) from posts"
+  "id": "103f992f0662",
+  "name": "pins count",
+  "db_id": "bf8029eb5b07",
+  "query": "select count(*) from pins",
+  "created_at": "2014-06-02T17:04:31.996089355Z",
+  "query_started_at": null,
+  "query_finished_at": null,
+  "results_fields_json": null,
+  "results_rows_json": null,
+  "results_error": null
 }
-EOF
+```
 
-curl -ns -X POST   $ENDPOINT/pins -H "Content-Type: application/json" -d @/tmp/pin2.js
+See what results it got:
 
-curl -ns -X GET    $ENDPOING/status
+```console
+$ curl -i -X GET $PGPIN_API_URL/pins/103f992f0662
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Date: Mon, 02 Jun 2014 17:29:20 GMT
+Content-Length: 391
 
+{
+  "id": "103f992f0662",
+  "name": "pins count",
+  "db_id": "bf8029eb5b07",
+  "query": "select count(*) from pins",
+  "created_at": "2014-06-02T17:04:31.996089Z",
+  "query_started_at": "2014-06-02T17:04:32.114051Z",
+  "query_finished_at": "2014-06-02T17:04:32.148756Z",
+  "results_fields_json": "[\"count\"]",
+  "results_rows_json": "[[1]]",
+  "results_error": null
+}
+```
 
+List pins:
+
+```console
+$ curl -i -X GET $PGPIN_API_URL/pins
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Date: Mon, 02 Jun 2014 17:30:05 GMT
+Content-Length: 63
+
+[
+  {
+    "id": "103f992f0662",
+    "name": "pins count"
+  }
+]
+```
+
+Delete a pin:
+
+```console
+$ curl -i -X DELETE $PGPIN_API_URL/pins/103f992f0662
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=utf-8
+Date: Mon, 02 Jun 2014 17:31:56 GMT
+Content-Length: 419
+
+{
+  "id": "103f992f0662",
+  "name": "pins count",
+  "db_id": "bf8029eb5b07",
+  "query": "select count(*) from pins",
+  "created_at": "2014-06-02T17:04:31.996089Z",
+  "query_started_at": "2014-06-02T17:04:32.114051Z",
+  "query_finished_at": "2014-06-02T17:04:32.148756Z",
+  "results_fields_json": "[\"count\"]",
+  "results_rows_json": "[[1]]",
+  "results_error": null,
+  "deleted_at": "2014-06-02T17:31:56.288976924Z"
+}
+```

@@ -26,7 +26,7 @@ type pin struct {
 	ResultsFieldsJson *string    `json:"results_fields_json"`
 	ResultsRowsJson   *string    `json:"results_rows_json"`
 	ResultsError      *string    `json:"results_error"`
-	DeletedAt         *time.Time `json:"deleted_at"`
+	DeletedAt         *time.Time `json:"-"`
 }
 
 type db struct {
