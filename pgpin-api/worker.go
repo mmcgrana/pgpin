@@ -28,7 +28,7 @@ func workerQuery(p *pin) error {
 	log("worker.query.reserve", "pin_id=%s", p.Id)
 	startedAt := time.Now()
 	p.QueryStartedAt = &startedAt
-	err = dataPinUpdate(p)
+	p, err = dataPinUpdate(p)
 	if err != nil {
 		return err
 	}
@@ -46,7 +46,7 @@ func workerQuery(p *pin) error {
 			log("worker.query.usererror", "pin_id=%s", p.Id)
 			msg := pgerr.Get('M')
 			p.ResultsError = &msg
-			err = dataPinUpdate(p)
+			p, err = dataPinUpdate(p)
 			if err != nil {
 				return err
 			}
@@ -74,7 +74,7 @@ func workerQuery(p *pin) error {
 	log("worker.query.commit", "pin_id=%s", p.Id)
 	p.ResultsFieldsJson = &resultsFieldsJson
 	p.ResultsRowsJson = &resultsRowsJson
-	err = dataPinUpdate(p)
+	p, err = dataPinUpdate(p)
 	if err != nil {
 		return err
 	}
@@ -84,7 +84,7 @@ func workerQuery(p *pin) error {
 
 func workerStart() {
 	log("worker.start")
-	dataStart()
+	DataStart()
 	for {
 		pin, err := workerPoll()
 		if err != nil {

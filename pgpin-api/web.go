@@ -9,7 +9,41 @@ import (
 	"time"
 )
 
-func webRespond(resp http.ResponseWriter, status int, data interface{}) {
+// Helpers.
+
+// webRead reads the JSON request body into the given dataRef. It
+// returns an error if the read fails for any reason.
+func webRead(req *http.Request, dataRef interface{}) error {
+	err := json.NewDecoder(req.Body).Decode(dataRef)
+	if err != nil {
+		err := &pgpinError{
+			Id:         "bad-request",
+			Message:    "malformed JSON body",
+			HttpStatus: 400,
+		}
+		return err
+	}
+	return nil
+}
+
+// webRespond writes an HTTP response to the given resp, either
+// according to status and data if err is nil, or according to err
+// if it's non-nil. It will attempt to coerce err into a pgpinError
+// and respond with an appropriate error message, falling back to
+// a generic 500 error if it can't. All web responses should go
+// through this function.
+func webRespond(resp http.ResponseWriter, status int, data interface{}, err error) {
+	if err != nil {
+		pgerr, ok := err.(*pgpinError)
+		if ok {
+			status = pgerr.HttpStatus
+			data = pgerr
+		} else {
+			log("web.error", "err=%+v", err)
+			status = 500
+			data = &map[string]string{"id": "internal-error", "message": "internal server error"}
+		}
+	}
 	b, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		panic(err)
@@ -20,87 +54,7 @@ func webRespond(resp http.ResponseWriter, status int, data interface{}) {
 	resp.Write([]byte("\n"))
 }
 
-func webPinList(resp http.ResponseWriter, req *http.Request) {
-	pins, err := dataPinList()
-	if err != nil {
-		webErr(resp, err)
-		return
-	}
-	webRespond(resp, 200, pins)
-}
-
-func webPinCreate(resp http.ResponseWriter, req *http.Request) {
-	pinReq := pin{}
-	err := json.NewDecoder(req.Body).Decode(&pinReq)
-	if err != nil {
-		err = &pgpinError{
-			Id:         "bad-request",
-			Message:    "malformed JSON body",
-			HttpStatus: 400,
-		}
-		webErr(resp, err)
-		return
-	}
-	pin, err := dataPinCreate(pinReq.DbId, pinReq.Name, pinReq.Query)
-	if err != nil {
-		webErr(resp, err)
-		return
-	}
-	webRespond(resp, 200, pin)
-}
-
-func webPinGet(c web.C, resp http.ResponseWriter, req *http.Request) {
-	id := c.URLParams["id"]
-	pin, err := dataPinGet(id)
-	if err != nil {
-		webErr(resp, err)
-		return
-	}
-	webRespond(resp, 200, pin)
-}
-
-func webPinDestroy(c web.C, resp http.ResponseWriter, req *http.Request) {
-	id := c.URLParams["id"]
-	pin, err := dataPinGet(id)
-	if err != nil {
-		webErr(resp, err)
-		return
-	}
-	err = dataPinDelete(pin)
-	if err != nil {
-		webErr(resp, err)
-		return
-	}
-	webRespond(resp, 200, pin)
-}
-
-func webStatus(resp http.ResponseWriter, req *http.Request) {
-	err := dataTest()
-	if err != nil {
-		webErr(resp, err)
-		return
-	}
-	webRespond(resp, 200, &map[string]string{"message": "ok"})
-}
-
-func webNotFound(resp http.ResponseWriter, req *http.Request) {
-	err := &pgpinError{
-		Id:         "not-found",
-		Message:    "not found",
-		HttpStatus: 404,
-	}
-	webErr(resp, err)
-}
-
-func webErr(resp http.ResponseWriter, err error) {
-	pgpinerr, ok := err.(*pgpinError)
-	if ok {
-		webRespond(resp, pgpinerr.HttpStatus, pgpinerr)
-	} else {
-		log("web.error", "err=%+v", err)
-		webRespond(resp, 500, &map[string]string{"id": "internal-error", "message": "internal server error"})
-	}
-}
+// Middleware.
 
 func webLogging(inner http.Handler) http.Handler {
 	outer := func(w http.ResponseWriter, r *http.Request) {
@@ -115,13 +69,88 @@ func webLogging(inner http.Handler) http.Handler {
 	return http.HandlerFunc(outer)
 }
 
+// Db endpoints.
+
+// func webDbList(resp http.ResponseWriter, req *http.Request) {
+// 	dbs, err := dataDbList()
+// 	webRespond(resp, 200, dbs, err)
+// }
+//
+// func webDbAdd(resp http.ResponseWriter, req *http.Request) {
+// 	db := &db{}
+// 	err := webRead(req, db)
+// 	if err == nil {
+// 		db, err = dataDbAdd(db.Name, db.Url)
+// 	}
+// 	webRespond(resp, 200, db, err)
+// }
+//
+// func webDbGet(c web.C, resp http.ResponseWriter, req *http.Request) {
+// 	db, err := dataDbGet(c.URLParams["id"])
+// 	webRespond(resp, 200, db, err)
+// }
+//
+// func webDbRemove(c web.C, resp http.ResponseWriter, req *http.Request) {
+// 	db, err := dataDbRemove(c.URLParams["id"])
+// 	webRespond(resp, 200, db, err)
+// }
+
+// Pin endpoints.
+
+func webPinList(resp http.ResponseWriter, req *http.Request) {
+	pins, err := dataPinList()
+	webRespond(resp, 200, pins, err)
+}
+
+func webPinCreate(resp http.ResponseWriter, req *http.Request) {
+	pin := &pin{}
+	err := webRead(req, pin)
+	if err != nil {
+		pin, err = dataPinCreate(pin.DbId, pin.Name, pin.Query)
+	}
+	webRespond(resp, 200, pin, err)
+}
+
+func webPinGet(c web.C, resp http.ResponseWriter, req *http.Request) {
+	pin, err := dataPinGet(c.URLParams["id"])
+	webRespond(resp, 200, pin, err)
+}
+
+func webPinDelete(c web.C, resp http.ResponseWriter, req *http.Request) {
+	pin, err := dataPinDelete(c.URLParams["id"])
+	webRespond(resp, 200, pin, err)
+}
+
+// Misc endpoints.
+
+func webStatus(resp http.ResponseWriter, req *http.Request) {
+	err := DataTest()
+	ok := &map[string]string{"message": "ok"}
+	webRespond(resp, 200, ok, err)
+}
+
+func webNotFound(resp http.ResponseWriter, req *http.Request) {
+	err := &pgpinError{
+		Id:         "not-found",
+		Message:    "not found",
+		HttpStatus: 404,
+	}
+	webRespond(resp, 0, nil, err)
+}
+
+// Server builder.
+
 func webStart() {
 	log("web.start")
-	dataStart()
+	DataStart()
+	// goji.Get("/dbs", webDbList)
+	// goji.Post("/dbs", webDbAdd)
+	// goji.Get("/dbs/:id", webDbGet)
+	// goji.Delete("/dbs/:id", webDbRemove)
 	goji.Get("/pins", webPinList)
 	goji.Post("/pins", webPinCreate)
 	goji.Get("/pins/:id", webPinGet)
-	goji.Delete("/pins/:id", webPinDestroy)
+	goji.Delete("/pins/:id", webPinDelete)
 	goji.Get("/status", webStatus)
 	goji.NotFound(webNotFound)
 	goji.Use(webLogging)

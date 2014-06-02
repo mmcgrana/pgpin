@@ -48,7 +48,7 @@ Usage: pgpin <command> [options] [arguments]
 Commands:
   pins        List pins
   pin-create  Create new pin
-  pin-destroy Destroy a pin
+  pin-delete  Delete a pin
   pin-show    Show pin details
   dbs         List databases
   db-add      Add database to registry
@@ -116,7 +116,7 @@ Results:
 We can remove our test pin and database with:
 
 ```console
-$ pgpin pin-destroy test-pin
+$ pgpin pin-delete test-pin
 
 $ pgpin db-remove test-database
 ```

@@ -57,7 +57,7 @@ func dataMustParseDatabaseUrl(s string) string {
 
 var conn *sql.DB
 
-func dataStart() {
+func DataStart() {
 	log("data.start")
 	conf := dataMustParseDatabaseUrl(env.String("DATABASE_URL"))
 	connNew, err := sql.Open("postgres", conf)
@@ -67,7 +67,7 @@ func dataStart() {
 	conn = connNew
 }
 
-func dataTest() error {
+func DataTest() error {
 	log("data.test")
 	var r int
 	err := conn.QueryRow("SELECT 1").Scan(&r)
@@ -175,13 +175,17 @@ func dataPinGet(id string) (*pin, error) {
 	return pin, nil
 }
 
-func dataPinUpdate(pin *pin) error {
+func dataPinUpdate(pin *pin) (*pin, error) {
 	_, err := conn.Exec("UPDATE pins SET db_id=$1, name=$2, query=$3, created_at=$4, query_started_at=$5, query_finished_at=$6, results_fields_json=$7, results_rows_json=$8, results_error=$9, deleted_at=$10 WHERE id=$11",
 		pin.DbId, pin.Name, pin.Query, pin.CreatedAt, pin.QueryStartedAt, pin.QueryFinishedAt, pin.ResultsFieldsJson, pin.ResultsRowsJson, pin.ResultsError, pin.DeletedAt, pin.Id)
-	return err
+	return pin, err
 }
 
-func dataPinDelete(pin *pin) error {
+func dataPinDelete(id string) (*pin, error) {
+	pin, err := dataPinGet(id)
+	if err != nil {
+		return nil, err
+	}
 	deletedAt := time.Now()
 	pin.DeletedAt = &deletedAt
 	return dataPinUpdate(pin)

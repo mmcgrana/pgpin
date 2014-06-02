@@ -6,7 +6,7 @@ import (
 )
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "Usage: datapins-api [web|worker|scratch]")
+	fmt.Fprintln(os.Stderr, "Usage: datapins-api [web|worker]")
 	os.Exit(1)
 }
 
@@ -19,7 +19,7 @@ func main() {
 		webStart()
 	case "worker":
 		workerStart()
-	case "scratch":
-		scratchStart()
+	default:
+		usage()
 	}
 }

@@ -36,6 +36,7 @@
 * Capturing status in logger
 * Graceful stop worker
 * Investigate goji request logging
+* Godeps
 
 ## Topics
 
