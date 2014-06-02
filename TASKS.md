@@ -1,6 +1,8 @@
 ## Todo
 
-* Testing
+* Full web stack testing
+* Test coverage
+* Test assertion libraries - testify?
 
 * Can't destroy DB with existing pins
 * Rename pin
