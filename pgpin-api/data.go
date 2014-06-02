@@ -65,7 +65,6 @@ func dataStart() {
 		panic(err)
 	}
 	conn = connNew
-	fmt.Printf("$+v\n", conn)
 }
 
 func dataTest() error {
@@ -127,7 +126,7 @@ func dataPinCreate(dbId string, name string, query string) (*pin, error) {
 }
 
 func dataPinGetInternal(queryFrag string, queryVals ...interface{}) (*pin, error) {
-	res, err := conn.Query(`SELECT id, db_id, name, query, created_at, query_started_at, query_finished_at, results_fields_json, results_rows_json, results_error FROM pins WHERE deleted_at IS NULL AND`+queryFrag+` LIMIT 1`, queryVals...)
+	res, err := conn.Query(`SELECT id, db_id, name, query, created_at, query_started_at, query_finished_at, results_fields_json, results_rows_json, results_error FROM pins WHERE deleted_at IS NULL AND `+queryFrag+` LIMIT 1`, queryVals...)
 	if err != nil {
 		return nil, err
 	}

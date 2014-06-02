@@ -149,5 +149,7 @@ $ vagrant up
 $ vagrant ssh
 $ cd src/github.com/mmcgrana/pgpin/pgpin-api
 $ go get
+$ cat db/* | psql $DATABASE_URL
+$ export API_AUTH="client:"$(openssl rand -base64 18)
 $ goreman start
 ```
