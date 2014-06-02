@@ -146,4 +146,8 @@ run:
 
 ```console
 $ vagrant up
+$ vagrant ssh
+$ cd src/github.com/mmcgrana/pgpin/pgpin-api
+$ go get
+$ goreman start
 ```

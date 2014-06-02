@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bitbucket.org/kardianos/tablebuffer"
+	"bitbucket.org/kardianos/table"
 	"database/sql"
 	"encoding/json"
 	"github.com/bmizerany/pq"
@@ -41,7 +41,7 @@ func workerQuery(p *pin) error {
 		return err
 	}
 	log("worker.query.exec pin_id=%s", p.Id)
-	buffer, err := tablebuffer.Get(resourceDb, p.Query)
+	buffer, err := table.Get(resourceDb, p.Query)
 	finishedAt := time.Now()
 	p.QueryFinishedAt = &finishedAt
 	if err != nil {
@@ -58,7 +58,7 @@ func workerQuery(p *pin) error {
 		return err
 	}
 	log("worker.query.read pin_id=%s", p.Id)
-	resultsFieldsJsonB, _ := json.Marshal(buffer.ColumnNames)
+	resultsFieldsJsonB, _ := json.Marshal(buffer.ColumnName)
 	resultsFieldsJson := string(resultsFieldsJsonB)
 	resultsRows := make([][]interface{}, len(buffer.Rows))
 	for i, row := range buffer.Rows {
