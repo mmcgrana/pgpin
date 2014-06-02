@@ -1,10 +1,10 @@
 package main
 
 import (
-	"github.com/zenazn/goji"
-	"github.com/zenazn/goji/web"
 	"encoding/json"
 	"github.com/darkhelmet/env"
+	"github.com/zenazn/goji"
+	"github.com/zenazn/goji/web"
 	"net/http"
 	"time"
 )
@@ -33,7 +33,11 @@ func webPinCreate(resp http.ResponseWriter, req *http.Request) {
 	pinReq := pin{}
 	err := json.NewDecoder(req.Body).Decode(&pinReq)
 	if err != nil {
-		err = pgpinError{Id: "bad-request", Message: "malformed JSON body"}
+		err = pgpinError{
+			Id:         "bad-request",
+			Message:    "malformed JSON body",
+			HttpStatus: 400,
+		}
 		webErr(resp, err)
 		return
 	}
@@ -80,15 +84,20 @@ func webStatus(resp http.ResponseWriter, req *http.Request) {
 }
 
 func webNotFound(resp http.ResponseWriter, req *http.Request) {
-	err := pgpinError{Id: "not-found", Message: "not found"}
+	err := pgpinError{
+		Id:         "not-found",
+		Message:    "not found",
+		HttpStatus: 404,
+	}
 	webErr(resp, err)
 }
 
 func webErr(resp http.ResponseWriter, err error) {
-	switch err.(type) {
-	case pgpinError:
-		webRespond(resp, 500, err)
-	default:
+	pgpinerr, ok := err.(*pgpinError)
+	if ok {
+		webRespond(resp, pgpinerr.HttpStatus, pgpinerr)
+	} else {
+		log("web.error", "err=%+v", err)
 		webRespond(resp, 500, &map[string]string{"id": "internal-error", "message": "internal server error"})
 	}
 }

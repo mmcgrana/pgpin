@@ -99,7 +99,11 @@ var emptyRegexp = regexp.MustCompile("\\A\\s*\\z")
 
 func dataValidateNonempty(f string, s string) error {
 	if emptyRegexp.MatchString(s) {
-		return &pgpinError{Id: "invalid", Message: fmt.Sprintf("field %s must be nonempty", f)}
+		return &pgpinError{
+			Id:         "invalid",
+			Message:    fmt.Sprintf("field %s must be nonempty", f),
+			HttpStatus: 400,
+		}
 	}
 	return nil
 }
@@ -149,7 +153,11 @@ func dataPinGet(id string) (*pin, error) {
 		return nil, err
 	}
 	if pin == nil {
-		return nil, &pgpinError{Id: "not-found", Message: "pin not found"}
+		return nil, &pgpinError{
+			Id:         "not-found",
+			Message:    "pin not found",
+			HttpStatus: 404,
+		}
 	}
 	return pin, nil
 }
