@@ -1,14 +1,11 @@
 package main
 
 import (
-	"code.google.com/p/gorilla/mux"
+	"github.com/zenazn/goji"
+	"github.com/zenazn/goji/web"
 	"encoding/json"
-	"fmt"
 	"github.com/darkhelmet/env"
 	"net/http"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 )
 
@@ -48,8 +45,8 @@ func webPinCreate(resp http.ResponseWriter, req *http.Request) {
 	webRespond(resp, 200, pin)
 }
 
-func webPinGet(resp http.ResponseWriter, req *http.Request) {
-	id := mux.Vars(req)["id"]
+func webPinGet(c web.C, resp http.ResponseWriter, req *http.Request) {
+	id := c.URLParams["id"]
 	pin, err := dataPinGet(id)
 	if err != nil {
 		webErr(resp, err)
@@ -58,8 +55,8 @@ func webPinGet(resp http.ResponseWriter, req *http.Request) {
 	webRespond(resp, 200, pin)
 }
 
-func webPinDestroy(resp http.ResponseWriter, req *http.Request) {
-	id := mux.Vars(req)["id"]
+func webPinDestroy(c web.C, resp http.ResponseWriter, req *http.Request) {
+	id := c.URLParams["id"]
 	pin, err := dataPinGet(id)
 	if err != nil {
 		webErr(resp, err)
@@ -96,63 +93,30 @@ func webErr(resp http.ResponseWriter, err error) {
 	}
 }
 
-func webRouterHandler() http.HandlerFunc {
-	router := mux.NewRouter()
-	router.HandleFunc("/pins", webPinList).Methods("GET")
-	router.HandleFunc("/pins", webPinCreate).Methods("POST")
-	router.HandleFunc("/pins/{id}", webPinGet).Methods("GET")
-	router.HandleFunc("/pins/{id}", webPinDestroy).Methods("DELETE")
-	router.HandleFunc("/status", webStatus).Methods("GET")
-	router.NotFoundHandler = http.HandlerFunc(webNotFound)
-	return func(w http.ResponseWriter, r *http.Request) {
-		router.ServeHTTP(w, r)
-	}
-}
-
-type webStatusingResponseWriter struct {
-	status int
-	http.ResponseWriter
-}
-
-func (w *webStatusingResponseWriter) WriteHeader(s int) {
-	w.status = s
-	w.ResponseWriter.WriteHeader(s)
-}
-
-func webWrapLogging(f http.HandlerFunc) http.HandlerFunc {
-	return func(res http.ResponseWriter, req *http.Request) {
+func webLogging(inner http.Handler) http.Handler {
+	outer := func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
-		method := req.Method
-		path := req.URL.Path
+		method := r.Method
+		path := r.URL.Path
 		log("web.request.start", "method=%s path=%s", method, path)
-		wres := webStatusingResponseWriter{-1, res}
-		f(&wres, req)
+		inner.ServeHTTP(w, r)
 		elapsed := float64(time.Since(start)) / 1000000.0
-		log("web.request.finish", "method=%s path=%s status=%d elapsed=%f", method, path, wres.status, elapsed)
+		log("web.request.finish", "method=%s path=%s elapsed=%f", method, path, elapsed)
 	}
-}
-
-func webTrap() {
-	log("web.trap.set")
-	trap := make(chan os.Signal)
-	go func() {
-		<-trap
-		log("web.exit")
-		os.Exit(0)
-	}()
-	signal.Notify(trap, syscall.SIGINT, syscall.SIGTERM)
+	return http.HandlerFunc(outer)
 }
 
 func webStart() {
 	log("web.start")
 	dataStart()
-	handler := webRouterHandler()
-	handler = webWrapLogging(handler)
-	webTrap()
+	goji.Get("/pins", webPinList)
+	goji.Post("/pins", webPinCreate)
+	goji.Get("/pins/:id", webPinGet)
+	goji.Delete("/pins/:id", webPinDestroy)
+	goji.Get("/status", webStatus)
+	goji.NotFound(webNotFound)
+	goji.Use(webLogging)
 	port := env.Int("PORT")
 	log("web.serve", "port=%d", port)
-	err := http.ListenAndServe(fmt.Sprintf(":%d", port), handler)
-	if err != nil {
-		panic(err)
-	}
+	goji.Serve()
 }

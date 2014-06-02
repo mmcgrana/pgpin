@@ -35,6 +35,9 @@
 * HTTP basic auth
 * Validation library
 * SQL helper library
+* Document https://github.com/zenazn/goji/commit/8770437237cd43b77742a0ac65640958346b7b10
+* Capturing status in logger
+* Graceful stop worker
 
 ## Topics
 

@@ -5,9 +5,6 @@ import (
 	"database/sql"
 	"encoding/json"
 	"github.com/bmizerany/pq"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 )
 
@@ -85,37 +82,10 @@ func workerQuery(p *pin) error {
 	return nil
 }
 
-func workerTrap() chan os.Signal {
-	log("worker.trap.set")
-	traps := make(chan os.Signal, 1)
-	sigs := make(chan os.Signal, 1)
-	go func() {
-		s := <-traps
-		log("worker.trap")
-		sigs <- s
-	}()
-	signal.Notify(traps, syscall.SIGINT, syscall.SIGTERM)
-	return sigs
-}
-
-func workerTrapped(sigs chan os.Signal) bool {
-	select {
-	case <-sigs:
-		return true
-	default:
-	}
-	return false
-}
-
 func workerStart() {
 	log("worker.start")
 	dataStart()
-	sigs := workerTrap()
 	for {
-		if workerTrapped(sigs) {
-			log("worker.exit")
-			return
-		}
 		pin, err := workerPoll()
 		if err != nil {
 			panic(err)
