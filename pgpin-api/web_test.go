@@ -19,7 +19,7 @@ func init() {
 	DataStart()
 }
 
-func TestStatusOk(t *testing.T) {
+func TestStatus(t *testing.T) {
 	req, err := http.NewRequest("GET", "https://pgpin-api.com/status", nil)
 	must(t, err)
 	res := httptest.NewRecorder()
