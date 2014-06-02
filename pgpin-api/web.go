@@ -89,7 +89,6 @@ func webNotFound(resp http.ResponseWriter, req *http.Request) {
 }
 
 func webErr(resp http.ResponseWriter, err error) {
-	fmt.Println("error:", err)
 	switch err.(type) {
 	case pgpinError:
 		webRespond(resp, 500, err)
