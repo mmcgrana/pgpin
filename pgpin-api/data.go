@@ -31,45 +31,32 @@ func dataMustParseDatabaseUrl(s string) string {
 
 // DB connection.
 
-var conn *sql.DB
+var dataConn *sql.DB
 
-func DataStart() {
+func dataStart() {
 	log("data.start")
 	conf := dataMustParseDatabaseUrl(env.String("DATABASE_URL"))
-	connNew, err := sql.Open("postgres", conf)
+	conn, err := sql.Open("postgres", conf)
 	if err != nil {
 		panic(err)
 	}
-	conn = connNew
+	dataConn = conn
 }
 
-func DataTest() error {
+func dataTest() error {
 	log("data.test")
 	var r int
-	err := conn.QueryRow("SELECT 1").Scan(&r)
+	err := dataConn.QueryRow("SELECT 1").Scan(&r)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// Db types and functions.
-
-type dbSlim struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
-}
-
-type db struct {
-	Id        string     `json:"id"`
-	Name      string     `json:"name"`
-	Url       string     `json:"url"`
-	AddedAt   time.Time  `json:"added_at"`
-	RemovedAt *time.Time `json:"-"`
-}
+// Db operations.
 
 func dataDbList() ([]dbSlim, error) {
-	res, err := conn.Query("SELECT id, name FROM dbs where removed_at IS NULL")
+	res, err := dataConn.Query("SELECT id, name FROM dbs where removed_at IS NULL")
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +85,7 @@ func dataDbAdd(name string, url string) (*db, error) {
 	db.Name = name
 	db.Url = url
 	db.AddedAt = time.Now()
-	_, err := conn.Exec("INSERT INTO dbs (id, name, url, added_at) VALUES ($1, $2, $3, $4)",
+	_, err := dataConn.Exec("INSERT INTO dbs (id, name, url, added_at) VALUES ($1, $2, $3, $4)",
 		db.Id, db.Name, db.Url, db.AddedAt)
 	if err != nil {
 		return nil, err
@@ -107,7 +94,7 @@ func dataDbAdd(name string, url string) (*db, error) {
 }
 
 func dataDbGet(id string) (*db, error) {
-	res, err := conn.Query(`SELECT id, name, url, added_at FROM dbs WHERE id=$1 AND removed_at IS NULL LIMIT 1`, id)
+	res, err := dataConn.Query(`SELECT id, name, url, added_at FROM dbs WHERE id=$1 AND removed_at IS NULL LIMIT 1`, id)
 	if err != nil {
 		return nil, err
 	}
@@ -129,7 +116,7 @@ func dataDbGet(id string) (*db, error) {
 }
 
 func dataDbUpdate(db *db) (*db, error) {
-	_, err := conn.Exec("UPDATE dbs SET name=$1, url=$2, added_at=$3, removed_at=$4 WHERE id=$5",
+	_, err := dataConn.Exec("UPDATE dbs SET name=$1, url=$2, added_at=$3, removed_at=$4 WHERE id=$5",
 		db.Name, db.Url, db.AddedAt, db.RemovedAt, db.Id)
 	return db, err
 }
@@ -144,29 +131,10 @@ func dataDbRemove(id string) (*db, error) {
 	return dataDbUpdate(db)
 }
 
-// Pin types and functions.
-
-type pinSlim struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
-}
-
-type pin struct {
-	Id                string     `json:"id"`
-	Name              string     `json:"name"`
-	DbId              string     `json:"db_id"`
-	Query             string     `json:"query"`
-	CreatedAt         time.Time  `json:"created_at"`
-	QueryStartedAt    *time.Time `json:"query_started_at"`
-	QueryFinishedAt   *time.Time `json:"query_finished_at"`
-	ResultsFieldsJson *string    `json:"results_fields_json"`
-	ResultsRowsJson   *string    `json:"results_rows_json"`
-	ResultsError      *string    `json:"results_error"`
-	DeletedAt         *time.Time `json:"-"`
-}
+// Pin operations.
 
 func dataPinList() ([]pinSlim, error) {
-	res, err := conn.Query("SELECT id, name FROM pins where deleted_at IS NULL")
+	res, err := dataConn.Query("SELECT id, name FROM pins where deleted_at IS NULL")
 	if err != nil {
 		return nil, err
 	}
@@ -199,7 +167,7 @@ func dataPinCreate(dbId string, name string, query string) (*pin, error) {
 	pin.Name = name
 	pin.Query = query
 	pin.CreatedAt = time.Now()
-	_, err := conn.Exec("INSERT INTO pins (id, db_id, name, query, created_at) VALUES ($1, $2, $3, $4, $5)",
+	_, err := dataConn.Exec("INSERT INTO pins (id, db_id, name, query, created_at) VALUES ($1, $2, $3, $4, $5)",
 		pin.Id, pin.DbId, pin.Name, pin.Query, pin.CreatedAt)
 	if err != nil {
 		return nil, err
@@ -208,7 +176,7 @@ func dataPinCreate(dbId string, name string, query string) (*pin, error) {
 }
 
 func dataPinGetInternal(queryFrag string, queryVals ...interface{}) (*pin, error) {
-	res, err := conn.Query(`SELECT id, db_id, name, query, created_at, query_started_at, query_finished_at, results_fields_json, results_rows_json, results_error FROM pins WHERE deleted_at IS NULL AND `+queryFrag+` LIMIT 1`, queryVals...)
+	res, err := dataConn.Query(`SELECT id, db_id, name, query, created_at, query_started_at, query_finished_at, results_fields_json, results_rows_json, results_error FROM pins WHERE deleted_at IS NULL AND `+queryFrag+` LIMIT 1`, queryVals...)
 	if err != nil {
 		return nil, err
 	}
@@ -245,7 +213,7 @@ func dataPinForQuery() (*pin, error) {
 }
 
 func dataPinUpdate(pin *pin) (*pin, error) {
-	_, err := conn.Exec("UPDATE pins SET db_id=$1, name=$2, query=$3, created_at=$4, query_started_at=$5, query_finished_at=$6, results_fields_json=$7, results_rows_json=$8, results_error=$9, deleted_at=$10 WHERE id=$11",
+	_, err := dataConn.Exec("UPDATE pins SET db_id=$1, name=$2, query=$3, created_at=$4, query_started_at=$5, query_finished_at=$6, results_fields_json=$7, results_rows_json=$8, results_error=$9, deleted_at=$10 WHERE id=$11",
 		pin.DbId, pin.Name, pin.Query, pin.CreatedAt, pin.QueryStartedAt, pin.QueryFinishedAt, pin.ResultsFieldsJson, pin.ResultsRowsJson, pin.ResultsError, pin.DeletedAt, pin.Id)
 	return pin, err
 }

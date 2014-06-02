@@ -84,7 +84,7 @@ func workerQuery(p *pin) error {
 
 func workerStart() {
 	log("worker.start")
-	DataStart()
+	dataStart()
 	for {
 		pin, err := workerPoll()
 		if err != nil {

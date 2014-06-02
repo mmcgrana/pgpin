@@ -128,7 +128,7 @@ type status struct {
 }
 
 func webStatus(resp http.ResponseWriter, req *http.Request) {
-	err := DataTest()
+	err := dataTest()
 	ok := &status{Message: "ok"}
 	webRespond(resp, 200, ok, err)
 }
@@ -146,7 +146,7 @@ func webNotFound(resp http.ResponseWriter, req *http.Request) {
 
 func webStart() {
 	log("web.start")
-	DataStart()
+	dataStart()
 	goji.Use(webLogging)
 	goji.Get("/dbs", webDbList)
 	goji.Post("/dbs", webDbAdd)

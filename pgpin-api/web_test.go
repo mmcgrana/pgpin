@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"env"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -15,8 +16,11 @@ func must(t *testing.T, err error) {
 }
 
 func init() {
-	os.Setenv("DATABASE_URL", os.Getenv("TEST_DATABASE_URL"))
-	DataStart()
+	if !strings.HasSuffix(env.String("DATABASE_URL"), "-test") {
+		panic("Doesn't look like a test database")
+	}
+	dataStart()
+	dataConn
 }
 
 func TestStatus(t *testing.T) {
