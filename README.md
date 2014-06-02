@@ -148,8 +148,21 @@ run:
 $ vagrant up
 $ vagrant ssh
 $ cd src/github.com/mmcgrana/pgpin/pgpin-api
-$ go get
+```
+
+To start a development version of app:
+
+```
+$ export DATABASE_URL=$DEVELOPMENT_DATABASE_URL
 $ cat db/* | psql $DATABASE_URL
-$ export API_AUTH="client:"$(openssl rand -base64 18)
+$ go get
 $ goreman start
+```
+
+To run tests:
+
+```console
+$ export DATABASE_URL=$TEST_DATABASE_URL
+$ cat db/* | psql $DATABASE_URL
+$ go test
 ```

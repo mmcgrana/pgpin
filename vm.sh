@@ -33,10 +33,13 @@ apt-get update
 apt-get install -y postgresql-9.3
 
 sudo -u postgres psql -U postgres -d postgres -c "alter user postgres with password 'secret';"
-sudo -u postgres createdb pgpin
+sudo -u postgres createdb pgpin-development
+sudo -u postgres createdb pgpin-test
 
 cat >> /home/vagrant/.profile <<EOF
-export DATABASE_URL=postgres://postgres:secret@127.0.0.1:5432/pgpin
+export DEVELOPMENT_DATABASE_URL=postgres://postgres:secret@127.0.0.1:5432/pgpin-development
+export TEST_DATABASE_URL=postgres://postgres:secret@127.0.0.1:5432/pgpin-test
+export API_AUTH="client:"$(openssl rand -base64 18)
 EOF
 
 # Goreman

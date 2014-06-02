@@ -1,5 +1,7 @@
 ## Todo
 
+* Testing
+
 * Can't destroy DB with existing pins
 * Rename pin
 * Refresh results periodically
@@ -9,6 +11,7 @@
 * Limit result size
 * Validate unique in DB, other constraints
 
+* Silence logs on test
 * Keyd logging, https://github.com/tv42/jog, https://github.com/heroku/slog
 * Try other types, including bytes
 * JSON data type instead of text
