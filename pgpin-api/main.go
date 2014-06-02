@@ -16,10 +16,10 @@ func main() {
 	}
 	switch os.Args[1] {
 	case "web":
-		web()
+		webStart()
 	case "worker":
-		worker()
+		workerStart()
 	case "scratch":
-		scratch()
+		scratchStart()
 	}
 }

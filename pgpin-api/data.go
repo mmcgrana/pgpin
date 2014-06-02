@@ -57,8 +57,8 @@ func dataMustParseDatabaseUrl(s string) string {
 
 var conn *sql.DB
 
-func dataInit() {
-	log("data.init")
+func dataStart() {
+	log("data.start")
 	conf := dataMustParseDatabaseUrl(env.String("DATABASE_URL"))
 	connNew, err := sql.Open("postgres", conf)
 	if err != nil {

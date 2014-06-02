@@ -126,11 +126,11 @@ func webWrapLogging(f http.HandlerFunc) http.HandlerFunc {
 		start := time.Now()
 		method := req.Method
 		path := req.URL.Path
-		log("web.request.start method=%s path=%s", method, path)
+		log("web.request.start", "method=%s path=%s", method, path)
 		wres := webStatusingResponseWriter{-1, res}
 		f(&wres, req)
 		elapsed := float64(time.Since(start)) / 1000000.0
-		log("web.request.finish method=%s path=%s status=%d elapsed=%f", method, path, wres.status, elapsed)
+		log("web.request.finish", "method=%s path=%s status=%d elapsed=%f", method, path, wres.status, elapsed)
 	}
 }
 
@@ -139,20 +139,21 @@ func webTrap() {
 	trap := make(chan os.Signal)
 	go func() {
 		<- trap
+		log("web.trap")
 		log("web.exit")
 		os.Exit(0)
 	}()
 	signal.Notify(trap, syscall.SIGINT, syscall.SIGTERM)
 }
 
-func web() {
-	dataInit()
+func webStart() {
 	log("web.start")
+	dataStart()
 	handler := webRouterHandler()
 	handler = webWrapLogging(handler)
 	webTrap()
 	port := env.Int("PORT")
-	log("web.serve port=%d", port)	
+	log("web.serve", "port=%d", port)	
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), handler)
 	if err != nil {
 		panic(err)

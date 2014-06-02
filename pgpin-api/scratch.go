@@ -4,6 +4,6 @@ import (
 	"fmt"
 )
 
-func scratch() {
+func scratchStart() {
 	fmt.Println(dataRandId())
 }
