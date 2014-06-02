@@ -139,7 +139,6 @@ func webTrap() {
 	trap := make(chan os.Signal)
 	go func() {
 		<- trap
-		log("web.trap")
 		log("web.exit")
 		os.Exit(0)
 	}()
