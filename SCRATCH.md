@@ -18,7 +18,7 @@ Create a pin:
 $ cat > /tmp/pin-input.json <<EOF
 {
   "db_id": "bf8029eb5b07",
-  "name": "pins count",
+  "name": "pins-count",
   "query": "select count(*) from pins"
 }
 EOF

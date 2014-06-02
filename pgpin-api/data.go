@@ -108,8 +108,21 @@ func dataValidateNonempty(f string, s string) error {
 	return nil
 }
 
+var slugRegexp = regexp.MustCompile("\\A[a-z0-9-]+\\z")
+
+func dataValidateSlug(f string, s string) error {
+	if !slugRegexp.MatchString(s) {
+		return &pgpinError{
+			Id:         "invalid",
+			Message:    fmt.Sprintf("field %s must be of the form [a-z0-9-]+", f),
+			HttpStatus: 400,
+		}
+	}
+	return nil
+}
+
 func dataPinCreate(dbId string, name string, query string) (*pin, error) {
-	if err := dataValidateNonempty("name", name); err != nil {
+	if err := dataValidateSlug("name", name); err != nil {
 		return nil, err
 	}
 	if err := dataValidateNonempty("query", query); err != nil {
