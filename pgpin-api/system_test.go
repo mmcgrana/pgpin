@@ -20,7 +20,8 @@ func init() {
 	if !strings.HasSuffix(env.String("DATABASE_URL"), "-test") {
 		panic("Doesn't look like a test database")
 	}
-	webStart(false)
+	dataStart()
+	webBuild()
 }
 
 func clear() {
