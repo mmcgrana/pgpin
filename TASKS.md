@@ -1,6 +1,5 @@
 ## Todo
 
-* Can't destroy DB with existing pins
 * Rename pin
 * Refresh results periodically
 * Inline JSON instead of text

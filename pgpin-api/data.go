@@ -117,6 +117,24 @@ func dataDbRemove(id string) (*db, error) {
 	if err != nil {
 		return nil, err
 	}
+	rows, err := dataConn.Query("SELECT count(*) FROM pins WHERE db_id=$1 AND deleted_at IS NULL", db.Id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	rows.Next()
+	var numPins int
+	err = rows.Scan(&numPins)
+	if err != nil {
+		return nil, err
+	}
+	if numPins != 0 {
+		return nil, &pgpinError{
+			Id: "removing-db-with-pins",
+			Message: "cannot remove db with pins",
+			HttpStatus: 400,
+		}
+	}
 	removedAt := time.Now()
 	db.RemovedAt = &removedAt
 	return dataDbUpdate(db)

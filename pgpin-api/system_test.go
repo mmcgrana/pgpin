@@ -106,8 +106,8 @@ func TestDbRemoveWithPins(t *testing.T) {
 	assert.Equal(t, 400, res.Code)
 	data := make(map[string]string)
 	mustDecode(res, &data)
-	assert.Equal(t, "bad-request", data["id"])
-	assert.Equal(t, "cannot remove db with pins", data["message"])
+	assert.Equal(t, "removing-db-with-pins", data["id"])
+	assert.NotEmpty(t, data["message"])
 }
 
 func TestDBList(t *testing.T) {
