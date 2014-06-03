@@ -50,9 +50,7 @@ func TestAddDb(t *testing.T) {
 	must(err)
 	res := httptest.NewRecorder()
 	webDbAdd(res, req)
-	if !(res.Code == 201) {
-		t.Errorf("Got status %d, want 201", res.Code)
-	}
+	assert.Equal(t, 201, res.Code)
 	db := &db{}
 	must(json.NewDecoder(res.Body).Decode(db))
 	assert.Equal(t, "pins", db.Name)
