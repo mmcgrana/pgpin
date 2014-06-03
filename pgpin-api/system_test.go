@@ -77,6 +77,12 @@ func TestDbGet(t *testing.T) {
 
 func TestDbRemove(t *testing.T) {
 	defer clear()
+	dbIn, err := dataDbAdd("pins-1", "postgres://u:p@h:1234/d-1")
+	must(err)
+	res := mustRequest("DELETE", "/dbs/"+dbIn.Id, nil)
+	assert.Equal(t, 200, res.Code)
+	res = mustRequest("GET", "/dbs/"+dbIn.Id, nil)
+	assert.Equal(t, 404, res.Code)
 }
 
 func TestDbList(t *testing.T) {
