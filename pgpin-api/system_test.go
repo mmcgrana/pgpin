@@ -63,6 +63,16 @@ func TestDbAdd(t *testing.T) {
 
 func TestDbGet(t *testing.T) {
 	defer clear()
+	dbIn, err := dataDbAdd("pins-1", "postgres://u:p@h:1234/d-1")
+	must(err)
+	res := mustRequest("GET", "/dbs/"+dbIn.Id, nil)
+	assert.Equal(t, 200, res.Code)
+	dbOut := &db{}
+	must(json.NewDecoder(res.Body).Decode(dbOut))
+	assert.Equal(t, dbIn.Id, dbOut.Id)
+	assert.Equal(t, "pins-1", dbOut.Name)
+	assert.Equal(t, "postgres://u:p@h:1234/d-1", dbOut.Url)
+	assert.WithinDuration(t, time.Now(), dbOut.AddedAt, 3*time.Second)
 }
 
 func TestDbRemove(t *testing.T) {
