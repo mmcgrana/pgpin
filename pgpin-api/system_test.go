@@ -43,7 +43,7 @@ func TestStatus(t *testing.T) {
 	assert.Equal(t, "ok", status.Message)
 }
 
-func TestAddDb(t *testing.T) {
+func TestDbAdd(t *testing.T) {
 	defer clear()
 	in := `{"name": "pins-1", "url": "postgres://u:p@h:1234/d-1"}`
 	req, err := http.NewRequest("POST", "http://pgpin.com/dbs", bytes.NewReader([]byte(in)))
@@ -57,4 +57,16 @@ func TestAddDb(t *testing.T) {
 	assert.Equal(t, "postgres://u:p@h:1234/d-1", db.Url)
 	assert.NotEmpty(t, db.Id)
 	assert.WithinDuration(t, time.Now(), db.AddedAt, 3*time.Second)
+}
+
+func TestDbGet(t *testing.T) {
+	defer clear()
+}
+
+func TestDbRemove(t *testing.T) {
+	defer clear()
+}
+
+func TestDbList(t *testing.T) {
+	defer clear()
 }
