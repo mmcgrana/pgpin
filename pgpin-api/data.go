@@ -30,6 +30,21 @@ func dataMustParseDatabaseUrl(s string) string {
 	return conf
 }
 
+func dataCount(query string, args ...interface{}) (int, error) {
+	rows, err := dataConn.Query(query, args...)
+	if err != nil {
+		return 0, err
+	}
+	defer rows.Close()
+	rows.Next()
+	var count int
+	err = rows.Scan(&count)
+	if err != nil {
+		return 0, err
+	}
+	return count, nil
+}
+
 // DB connection.
 
 var dataConn *sql.DB
@@ -117,14 +132,7 @@ func dataDbRemove(id string) (*db, error) {
 	if err != nil {
 		return nil, err
 	}
-	rows, err := dataConn.Query("SELECT count(*) FROM pins WHERE db_id=$1 AND deleted_at IS NULL", db.Id)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	rows.Next()
-	var numPins int
-	err = rows.Scan(&numPins)
+	numPins, err := dataCount("SELECT count(*) FROM pins WHERE db_id=$1 AND deleted_at IS NULL", db.Id)
 	if err != nil {
 		return nil, err
 	}
