@@ -2,13 +2,11 @@ package main
 
 import (
 	"fmt"
-	"sync"
+	logger "log"
 )
 
-var logMutex *sync.Mutex
-
 func init() {
-	logMutex = &sync.Mutex{}
+	logger.SetFlags(0)
 }
 
 func log(k string, args ...interface{}) {
@@ -20,7 +18,5 @@ func log(k string, args ...interface{}) {
 		rest := args[1:]
 		line = fmt.Sprintf(k+" "+first, rest...)
 	}
-	logMutex.Lock()
-	defer logMutex.Unlock()
-	fmt.Println(line)
+	logger.Println(line)
 }

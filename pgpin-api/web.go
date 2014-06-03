@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"github.com/zenazn/goji"
 	"github.com/zenazn/goji/web"
+	"github.com/zenazn/goji/web/middleware"
 	"net/http"
 	"time"
 )
@@ -144,6 +145,7 @@ func webNotFound(resp http.ResponseWriter, req *http.Request) {
 // Server builder.
 func webBuild() {
 	goji.Use(webLogging)
+	goji.Abandon(middleware.Logger)
 	goji.Get("/dbs", webDbList)
 	goji.Post("/dbs", webDbAdd)
 	goji.Get("/dbs/:id", webDbGet)

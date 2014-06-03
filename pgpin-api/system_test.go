@@ -6,6 +6,8 @@ import (
 	"github.com/darkhelmet/env"
 	"github.com/stretchr/testify/assert"
 	"github.com/zenazn/goji"
+	"io/ioutil"
+	logger "log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -20,6 +22,7 @@ func must(err error) {
 }
 
 func init() {
+	logger.SetOutput(ioutil.Discard)
 	if !strings.HasSuffix(env.String("DATABASE_URL"), "-test") {
 		panic("Doesn't look like a test database")
 	}

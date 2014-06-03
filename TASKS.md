@@ -1,6 +1,5 @@
 ## Todo
 
-* Test log suppression
 * Test coverage
 
 * Can't destroy DB with existing pins
