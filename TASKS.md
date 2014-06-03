@@ -11,7 +11,6 @@
 * Limit result size
 * Validate unique in DB, other constraints
 
-* Keyd logging, https://github.com/tv42/jog, https://github.com/heroku/slog
 * Try other types, including bytes
 * JSON data type instead of text
 * Encrypt resource URL
