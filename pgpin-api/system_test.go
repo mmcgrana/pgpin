@@ -16,6 +16,8 @@ import (
 	"time"
 )
 
+// Setup and teardown.
+
 func clear() {
 	_, err := dataConn.Exec("DELETE from pins")
 	must(err)
@@ -33,6 +35,8 @@ func init() {
 	webBuild()
 }
 
+// Helpers.
+
 func mustRequest(method, url string, body io.Reader) *httptest.ResponseRecorder {
 	req, err := http.NewRequest(method, url, body)
 	must(err)
@@ -45,22 +49,19 @@ func mustDecode(res *httptest.ResponseRecorder, data interface{}) {
 	must(json.NewDecoder(res.Body).Decode(data))
 }
 
-func TestNotFound(t *testing.T) {
-	res := mustRequest("GET", "/wat", nil)
-	assert.Equal(t, 404, res.Code)
-	data := make(map[string]string)
-	mustDecode(res, &data)
-	assert.Equal(t, "not-found", data["id"])
-	assert.Equal(t, "not found", data["message"])
+func mustDataDbAdd(name string, url string) *db {
+	db, err := dataDbAdd(name, url)
+	must(err)
+	return db
 }
 
-func TestStatus(t *testing.T) {
-	res := mustRequest("GET", "/status", nil)
-	assert.Equal(t, 200, res.Code)
-	status := &status{}
-	mustDecode(res, status)
-	assert.Equal(t, "ok", status.Message)
+func mustDataPinCreate(dbId string, name string, query string) *pin {
+	pin, err := dataPinCreate(dbId, name, query)
+	must(err)
+	return pin
 }
+
+// DB endpoints.
 
 func TestDbAdd(t *testing.T) {
 	defer clear()
@@ -77,8 +78,7 @@ func TestDbAdd(t *testing.T) {
 
 func TestDbGet(t *testing.T) {
 	defer clear()
-	dbIn, err := dataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
-	must(err)
+	dbIn := mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
 	res := mustRequest("GET", "/dbs/"+dbIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
 	dbOut := &db{}
@@ -91,21 +91,30 @@ func TestDbGet(t *testing.T) {
 
 func TestDbRemove(t *testing.T) {
 	defer clear()
-	dbIn, err := dataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
-	must(err)
+	dbIn := mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
 	res := mustRequest("DELETE", "/dbs/"+dbIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
 	res = mustRequest("GET", "/dbs/"+dbIn.Id, nil)
 	assert.Equal(t, 404, res.Code)
 }
 
+func TestDbRemoveWithPins(t *testing.T) {
+	defer clear()
+	db := mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
+	mustDataPinCreate(db.Id, "pins-1", "select count (*) from pins")
+	res := mustRequest("DELETE", "/dbs/"+db.Id, nil)
+	assert.Equal(t, 400, res.Code)
+	data := make(map[string]string)
+	mustDecode(res, &data)
+	assert.Equal(t, "bad-request", data["id"])
+	assert.Equal(t, "cannot remove db with pins", data["message"])
+}
+
 func TestDBList(t *testing.T) {
 	defer clear()
-	dbIn1, err := dataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
-	must(err)
-	dbIn2, err := dataDbAdd("dbs-2", "postgres://u:p@h:1234/d-2")
-	must(err)
-	_, err = dataDbRemove(dbIn2.Id)
+	dbIn1 := mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
+	dbIn2 := mustDataDbAdd("dbs-2", "postgres://u:p@h:1234/d-2")
+	_, err := dataDbRemove(dbIn2.Id)
 	must(err)
 	res := mustRequest("GET", "/dbs", nil)
 	assert.Equal(t, 200, res.Code)
@@ -116,10 +125,11 @@ func TestDBList(t *testing.T) {
 	assert.Equal(t, "dbs-1", dbsOut[0].Name)
 }
 
+// Pin endpoints.
+
 func TestPinCreateAndGet(t *testing.T) {
 	defer clear()
-	dbIn, err := dataDbAdd("dbs-1", env.String("DATABASE_URL"))
-	must(err)
+	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
 	b := bytes.NewReader([]byte(`{"name": "pin-1", "db_id": "` + dbIn.Id + `", "query": "select count(*) from pins"}`))
 	res := mustRequest("POST", "/pins", b)
 	assert.Equal(t, 201, res.Code)
@@ -143,10 +153,8 @@ func TestPinCreateAndGet(t *testing.T) {
 
 func TestPinDelete(t *testing.T) {
 	defer clear()
-	dbIn, err := dataDbAdd("dbs-1", env.String("DATABASE_URL"))
-	must(err)
-	pinIn, err := dataPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
-	must(err)
+	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
+	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
 	res := mustRequest("DELETE", "/pins/"+pinIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
 	pinOut := &pin{}
@@ -158,13 +166,10 @@ func TestPinDelete(t *testing.T) {
 
 func TestPinList(t *testing.T) {
 	defer clear()
-	dbIn, err := dataDbAdd("dbs-1", env.String("DATABASE_URL"))
-	must(err)
-	pinIn1, err := dataPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
-	must(err)
-	pinIn2, err := dataPinCreate(dbIn.Id, "pins-2", "select * from pins")
-	must(err)
-	_, err = dataPinDelete(pinIn1.Id)
+	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
+	pinIn1 := mustDataPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
+	pinIn2 := mustDataPinCreate(dbIn.Id, "pins-2", "select * from pins")
+	_, err := dataPinDelete(pinIn1.Id)
 	must(err)
 	res := mustRequest("GET", "/pins", nil)
 	assert.Equal(t, 200, res.Code)
@@ -173,4 +178,23 @@ func TestPinList(t *testing.T) {
 	assert.Equal(t, len(pinsOut), 1)
 	assert.Equal(t, pinIn2.Id, pinsOut[0].Id)
 	assert.Equal(t, "pins-2", pinsOut[0].Name)
+}
+
+// Misc endpoints.
+
+func TestNotFound(t *testing.T) {
+	res := mustRequest("GET", "/wat", nil)
+	assert.Equal(t, 404, res.Code)
+	data := make(map[string]string)
+	mustDecode(res, &data)
+	assert.Equal(t, "not-found", data["id"])
+	assert.Equal(t, "not found", data["message"])
+}
+
+func TestStatus(t *testing.T) {
+	res := mustRequest("GET", "/status", nil)
+	assert.Equal(t, 200, res.Code)
+	status := &status{}
+	mustDecode(res, status)
+	assert.Equal(t, "ok", status.Message)
 }
