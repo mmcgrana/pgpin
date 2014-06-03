@@ -162,12 +162,14 @@ func webBuild() {
 	goji.NotFound(webNotFound)
 }
 
-func webStart() {
+func webStart(listen bool) {
 	log.Print("web.start")
 	dataStart()
 	webBuild()
-	listener := bind.Default()
-	bind.Ready()
-	must(graceful.Serve(listener, goji.DefaultMux))
-	graceful.Wait()
+	if listen {
+		listener := bind.Default()
+		bind.Ready()
+		must(graceful.Serve(listener, goji.DefaultMux))
+		graceful.Wait()
+	}
 }

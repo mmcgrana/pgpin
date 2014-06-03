@@ -21,7 +21,7 @@ func main() {
 	}
 	switch os.Args[1] {
 	case "web":
-		webStart()
+		webStart(true)
 	case "worker":
 		workerStart()
 	default:
