@@ -85,6 +85,31 @@ func TestDbRemove(t *testing.T) {
 	assert.Equal(t, 404, res.Code)
 }
 
-func TestDbList(t *testing.T) {
+func TestDbListBasic(t *testing.T) {
 	defer clear()
+	dbIn, err := dataDbAdd("pins-1", "postgres://u:p@h:1234/d-1")
+	must(err)
+	res := mustRequest("GET", "/dbs", nil)
+	assert.Equal(t, 200, res.Code)
+	dbsOut := []*db{}
+	must(json.NewDecoder(res.Body).Decode(&dbsOut))
+	assert.Equal(t, len(dbsOut), 1)
+	assert.Equal(t, dbIn.Id, dbsOut[0].Id)
+	assert.Equal(t, "pins-1", dbsOut[0].Name)
+}
+
+func TestDBListDeletions(t *testing.T) {
+	defer clear()
+	dbIn1, err := dataDbAdd("pins-1", "postgres://u:p@h:1234/d-1")
+	must(err)
+	dbIn2, err := dataDbAdd("pins-2", "postgres://u:p@h:1234/d-2")
+	must(err)
+	_, err = dataDbRemove(dbIn2.Id)
+	must(err)
+	res := mustRequest("GET", "/dbs", nil)
+	assert.Equal(t, 200, res.Code)
+	dbsOut := []*db{}
+	must(json.NewDecoder(res.Body).Decode(&dbsOut))
+	assert.Equal(t, len(dbsOut), 1)
+	assert.Equal(t, dbIn1.Id, dbsOut[0].Id)
 }
