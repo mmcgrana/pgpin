@@ -39,9 +39,16 @@ sudo -u postgres createdb pgpin-test
 cat >> /home/vagrant/.profile <<EOF
 export DEVELOPMENT_DATABASE_URL=postgres://postgres:secret@127.0.0.1:5432/pgpin-development
 export TEST_DATABASE_URL=postgres://postgres:secret@127.0.0.1:5432/pgpin-test
-export API_AUTH="client:"$(openssl rand -hex 12)
-export PGPIN_API_URL=http://\$API_AUTH@127.0.0.1:5000
 EOF
 
 # Goreman
 sudo -u vagrant -i go get github.com/mattn/goreman
+
+# Config
+cat >> /home/vagrant/.profile <<EOF
+export API_AUTH="client:"$(openssl rand -hex 12)
+export PGPIN_API_URL=http://\$API_AUTH@127.0.0.1:5000
+EOF
+
+# App dir
+cd ~/src/github.com/mmcgrana/pgpin
