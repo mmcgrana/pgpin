@@ -147,6 +147,7 @@ func webNotFound(resp http.ResponseWriter, req *http.Request) {
 }
 
 // Server builder.
+
 func webBuild() {
 	goji.Use(webLogging)
 	goji.Abandon(middleware.Logger)
