@@ -6,6 +6,7 @@ import (
 	"github.com/darkhelmet/env"
 	"github.com/stretchr/testify/assert"
 	"github.com/zenazn/goji"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -31,12 +32,16 @@ func clear() {
 	must(err)
 }
 
-func TestStatus(t *testing.T) {
-	req, err := http.NewRequest("GET", "/status", nil)
+func mustRequest(method, url string, body io.Reader) *httptest.ResponseRecorder {
+	req, err := http.NewRequest(method, url, body)
 	must(err)
 	res := httptest.NewRecorder()
 	goji.DefaultMux.ServeHTTP(res, req)
-	webStatus(res, req)
+	return res
+}
+
+func TestStatus(t *testing.T) {
+	res := mustRequest("GET", "/status", nil)
 	assert.Equal(t, 200, res.Code)
 	status := &status{}
 	must(json.NewDecoder(res.Body).Decode(status))
@@ -45,11 +50,8 @@ func TestStatus(t *testing.T) {
 
 func TestDbAdd(t *testing.T) {
 	defer clear()
-	in := `{"name": "pins-1", "url": "postgres://u:p@h:1234/d-1"}`
-	req, err := http.NewRequest("POST", "/dbs", bytes.NewReader([]byte(in)))
-	must(err)
-	res := httptest.NewRecorder()
-	goji.DefaultMux.ServeHTTP(res, req)
+	b := bytes.NewReader([]byte(`{"name": "pins-1", "url": "postgres://u:p@h:1234/d-1"}`))
+	res := mustRequest("POST", "/dbs", b)
 	assert.Equal(t, 201, res.Code)
 	db := &db{}
 	must(json.NewDecoder(res.Body).Decode(db))
