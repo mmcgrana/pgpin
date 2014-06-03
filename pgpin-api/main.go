@@ -2,8 +2,13 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 )
+
+func init() {
+	log.SetFlags(0)
+}
 
 func usage() {
 	fmt.Fprintln(os.Stderr, "Usage: datapins-api [web|worker]")

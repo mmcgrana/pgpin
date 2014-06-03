@@ -3,8 +3,11 @@ package main
 import (
 	"encoding/json"
 	"github.com/zenazn/goji"
+	"github.com/zenazn/goji/bind"
+	"github.com/zenazn/goji/graceful"
 	"github.com/zenazn/goji/web"
 	"github.com/zenazn/goji/web/middleware"
+	"log"
 	"net/http"
 	"time"
 )
@@ -39,7 +42,7 @@ func webRespond(resp http.ResponseWriter, status int, data interface{}, err erro
 			status = pgerr.HttpStatus
 			data = pgerr
 		} else {
-			log("web.error", "%+v", err)
+			log.Printf("web.error %+v", err)
 			status = 500
 			data = &map[string]string{"id": "internal-error", "message": "internal server error"}
 		}
@@ -61,10 +64,11 @@ func webLogging(inner http.Handler) http.Handler {
 		start := time.Now()
 		method := r.Method
 		path := r.URL.Path
-		log("web.request.start", "method=%s path=%s", method, path)
+		log.Println("wat")
+		log.Printf("web.request.start method=%s path=%s", method, path)
 		inner.ServeHTTP(w, r)
 		elapsed := float64(time.Since(start)) / 1000000.0
-		log("web.request.finish", "method=%s path=%s elapsed=%f", method, path, elapsed)
+		log.Printf("web.request.finish method=%s path=%s elapsed=%f", method, path, elapsed)
 	}
 	return http.HandlerFunc(outer)
 }
@@ -159,8 +163,11 @@ func webBuild() {
 }
 
 func webStart() {
-	log("web.start")
+	log.Print("web.start")
 	dataStart()
 	webBuild()
-	goji.Serve()
+	listener := bind.Default()
+	bind.Ready()
+	must(graceful.Serve(listener, goji.DefaultMux))
+	graceful.Wait()
 }

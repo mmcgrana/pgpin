@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/bmizerany/pq"
 	"github.com/darkhelmet/env"
+	"log"
 	"time"
 )
 
@@ -34,7 +35,7 @@ func dataMustParseDatabaseUrl(s string) string {
 var dataConn *sql.DB
 
 func dataStart() {
-	log("data.start")
+	log.Print("data.start")
 	conf := dataMustParseDatabaseUrl(env.String("DATABASE_URL"))
 	conn, err := sql.Open("postgres", conf)
 	if err != nil {

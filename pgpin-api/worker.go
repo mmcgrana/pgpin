@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"github.com/bmizerany/pq"
+	"log"
 	"time"
 )
 
@@ -13,37 +14,37 @@ func workerPoll() (*pin, error) {
 	if err != nil {
 		return nil, err
 	} else if pin != nil {
-		log("worker.poll.found", "pin_id=%s", pin.Id)
+		log.Printf("worker.poll.found pin_id=%s", pin.Id)
 		return pin, nil
 	}
 	return nil, nil
 }
 
 func workerQuery(p *pin) error {
-	log("worker.query.start", "pin_id=%s", p.Id)
+	log.Printf("worker.query.start pin_id=%s", p.Id)
 	dbUrl, err := dataPinDbUrl(p)
 	if err != nil {
 		return err
 	}
-	log("worker.query.reserve", "pin_id=%s", p.Id)
+	log.Printf("worker.query.reserve pin_id=%s", p.Id)
 	startedAt := time.Now()
 	p.QueryStartedAt = &startedAt
 	p, err = dataPinUpdate(p)
 	if err != nil {
 		return err
 	}
-	log("worker.query.open", "pin_id=%s", p.Id)
+	log.Printf("worker.query.open pin_id=%s", p.Id)
 	resourceDb, err := sql.Open("postgres", dataMustParseDatabaseUrl(dbUrl))
 	if err != nil {
 		return err
 	}
-	log("worker.query.exec", "pin_id=%s", p.Id)
+	log.Printf("worker.query.exec pin_id=%s", p.Id)
 	buffer, err := table.Get(resourceDb, p.Query)
 	finishedAt := time.Now()
 	p.QueryFinishedAt = &finishedAt
 	if err != nil {
 		if pgerr, ok := err.(pq.PGError); ok {
-			log("worker.query.usererror", "pin_id=%s", p.Id)
+			log.Printf("worker.query.usererror pin_id=%s", p.Id)
 			msg := pgerr.Get('M')
 			p.ResultsError = &msg
 			p, err = dataPinUpdate(p)
@@ -54,7 +55,7 @@ func workerQuery(p *pin) error {
 		}
 		return err
 	}
-	log("worker.query.read", "pin_id=%s", p.Id)
+	log.Printf("worker.query.read pin_id=%s", p.Id)
 	resultsFieldsJsonB, _ := json.Marshal(buffer.ColumnName)
 	resultsFieldsJson := string(resultsFieldsJsonB)
 	resultsRows := make([][]interface{}, len(buffer.Rows))
@@ -71,19 +72,19 @@ func workerQuery(p *pin) error {
 	}
 	resultsRowsJsonB, _ := json.Marshal(resultsRows)
 	resultsRowsJson := string(resultsRowsJsonB)
-	log("worker.query.commit", "pin_id=%s", p.Id)
+	log.Printf("worker.query.commit pin_id=%s", p.Id)
 	p.ResultsFieldsJson = &resultsFieldsJson
 	p.ResultsRowsJson = &resultsRowsJson
 	p, err = dataPinUpdate(p)
 	if err != nil {
 		return err
 	}
-	log("worker.query.finish", "pin_id=%s", p.Id)
+	log.Printf("worker.query.finish pin_id=%s", p.Id)
 	return nil
 }
 
 func workerStart() {
-	log("worker.start")
+	log.Print("worker.start")
 	dataStart()
 	for {
 		pin, err := workerPoll()

@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/zenazn/goji"
 	"io/ioutil"
-	logger "log"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -15,14 +15,8 @@ import (
 	"time"
 )
 
-func must(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
 func init() {
-	logger.SetOutput(ioutil.Discard)
+	log.SetOutput(ioutil.Discard)
 	if !strings.HasSuffix(env.String("DATABASE_URL"), "-test") {
 		panic("Doesn't look like a test database")
 	}
