@@ -16,23 +16,24 @@ import (
 	"time"
 )
 
+func clear() {
+	_, err := dataConn.Exec("DELETE from pins")
+	must(err)
+		_, err = dataConn.Exec("DELETE from dbs")
+	must(err)
+}
+
 func init() {
 	log.SetOutput(ioutil.Discard)
 	if !strings.HasSuffix(env.String("DATABASE_URL"), "-test") {
 		panic("Doesn't look like a test database")
 	}
 	dataStart()
+	clear()
 	webBuild()
 }
 
-func clear() {
-	_, err := dataConn.Exec("DELETE from dbs")
-	must(err)
-	_, err = dataConn.Exec("DELETE from pins")
-	must(err)
-}
-
-func mustRequest(method, url string, body io.Reader) *httptest.ResponseRecorder {
+func request(method, url string, body io.Reader) *httptest.ResponseRecorder {
 	req, err := http.NewRequest(method, url, body)
 	must(err)
 	res := httptest.NewRecorder()
@@ -41,7 +42,7 @@ func mustRequest(method, url string, body io.Reader) *httptest.ResponseRecorder 
 }
 
 func TestStatus(t *testing.T) {
-	res := mustRequest("GET", "/status", nil)
+	res := request("GET", "/status", nil)
 	assert.Equal(t, 200, res.Code)
 	status := &status{}
 	must(json.NewDecoder(res.Body).Decode(status))
@@ -51,7 +52,7 @@ func TestStatus(t *testing.T) {
 func TestDbAdd(t *testing.T) {
 	defer clear()
 	b := bytes.NewReader([]byte(`{"name": "pins-1", "url": "postgres://u:p@h:1234/d-1"}`))
-	res := mustRequest("POST", "/dbs", b)
+	res := request("POST", "/dbs", b)
 	assert.Equal(t, 201, res.Code)
 	db := &db{}
 	must(json.NewDecoder(res.Body).Decode(db))
@@ -65,7 +66,7 @@ func TestDbGet(t *testing.T) {
 	defer clear()
 	dbIn, err := dataDbAdd("pins-1", "postgres://u:p@h:1234/d-1")
 	must(err)
-	res := mustRequest("GET", "/dbs/"+dbIn.Id, nil)
+	res := request("GET", "/dbs/"+dbIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
 	dbOut := &db{}
 	must(json.NewDecoder(res.Body).Decode(dbOut))
@@ -79,9 +80,9 @@ func TestDbRemove(t *testing.T) {
 	defer clear()
 	dbIn, err := dataDbAdd("pins-1", "postgres://u:p@h:1234/d-1")
 	must(err)
-	res := mustRequest("DELETE", "/dbs/"+dbIn.Id, nil)
+	res := request("DELETE", "/dbs/"+dbIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
-	res = mustRequest("GET", "/dbs/"+dbIn.Id, nil)
+	res = request("GET", "/dbs/"+dbIn.Id, nil)
 	assert.Equal(t, 404, res.Code)
 }
 
@@ -89,7 +90,7 @@ func TestDbListBasic(t *testing.T) {
 	defer clear()
 	dbIn, err := dataDbAdd("pins-1", "postgres://u:p@h:1234/d-1")
 	must(err)
-	res := mustRequest("GET", "/dbs", nil)
+	res := request("GET", "/dbs", nil)
 	assert.Equal(t, 200, res.Code)
 	dbsOut := []*db{}
 	must(json.NewDecoder(res.Body).Decode(&dbsOut))
@@ -106,7 +107,7 @@ func TestDBListDeletions(t *testing.T) {
 	must(err)
 	_, err = dataDbRemove(dbIn2.Id)
 	must(err)
-	res := mustRequest("GET", "/dbs", nil)
+	res := request("GET", "/dbs", nil)
 	assert.Equal(t, 200, res.Code)
 	dbsOut := []*db{}
 	must(json.NewDecoder(res.Body).Decode(&dbsOut))
@@ -116,20 +117,25 @@ func TestDBListDeletions(t *testing.T) {
 
 func TestPinCreate(t *testing.T) {
 	defer clear()
-	dbIn, err := dataDbAdd("pins-1", "postgres://u:p@h:1234/d-1")
+	dbIn, err := dataDbAdd("pins-1", env.String("DATABASE_URL"))
 	must(err)
-	b := bytes.NewReader([]byte(`{"name": "pin-1", "db_id": "` + dbIn.Id + `", "query": "select * from pins"`))
-	res := mustRequest("POST", "/dbs", b)
+	b := bytes.NewReader([]byte(`{"name": "pin-1", "db_id": "` + dbIn.Id + `", "query": "select count(*) from pins"}`))
+	res := request("POST", "/pins", b)
 	assert.Equal(t, 201, res.Code)
-	workerTick()
 	pinOut := &pin{}
 	must(json.NewDecoder(res.Body).Decode(pinOut))
+	workerTick()
+	res = request("GET", "/pins/"+pinOut.Id, nil)
+	assert.Equal(t, 200, res.Code)
+	must(json.NewDecoder(res.Body).Decode(pinOut))
+	assert.NotEmpty(t, pinOut.Id)
 	assert.Equal(t, "pin-1", pinOut.Name)
-	assert.Equal(t, "postgres://u:p@h:1234/d-1", db.Url)
-	assert.NotEmpty(t, db.Id)
-	assert.WithinDuration(t, time.Now(), db.AddedAt, 3*time.Second)
-}
-
-func TestPinWithoutDb(t *testing.T) {
-	defer clear()
+	assert.Equal(t, dbIn.Id, pinOut.DbId)
+	assert.Equal(t, "select count(*) from pins", pinOut.Query)
+	assert.WithinDuration(t, time.Now(), pinOut.CreatedAt, 3*time.Second)
+	assert.True(t, pinOut.QueryStartedAt.After(pinOut.CreatedAt))
+	assert.True(t, pinOut.QueryFinishedAt.After(*pinOut.QueryStartedAt))
+	assert.Equal(t, `["count"]`, *pinOut.ResultsFieldsJson)
+	assert.Equal(t, `[[1]]`, *pinOut.ResultsRowsJson)
+	assert.Nil(t, pinOut.ResultsError)
 }
