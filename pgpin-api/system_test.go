@@ -45,16 +45,16 @@ func TestStatus(t *testing.T) {
 
 func TestAddDb(t *testing.T) {
 	defer clear()
-	in := `{"name": "pins", "url": "postgres://u:p@h:1234/d"}`
-	req, err := http.NewRequest("GET", "http://pgpin.com/status", bytes.NewReader([]byte(in)))
+	in := `{"name": "pins-1", "url": "postgres://u:p@h:1234/d-1"}`
+	req, err := http.NewRequest("POST", "http://pgpin.com/dbs", bytes.NewReader([]byte(in)))
 	must(err)
 	res := httptest.NewRecorder()
-	webDbAdd(res, req)
+	goji.DefaultMux.ServeHTTP(res, req)
 	assert.Equal(t, 201, res.Code)
 	db := &db{}
 	must(json.NewDecoder(res.Body).Decode(db))
-	assert.Equal(t, "pins", db.Name)
-	assert.Equal(t, "postgres://u:p@h:1234/d", db.Url)
+	assert.Equal(t, "pins-1", db.Name)
+	assert.Equal(t, "postgres://u:p@h:1234/d-1", db.Url)
 	assert.NotEmpty(t, db.Id)
 	assert.WithinDuration(t, time.Now(), db.AddedAt, 3*time.Second)
 }
