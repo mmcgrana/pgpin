@@ -163,6 +163,19 @@ func TestPinCreateAndGet(t *testing.T) {
 	assert.Nil(t, pinOut.ResultsError)
 }
 
+func TestPinCreateDuplicateName(t *testing.T) {
+	defer clear()
+	dbIn := mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
+	mustDataPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
+	b := bytes.NewReader([]byte(`{"name": "pins-1", "db_id": "`+dbIn.Id+`", "query": "select count(*) from pins"}`))
+	res := mustRequest("POST", "/pins", b)
+	assert.Equal(t, 400, res.Code)
+	data := make(map[string]string)
+	mustDecode(res, &data)
+	assert.Equal(t, "duplicate-pin-name", data["id"])
+	assert.NotEmpty(t, data["message"])
+}
+
 func TestPinDelete(t *testing.T) {
 	defer clear()
 	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))

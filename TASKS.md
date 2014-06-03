@@ -1,7 +1,5 @@
 ## Todo
 
-* Ensure pin and DB names are unique, in code
-
 * Rename pin
 * Refresh results periodically
 * Inline JSON instead of text

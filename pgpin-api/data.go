@@ -189,6 +189,15 @@ func dataPinCreate(dbId string, name string, query string) (*pin, error) {
 	if _, err := dataDbGet(dbId); err != nil {
 		return nil, err
 	}
+	if sameNamed, err := dataCount("SELECT count(*) FROM pins WHERE name=$1 and deleted_at IS NULL", name); err != nil {
+		return nil, err
+	} else if sameNamed > 0 {
+			return nil, &pgpinError{
+				Id: "duplicate-pin-name",
+				Message: "name is already used by another pin",
+				HttpStatus: 400,
+			}
+	}
 	pin := pin{}
 	pin.Id = dataRandId()
 	pin.DbId = dbId
