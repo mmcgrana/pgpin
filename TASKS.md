@@ -1,5 +1,6 @@
 ## Todo
 
+* Test log suppression
 * Test coverage
 
 * Can't destroy DB with existing pins
@@ -11,7 +12,6 @@
 * Limit result size
 * Validate unique in DB, other constraints
 
-* Silence logs on test
 * Keyd logging, https://github.com/tv42/jog, https://github.com/heroku/slog
 * Try other types, including bytes
 * JSON data type instead of text
