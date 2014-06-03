@@ -1,12 +1,13 @@
 ## Todo
 
+* Ensure pin and DB names are unique, in code and DB
+
 * Rename pin
 * Refresh results periodically
 * Inline JSON instead of text
 * Limit query duration
 * Limit result rows
 * Limit result size
-* Validate unique in DB, other constraints
 
 * Try other types, including bytes
 * JSON data type instead of text
