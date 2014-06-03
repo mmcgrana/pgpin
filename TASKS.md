@@ -1,6 +1,6 @@
 ## Todo
 
-* Ensure pin and DB names are unique, in code and DB
+* Ensure pin and DB names are unique, in code
 
 * Rename pin
 * Refresh results periodically
