@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/darkhelmet/env"
 	"github.com/zenazn/goji"
 	"github.com/zenazn/goji/web"
 	"net/http"
@@ -143,10 +142,7 @@ func webNotFound(resp http.ResponseWriter, req *http.Request) {
 }
 
 // Server builder.
-
-func webStart() {
-	log("web.start")
-	dataStart()
+func webBuild() {
 	goji.Use(webLogging)
 	goji.Get("/dbs", webDbList)
 	goji.Post("/dbs", webDbAdd)
@@ -158,7 +154,11 @@ func webStart() {
 	goji.Delete("/pins/:id", webPinDelete)
 	goji.Get("/status", webStatus)
 	goji.NotFound(webNotFound)
-	port := env.Int("PORT")
-	log("web.serve", "port=%d", port)
+}
+
+func webStart() {
+	log("web.start")
+	dataStart()
+	webBuild()
 	goji.Serve()
 }

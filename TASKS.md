@@ -1,6 +1,5 @@
 ## Todo
 
-* Full web stack testing
 * Test coverage
 
 * Can't destroy DB with existing pins

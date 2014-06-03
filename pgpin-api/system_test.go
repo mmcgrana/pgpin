@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/darkhelmet/env"
 	"github.com/stretchr/testify/assert"
+	"github.com/zenazn/goji"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -23,6 +24,7 @@ func init() {
 		panic("Doesn't look like a test database")
 	}
 	dataStart()
+	webBuild()
 }
 
 func clear() {
@@ -36,6 +38,7 @@ func TestStatus(t *testing.T) {
 	req, err := http.NewRequest("GET", "https://pgpin.com/status", nil)
 	must(err)
 	res := httptest.NewRecorder()
+	goji.DefaultMux.ServeHTTP(res, req)
 	webStatus(res, req)
 	assert.Equal(t, 200, res.Code)
 	status := &status{}
