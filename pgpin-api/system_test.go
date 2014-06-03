@@ -65,15 +65,27 @@ func mustDataPinCreate(dbId string, name string, query string) *pin {
 
 func TestDbAdd(t *testing.T) {
 	defer clear()
-	b := bytes.NewReader([]byte(`{"name": "pins-1", "url": "postgres://u:p@h:1234/d-1"}`))
+	b := bytes.NewReader([]byte(`{"name": "dbs-1", "url": "postgres://u:p@h:1234/d-1"}`))
 	res := mustRequest("POST", "/dbs", b)
 	assert.Equal(t, 201, res.Code)
 	dbOut := &db{}
 	mustDecode(res, dbOut)
-	assert.Equal(t, "pins-1", dbOut.Name)
+	assert.Equal(t, "dbs-1", dbOut.Name)
 	assert.Equal(t, "postgres://u:p@h:1234/d-1", dbOut.Url)
 	assert.NotEmpty(t, dbOut.Id)
 	assert.WithinDuration(t, time.Now(), dbOut.AddedAt, 3*time.Second)
+}
+
+func TestDbAddDuplicateName(t *testing.T) {
+	defer clear()
+	mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
+	b := bytes.NewReader([]byte(`{"name": "dbs-1", "url": "postgres://u:p@h:1234/d-other"}`))
+	res := mustRequest("POST", "/dbs", b)
+	assert.Equal(t, 400, res.Code)
+	data := make(map[string]string)
+	mustDecode(res, &data)
+	assert.Equal(t, "duplicate-db-name", data["id"])
+	assert.NotEmpty(t, data["message"])
 }
 
 func TestDbGet(t *testing.T) {

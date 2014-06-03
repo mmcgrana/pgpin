@@ -86,12 +86,23 @@ func dataDbAdd(name string, url string) (*db, error) {
 	if err := dataValidatePgUrl("url", url); err != nil {
 		return nil, err
 	}
+	sameNamed, err := dataCount("SELECT count(*) FROM dbs WHERE name=$1 and removed_at IS NULL", name)
+	if err != nil {
+		return nil, err
+	}
+	if sameNamed > 0 {
+		return nil, &pgpinError{
+			Id: "duplicate-db-name",
+			Message: "name is already used by another db",
+			HttpStatus: 400,
+		}
+	}
 	db := db{}
 	db.Id = dataRandId()
 	db.Name = name
 	db.Url = url
 	db.AddedAt = time.Now()
-	_, err := dataConn.Exec("INSERT INTO dbs (id, name, url, added_at) VALUES ($1, $2, $3, $4)",
+	_, err = dataConn.Exec("INSERT INTO dbs (id, name, url, added_at) VALUES ($1, $2, $3, $4)",
 		db.Id, db.Name, db.Url, db.AddedAt)
 	if err != nil {
 		return nil, err
