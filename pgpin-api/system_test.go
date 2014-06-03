@@ -99,20 +99,7 @@ func TestDbRemove(t *testing.T) {
 	assert.Equal(t, 404, res.Code)
 }
 
-func TestDbListBasic(t *testing.T) {
-	defer clear()
-	dbIn, err := dataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
-	must(err)
-	res := mustRequest("GET", "/dbs", nil)
-	assert.Equal(t, 200, res.Code)
-	dbsOut := []*db{}
-	mustDecode(res, &dbsOut)
-	assert.Equal(t, len(dbsOut), 1)
-	assert.Equal(t, dbIn.Id, dbsOut[0].Id)
-	assert.Equal(t, "dbs-1", dbsOut[0].Name)
-}
-
-func TestDBListDeletions(t *testing.T) {
+func TestDBList(t *testing.T) {
 	defer clear()
 	dbIn1, err := dataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
 	must(err)
@@ -126,6 +113,7 @@ func TestDBListDeletions(t *testing.T) {
 	mustDecode(res, &dbsOut)
 	assert.Equal(t, len(dbsOut), 1)
 	assert.Equal(t, dbIn1.Id, dbsOut[0].Id)
+	assert.Equal(t, "dbs-1", dbsOut[0].Name)
 }
 
 func TestPinCreateAndGet(t *testing.T) {
@@ -166,4 +154,23 @@ func TestPinDelete(t *testing.T) {
 	assert.Equal(t, "pins-1", pinOut.Name)
 	res = mustRequest("GET", "/pins/"+pinIn.Id, nil)
 	assert.Equal(t, 404, res.Code)
+}
+
+func TestPinList(t *testing.T) {
+	defer clear()
+	dbIn, err := dataDbAdd("dbs-1", env.String("DATABASE_URL"))
+	must(err)
+	pinIn1, err := dataPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
+	must(err)
+	pinIn2, err := dataPinCreate(dbIn.Id, "pins-2", "select * from pins")
+	must(err)
+	_, err = dataPinDelete(pinIn1.Id)
+	must(err)
+	res := mustRequest("GET", "/pins", nil)
+	assert.Equal(t, 200, res.Code)
+	pinsOut := []*pin{}
+	mustDecode(res, &pinsOut)
+	assert.Equal(t, len(pinsOut), 1)
+	assert.Equal(t, pinIn2.Id, pinsOut[0].Id)
+	assert.Equal(t, "pins-2", pinsOut[0].Name)
 }
