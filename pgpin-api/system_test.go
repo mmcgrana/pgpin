@@ -19,7 +19,7 @@ import (
 func clear() {
 	_, err := dataConn.Exec("DELETE from pins")
 	must(err)
-		_, err = dataConn.Exec("DELETE from dbs")
+	_, err = dataConn.Exec("DELETE from dbs")
 	must(err)
 }
 
@@ -33,7 +33,7 @@ func init() {
 	webBuild()
 }
 
-func request(method, url string, body io.Reader) *httptest.ResponseRecorder {
+func mustRequest(method, url string, body io.Reader) *httptest.ResponseRecorder {
 	req, err := http.NewRequest(method, url, body)
 	must(err)
 	res := httptest.NewRecorder()
@@ -41,44 +41,48 @@ func request(method, url string, body io.Reader) *httptest.ResponseRecorder {
 	return res
 }
 
+func mustDecode(res *httptest.ResponseRecorder, data interface{}) {
+	must(json.NewDecoder(res.Body).Decode(data))
+}
+
 func TestNotFound(t *testing.T) {
-	res := request("GET", "/wat", nil)
+	res := mustRequest("GET", "/wat", nil)
 	assert.Equal(t, 404, res.Code)
 	data := make(map[string]string)
-	must(json.NewDecoder(res.Body).Decode(&data))
+	mustDecode(res, &data)
 	assert.Equal(t, "not-found", data["id"])
 	assert.Equal(t, "not found", data["message"])
 }
 
 func TestStatus(t *testing.T) {
-	res := request("GET", "/status", nil)
+	res := mustRequest("GET", "/status", nil)
 	assert.Equal(t, 200, res.Code)
 	status := &status{}
-	must(json.NewDecoder(res.Body).Decode(status))
+	mustDecode(res, status)
 	assert.Equal(t, "ok", status.Message)
 }
 
 func TestDbAdd(t *testing.T) {
 	defer clear()
 	b := bytes.NewReader([]byte(`{"name": "pins-1", "url": "postgres://u:p@h:1234/d-1"}`))
-	res := request("POST", "/dbs", b)
+	res := mustRequest("POST", "/dbs", b)
 	assert.Equal(t, 201, res.Code)
-	db := &db{}
-	must(json.NewDecoder(res.Body).Decode(db))
-	assert.Equal(t, "pins-1", db.Name)
-	assert.Equal(t, "postgres://u:p@h:1234/d-1", db.Url)
-	assert.NotEmpty(t, db.Id)
-	assert.WithinDuration(t, time.Now(), db.AddedAt, 3*time.Second)
+	dbOut := &db{}
+	mustDecode(res, dbOut)
+	assert.Equal(t, "pins-1", dbOut.Name)
+	assert.Equal(t, "postgres://u:p@h:1234/d-1", dbOut.Url)
+	assert.NotEmpty(t, dbOut.Id)
+	assert.WithinDuration(t, time.Now(), dbOut.AddedAt, 3*time.Second)
 }
 
 func TestDbGet(t *testing.T) {
 	defer clear()
 	dbIn, err := dataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
 	must(err)
-	res := request("GET", "/dbs/"+dbIn.Id, nil)
+	res := mustRequest("GET", "/dbs/"+dbIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
 	dbOut := &db{}
-	must(json.NewDecoder(res.Body).Decode(dbOut))
+	mustDecode(res, dbOut)
 	assert.Equal(t, dbIn.Id, dbOut.Id)
 	assert.Equal(t, "dbs-1", dbOut.Name)
 	assert.Equal(t, "postgres://u:p@h:1234/d-1", dbOut.Url)
@@ -89,9 +93,9 @@ func TestDbRemove(t *testing.T) {
 	defer clear()
 	dbIn, err := dataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
 	must(err)
-	res := request("DELETE", "/dbs/"+dbIn.Id, nil)
+	res := mustRequest("DELETE", "/dbs/"+dbIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
-	res = request("GET", "/dbs/"+dbIn.Id, nil)
+	res = mustRequest("GET", "/dbs/"+dbIn.Id, nil)
 	assert.Equal(t, 404, res.Code)
 }
 
@@ -99,10 +103,10 @@ func TestDbListBasic(t *testing.T) {
 	defer clear()
 	dbIn, err := dataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
 	must(err)
-	res := request("GET", "/dbs", nil)
+	res := mustRequest("GET", "/dbs", nil)
 	assert.Equal(t, 200, res.Code)
 	dbsOut := []*db{}
-	must(json.NewDecoder(res.Body).Decode(&dbsOut))
+	mustDecode(res, &dbsOut)
 	assert.Equal(t, len(dbsOut), 1)
 	assert.Equal(t, dbIn.Id, dbsOut[0].Id)
 	assert.Equal(t, "dbs-1", dbsOut[0].Name)
@@ -116,10 +120,10 @@ func TestDBListDeletions(t *testing.T) {
 	must(err)
 	_, err = dataDbRemove(dbIn2.Id)
 	must(err)
-	res := request("GET", "/dbs", nil)
+	res := mustRequest("GET", "/dbs", nil)
 	assert.Equal(t, 200, res.Code)
 	dbsOut := []*db{}
-	must(json.NewDecoder(res.Body).Decode(&dbsOut))
+	mustDecode(res, &dbsOut)
 	assert.Equal(t, len(dbsOut), 1)
 	assert.Equal(t, dbIn1.Id, dbsOut[0].Id)
 }
@@ -129,14 +133,14 @@ func TestPinCreateAndGet(t *testing.T) {
 	dbIn, err := dataDbAdd("dbs-1", env.String("DATABASE_URL"))
 	must(err)
 	b := bytes.NewReader([]byte(`{"name": "pin-1", "db_id": "` + dbIn.Id + `", "query": "select count(*) from pins"}`))
-	res := request("POST", "/pins", b)
+	res := mustRequest("POST", "/pins", b)
 	assert.Equal(t, 201, res.Code)
 	pinOut := &pin{}
-	must(json.NewDecoder(res.Body).Decode(pinOut))
+	mustDecode(res, pinOut)
 	workerTick()
-	res = request("GET", "/pins/"+pinOut.Id, nil)
+	res = mustRequest("GET", "/pins/"+pinOut.Id, nil)
 	assert.Equal(t, 200, res.Code)
-	must(json.NewDecoder(res.Body).Decode(pinOut))
+	mustDecode(res, pinOut)
 	assert.NotEmpty(t, pinOut.Id)
 	assert.Equal(t, "pin-1", pinOut.Name)
 	assert.Equal(t, dbIn.Id, pinOut.DbId)
@@ -155,11 +159,11 @@ func TestPinDelete(t *testing.T) {
 	must(err)
 	pinIn, err := dataPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
 	must(err)
-	res := request("DELETE", "/pins/"+pinIn.Id, nil)
+	res := mustRequest("DELETE", "/pins/"+pinIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
 	pinOut := &pin{}
-	must(json.NewDecoder(res.Body).Decode(pinOut))
+	mustDecode(res, pinOut)
 	assert.Equal(t, "pins-1", pinOut.Name)
-	res = request("GET", "/pins/"+pinIn.Id, nil)
+	res = mustRequest("GET", "/pins/"+pinIn.Id, nil)
 	assert.Equal(t, 404, res.Code)
 }
