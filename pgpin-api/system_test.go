@@ -32,7 +32,7 @@ func clear() {
 }
 
 func TestStatus(t *testing.T) {
-	req, err := http.NewRequest("GET", "https://pgpin.com/status", nil)
+	req, err := http.NewRequest("GET", "/status", nil)
 	must(err)
 	res := httptest.NewRecorder()
 	goji.DefaultMux.ServeHTTP(res, req)
@@ -46,7 +46,7 @@ func TestStatus(t *testing.T) {
 func TestDbAdd(t *testing.T) {
 	defer clear()
 	in := `{"name": "pins-1", "url": "postgres://u:p@h:1234/d-1"}`
-	req, err := http.NewRequest("POST", "http://pgpin.com/dbs", bytes.NewReader([]byte(in)))
+	req, err := http.NewRequest("POST", "/dbs", bytes.NewReader([]byte(in)))
 	must(err)
 	res := httptest.NewRecorder()
 	goji.DefaultMux.ServeHTTP(res, req)
