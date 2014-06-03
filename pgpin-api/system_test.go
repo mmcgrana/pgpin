@@ -113,3 +113,23 @@ func TestDBListDeletions(t *testing.T) {
 	assert.Equal(t, len(dbsOut), 1)
 	assert.Equal(t, dbIn1.Id, dbsOut[0].Id)
 }
+
+func TestPinCreate(t *testing.T) {
+	defer clear()
+	dbIn, err := dataDbAdd("pins-1", "postgres://u:p@h:1234/d-1")
+	must(err)
+	b := bytes.NewReader([]byte(`{"name": "pin-1", "db_id": "` + dbIn.Id + `", "query": "select * from pins"`))
+	res := mustRequest("POST", "/dbs", b)
+	assert.Equal(t, 201, res.Code)
+	workerTick()
+	pinOut := &pin{}
+	must(json.NewDecoder(res.Body).Decode(pinOut))
+	assert.Equal(t, "pin-1", pinOut.Name)
+	assert.Equal(t, "postgres://u:p@h:1234/d-1", db.Url)
+	assert.NotEmpty(t, db.Id)
+	assert.WithinDuration(t, time.Now(), db.AddedAt, 3*time.Second)
+}
+
+func TestPinWithoutDb(t *testing.T) {
+	defer clear()
+}

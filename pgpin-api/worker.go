@@ -83,20 +83,24 @@ func workerQuery(p *pin) error {
 	return nil
 }
 
-func workerStart() {
-	log.Print("worker.start")
-	for {
-		pin, err := workerPoll()
+func workerTick() {
+	pin, err := workerPoll()
+	if err != nil {
+		panic(err)
+	}
+	if pin != nil {
+		err = workerQuery(pin)
 		if err != nil {
 			panic(err)
 		}
-		if pin != nil {
-			err = workerQuery(pin)
-			if err != nil {
-				panic(err)
-			}
-		} else {
-			time.Sleep(time.Millisecond * 250)
-		}
+	} else {
+		time.Sleep(time.Millisecond * 250)
+	}
+}
+
+func workerStart() {
+	log.Print("worker.start")
+	for {
+		workerTick()
 	}
 }
