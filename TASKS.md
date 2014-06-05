@@ -1,6 +1,6 @@
 ## Todo
 
-- Rename db (updated_at, limit updates)
+- Rename db (limit updates)
 * Rename pin
 * Refresh results periodically
 * Inline JSON instead of text
@@ -8,6 +8,7 @@
 * Limit result rows
 * Limit result size
 
+* Run db bootstrap on test start
 * Try other types, including bytes
 * JSON data type instead of text
 * Encrypt resource URL

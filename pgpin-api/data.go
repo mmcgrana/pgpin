@@ -108,16 +108,17 @@ func dataDbAdd(name string, url string) (*db, error) {
 	db.Name = name
 	db.Url = url
 	db.AddedAt = time.Now()
+	db.UpdatedAt = time.Now()
 	err := dataDbValidate(db)
 	if err == nil {
-		_, err = dataConn.Exec("INSERT INTO dbs (id, name, url, added_at) VALUES ($1, $2, $3, $4)",
-			db.Id, db.Name, db.Url, db.AddedAt)
+		_, err = dataConn.Exec("INSERT INTO dbs (id, name, url, added_at, updated_at) VALUES ($1, $2, $3, $4, $5)",
+			db.Id, db.Name, db.Url, db.AddedAt, db.UpdatedAt)
 	}
 	return db, err
 }
 
 func dataDbGet(id string) (*db, error) {
-	res, err := dataConn.Query(`SELECT id, name, url, added_at FROM dbs WHERE id=$1 AND removed_at IS NULL LIMIT 1`, id)
+	res, err := dataConn.Query(`SELECT id, name, url, added_at, updated_at FROM dbs WHERE id=$1 AND removed_at IS NULL LIMIT 1`, id)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +132,7 @@ func dataDbGet(id string) (*db, error) {
 		}
 	}
 	db := db{}
-	err = res.Scan(&db.Id, &db.Name, &db.Url, &db.AddedAt)
+	err = res.Scan(&db.Id, &db.Name, &db.Url, &db.AddedAt, &db.UpdatedAt)
 	if err != nil {
 		return nil, err
 	}
@@ -140,9 +141,10 @@ func dataDbGet(id string) (*db, error) {
 
 func dataDbUpdate(db *db) (*db, error) {
 	err := dataDbValidate(db)
+	db.UpdatedAt = time.Now()
 	if err == nil {
-		_, err = dataConn.Exec("UPDATE dbs SET name=$1, url=$2, added_at=$3, removed_at=$4 WHERE id=$5",
-			db.Name, db.Url, db.AddedAt, db.RemovedAt, db.Id)
+		_, err = dataConn.Exec("UPDATE dbs SET name=$1, url=$2, added_at=$3, updated_at=$4, removed_at=$5 WHERE id=$6",
+			db.Name, db.Url, db.AddedAt, db.UpdatedAt, db.RemovedAt, db.Id)
 	}
 	return db, err
 }

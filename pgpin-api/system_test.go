@@ -99,6 +99,7 @@ func TestDbGet(t *testing.T) {
 	assert.Equal(t, "dbs-1", dbOut.Name)
 	assert.Equal(t, "postgres://u:p@h:1234/d-1", dbOut.Url)
 	assert.WithinDuration(t, time.Now(), dbOut.AddedAt, 3*time.Second)
+	assert.WithinDuration(t, time.Now(), dbOut.UpdatedAt, 3*time.Second)
 }
 
 func TestDbRename(t *testing.T) {
@@ -115,6 +116,7 @@ func TestDbRename(t *testing.T) {
 	dbGetOut := &db{}
 	mustDecode(res, dbGetOut)
 	assert.Equal(t, "dbs-1a", dbGetOut.Name)
+	assert.True(t, dbGetOut.UpdatedAt.After(dbIn.UpdatedAt))
 }
 
 func TestDbRemove(t *testing.T) {

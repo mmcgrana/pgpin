@@ -33,5 +33,6 @@ type db struct {
 	Name      string     `json:"name"`
 	Url       string     `json:"url"`
 	AddedAt   time.Time  `json:"added_at"`
+	UpdatedAt time.Time  `json:"updated_at"`
 	RemovedAt *time.Time `json:"-"`
 }
