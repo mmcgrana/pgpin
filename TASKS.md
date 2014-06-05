@@ -1,6 +1,6 @@
 ## Todo
 
-- Rename db (op, updated_at, name validation, limit updates, decoding cleanup / helper)
+- Rename db (updated_at, name validation, limit updates)
 * Rename pin
 * Refresh results periodically
 * Inline JSON instead of text
