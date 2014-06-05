@@ -1,6 +1,5 @@
 ## Todo
 
-* Rename pin
 * Refresh results periodically
 * Inline JSON instead of text
 * Limit query duration

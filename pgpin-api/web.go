@@ -129,6 +129,20 @@ func webPinCreate(resp http.ResponseWriter, req *http.Request) {
 	webRespond(resp, 201, pin, err)
 }
 
+func webPinUpdate(c web.C, resp http.ResponseWriter, req *http.Request) {
+	pinUpdate := &pin{}
+	pin := &pin{}
+	err := webRead(req, pinUpdate)
+	if err == nil {
+		pin, err = dataPinGet(c.URLParams["id"])
+		if err == nil {
+			pin.Name = pinUpdate.Name
+			err = dataPinUpdate(pin)
+		}
+	}
+	webRespond(resp, 200, pin, err)
+}
+
 func webPinGet(c web.C, resp http.ResponseWriter, req *http.Request) {
 	pin, err := dataPinGet(c.URLParams["id"])
 	webRespond(resp, 200, pin, err)
@@ -172,6 +186,7 @@ func webBuild() {
 	goji.Delete("/dbs/:id", webDbRemove)
 	goji.Get("/pins", webPinList)
 	goji.Post("/pins", webPinCreate)
+	goji.Put("/pins/:id", webPinUpdate)
 	goji.Get("/pins/:id", webPinGet)
 	goji.Delete("/pins/:id", webPinDelete)
 	goji.Get("/status", webStatus)

@@ -141,8 +141,8 @@ func dataDbGet(id string) (*db, error) {
 
 func dataDbUpdate(db *db) error {
 	err := dataDbValidate(db)
-	db.UpdatedAt = time.Now()
 	if err == nil {
+		db.UpdatedAt = time.Now()
 		_, err = dataConn.Exec("UPDATE dbs SET name=$1, url=$2, added_at=$3, updated_at=$4, removed_at=$5 WHERE id=$6",
 			db.Name, db.Url, db.AddedAt, db.UpdatedAt, db.RemovedAt, db.Id)
 	}
@@ -173,6 +173,32 @@ func dataDbRemove(id string) (*db, error) {
 
 // Pin operations.
 
+func dataPinValidate(pin *pin) error {
+	err := validateSlug("name", pin.Name)
+	if err != nil {
+		return err
+	}
+	err = validateNonempty("query", pin.Query)
+	if err != nil {
+		return err
+	}
+	_, err = dataDbGet(pin.DbId)
+	if err != nil {
+		return err
+	}
+	sameNamed, err := dataCount("SELECT count(*) FROM pins WHERE name=$1 AND id!=$2 and deleted_at IS NULL", pin.Name, pin.Id)
+	if err != nil {
+		return err
+	} else if sameNamed > 0 {
+		return &pgpinError{
+			Id:         "duplicate-pin-name",
+			Message:    "name is already used by another pin",
+			HttpStatus: 400,
+		}
+	}
+	return nil
+}
+
 func dataPinList() ([]pinSlim, error) {
 	res, err := dataConn.Query("SELECT id, name FROM pins where deleted_at IS NULL")
 	if err != nil {
@@ -192,44 +218,27 @@ func dataPinList() ([]pinSlim, error) {
 }
 
 func dataPinCreate(dbId string, name string, query string) (*pin, error) {
-	err := validateSlug("name", name)
-	if err != nil {
-		return nil, err
-	}
-	err = validateNonempty("query", query)
-	if err != nil {
-		return nil, err
-	}
-	_, err = dataDbGet(dbId)
-	if err != nil {
-		return nil, err
-	}
-	sameNamed, err := dataCount("SELECT count(*) FROM pins WHERE name=$1 and deleted_at IS NULL", name)
-	if err != nil {
-		return nil, err
-	} else if sameNamed > 0 {
-		return nil, &pgpinError{
-			Id:         "duplicate-pin-name",
-			Message:    "name is already used by another pin",
-			HttpStatus: 400,
-		}
-	}
-	pin := pin{}
+	pin := &pin{}
 	pin.Id = dataRandId()
 	pin.DbId = dbId
 	pin.Name = name
 	pin.Query = query
 	pin.CreatedAt = time.Now()
-	_, err = dataConn.Exec("INSERT INTO pins (id, db_id, name, query, created_at) VALUES ($1, $2, $3, $4, $5)",
-		pin.Id, pin.DbId, pin.Name, pin.Query, pin.CreatedAt)
+	pin.UpdatedAt = time.Now()
+	err := dataPinValidate(pin)
 	if err != nil {
 		return nil, err
 	}
-	return &pin, nil
+	_, err = dataConn.Exec("INSERT INTO pins (id, db_id, name, query, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)",
+		pin.Id, pin.DbId, pin.Name, pin.Query, pin.CreatedAt, pin.UpdatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return pin, nil
 }
 
 func dataPinGetInternal(queryFrag string, queryVals ...interface{}) (*pin, error) {
-	res, err := dataConn.Query(`SELECT id, db_id, name, query, created_at, query_started_at, query_finished_at, results_fields_json, results_rows_json, results_error FROM pins WHERE deleted_at IS NULL AND `+queryFrag+` LIMIT 1`, queryVals...)
+	res, err := dataConn.Query(`SELECT id, db_id, name, query, created_at, updated_at, query_started_at, query_finished_at, results_fields_json, results_rows_json, results_error FROM pins WHERE deleted_at IS NULL AND `+queryFrag+` LIMIT 1`, queryVals...)
 	if err != nil {
 		return nil, err
 	}
@@ -239,7 +248,7 @@ func dataPinGetInternal(queryFrag string, queryVals ...interface{}) (*pin, error
 		return nil, nil
 	}
 	pin := pin{}
-	err = res.Scan(&pin.Id, &pin.DbId, &pin.Name, &pin.Query, &pin.CreatedAt, &pin.QueryStartedAt, &pin.QueryFinishedAt, &pin.ResultsFieldsJson, &pin.ResultsRowsJson, &pin.ResultsError)
+	err = res.Scan(&pin.Id, &pin.DbId, &pin.Name, &pin.Query, &pin.CreatedAt, &pin.UpdatedAt, &pin.QueryStartedAt, &pin.QueryFinishedAt, &pin.ResultsFieldsJson, &pin.ResultsRowsJson, &pin.ResultsError)
 	if err != nil {
 		return nil, err
 	}
@@ -265,10 +274,18 @@ func dataPinForQuery() (*pin, error) {
 	return dataPinGetInternal("query_started_at IS NULL AND deleted_at IS NULL")
 }
 
-func dataPinUpdate(pin *pin) (*pin, error) {
-	_, err := dataConn.Exec("UPDATE pins SET db_id=$1, name=$2, query=$3, created_at=$4, query_started_at=$5, query_finished_at=$6, results_fields_json=$7, results_rows_json=$8, results_error=$9, deleted_at=$10 WHERE id=$11",
-		pin.DbId, pin.Name, pin.Query, pin.CreatedAt, pin.QueryStartedAt, pin.QueryFinishedAt, pin.ResultsFieldsJson, pin.ResultsRowsJson, pin.ResultsError, pin.DeletedAt, pin.Id)
-	return pin, err
+func dataPinUpdate(pin *pin) error {
+	err := dataPinValidate(pin)
+	if err != nil {
+		return err
+	}
+	pin.UpdatedAt = time.Now()
+	_, err = dataConn.Exec("UPDATE pins SET db_id=$1, name=$2, query=$3, created_at=$4, updated_at=$5, query_started_at=$6, query_finished_at=$7, results_fields_json=$8, results_rows_json=$9, results_error=$10, deleted_at=$11 WHERE id=$12",
+		pin.DbId, pin.Name, pin.Query, pin.CreatedAt, pin.UpdatedAt, pin.QueryStartedAt, pin.QueryFinishedAt, pin.ResultsFieldsJson, pin.ResultsRowsJson, pin.ResultsError, pin.DeletedAt, pin.Id)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func dataPinDelete(id string) (*pin, error) {
@@ -278,7 +295,11 @@ func dataPinDelete(id string) (*pin, error) {
 	}
 	deletedAt := time.Now()
 	pin.DeletedAt = &deletedAt
-	return dataPinUpdate(pin)
+	err = dataPinUpdate(pin)
+	if err != nil {
+		return nil, err
+	}
+	return pin, nil
 }
 
 func dataPinDbUrl(pin *pin) (string, error) {

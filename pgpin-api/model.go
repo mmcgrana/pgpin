@@ -15,6 +15,7 @@ type pin struct {
 	DbId              string     `json:"db_id"`
 	Query             string     `json:"query"`
 	CreatedAt         time.Time  `json:"created_at"`
+	UpdatedAt         time.Time  `json:"updated_at"`
 	QueryStartedAt    *time.Time `json:"query_started_at"`
 	QueryFinishedAt   *time.Time `json:"query_finished_at"`
 	ResultsFieldsJson *string    `json:"results_fields_json"`
