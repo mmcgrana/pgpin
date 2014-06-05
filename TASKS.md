@@ -1,6 +1,5 @@
 ## Todo
 
-- Rename db (limit updates)
 * Rename pin
 * Refresh results periodically
 * Inline JSON instead of text
@@ -15,6 +14,7 @@
 * Encrypt other sensitive fields
 * Multiple workers/ concurrent workers
 * Operational metrics
+* Handling extra input fields on JSON
 * Exception logging and actionable reporting
 * Request Ids
 * Rename database

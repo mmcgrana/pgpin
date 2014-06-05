@@ -90,14 +90,14 @@ func webDbAdd(resp http.ResponseWriter, req *http.Request) {
 }
 
 func webDbUpdate(c web.C, resp http.ResponseWriter, req *http.Request) {
-	dbUpdates := &db{}
+	dbUpdate := &db{}
 	db := &db{}
-	err := webRead(req, dbUpdates)
+	err := webRead(req, dbUpdate)
 	if err == nil {
 		db, err = dataDbGet(c.URLParams["id"])
 		if err == nil {
-			db.Name = dbUpdates.Name
-			db, err = dataDbUpdate(db)
+			db.Name = dbUpdate.Name
+			err = dataDbUpdate(db)
 		}
 	}
 	webRespond(resp, 200, db, err)

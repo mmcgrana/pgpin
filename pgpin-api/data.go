@@ -139,14 +139,14 @@ func dataDbGet(id string) (*db, error) {
 	return &db, nil
 }
 
-func dataDbUpdate(db *db) (*db, error) {
+func dataDbUpdate(db *db) error {
 	err := dataDbValidate(db)
 	db.UpdatedAt = time.Now()
 	if err == nil {
 		_, err = dataConn.Exec("UPDATE dbs SET name=$1, url=$2, added_at=$3, updated_at=$4, removed_at=$5 WHERE id=$6",
 			db.Name, db.Url, db.AddedAt, db.UpdatedAt, db.RemovedAt, db.Id)
 	}
-	return db, err
+	return err
 }
 
 func dataDbRemove(id string) (*db, error) {
@@ -167,7 +167,8 @@ func dataDbRemove(id string) (*db, error) {
 	}
 	removedAt := time.Now()
 	db.RemovedAt = &removedAt
-	return dataDbUpdate(db)
+	err = dataDbUpdate(db)
+	return db, err
 }
 
 // Pin operations.
