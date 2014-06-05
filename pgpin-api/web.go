@@ -89,6 +89,20 @@ func webDbAdd(resp http.ResponseWriter, req *http.Request) {
 	webRespond(resp, 201, db, err)
 }
 
+func webDbUpdate(c web.C, resp http.ResponseWriter, req *http.Request) {
+	dbUpdates := &db{}
+	db := &db{}
+	err := webRead(req, dbUpdates)
+	if err == nil {
+		db, err = dataDbGet(c.URLParams["id"])
+		if err == nil {
+			db.Name = dbUpdates.Name
+			db, err = dataDbUpdate(db)
+		}
+	}
+	webRespond(resp, 200, db, err)
+}
+
 func webDbGet(c web.C, resp http.ResponseWriter, req *http.Request) {
 	db, err := dataDbGet(c.URLParams["id"])
 	webRespond(resp, 200, db, err)
@@ -153,6 +167,7 @@ func webBuild() {
 	goji.Abandon(middleware.Logger)
 	goji.Get("/dbs", webDbList)
 	goji.Post("/dbs", webDbAdd)
+	goji.Put("/dbs/:id", webDbUpdate)
 	goji.Get("/dbs/:id", webDbGet)
 	goji.Delete("/dbs/:id", webDbRemove)
 	goji.Get("/pins", webPinList)
