@@ -7,7 +7,7 @@ import (
 
 var emptyRegexp = regexp.MustCompile("\\A\\s*\\z")
 
-func dataValidateNonempty(f string, s string) error {
+func validateNonempty(f string, s string) error {
 	if emptyRegexp.MatchString(s) {
 		return &pgpinError{
 			Id:         "invalid",
@@ -20,7 +20,7 @@ func dataValidateNonempty(f string, s string) error {
 
 var slugRegexp = regexp.MustCompile("\\A[a-z0-9-]+\\z")
 
-func dataValidateSlug(f string, s string) error {
+func validateSlug(f string, s string) error {
 	if !slugRegexp.MatchString(s) {
 		return &pgpinError{
 			Id:         "invalid",
@@ -31,6 +31,6 @@ func dataValidateSlug(f string, s string) error {
 	return nil
 }
 
-func dataValidatePgUrl(f string, s string) error {
-	return dataValidateNonempty(f, s)
+func validatePgUrl(f string, s string) error {
+	return validateNonempty(f, s)
 }

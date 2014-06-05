@@ -138,7 +138,7 @@ func TestDbRemoveWithPins(t *testing.T) {
 	assert.NotEmpty(t, data["message"])
 }
 
-func TestDBList(t *testing.T) {
+func TestDbList(t *testing.T) {
 	defer clear()
 	dbIn1 := mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
 	dbIn2 := mustDataDbAdd("dbs-2", "postgres://u:p@h:1234/d-2")
@@ -183,7 +183,7 @@ func TestPinCreateDuplicateName(t *testing.T) {
 	defer clear()
 	dbIn := mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
 	mustDataPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
-	b := bytes.NewReader([]byte(`{"name": "pins-1", "db_id": "`+dbIn.Id+`", "query": "select count(*) from pins"}`))
+	b := bytes.NewReader([]byte(`{"name": "pins-1", "db_id": "` + dbIn.Id + `", "query": "select count(*) from pins"}`))
 	res := mustRequest("POST", "/pins", b)
 	assert.Equal(t, 400, res.Code)
 	data := make(map[string]string)

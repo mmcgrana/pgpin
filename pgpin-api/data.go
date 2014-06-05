@@ -61,6 +61,29 @@ func dataStart() {
 
 // Db operations.
 
+func dataDbValidate(db *db) error {
+	err := validateSlug("name", db.Name)
+	if err != nil {
+		return err
+	}
+	err = validatePgUrl("url", db.Url)
+	if err != nil {
+		return err
+	}
+	sameNamed, err := dataCount("SELECT count(*) FROM dbs WHERE name=$1 and id!=$2 and removed_at IS NULL", db.Name, db.Id)
+	if err != nil {
+		return err
+	}
+	if sameNamed > 0 {
+		return &pgpinError{
+			Id:         "duplicate-db-name",
+			Message:    "name is already used by another db",
+			HttpStatus: 400,
+		}
+	}
+	return nil
+}
+
 func dataDbList() ([]dbSlim, error) {
 	res, err := dataConn.Query("SELECT id, name FROM dbs where removed_at IS NULL")
 	if err != nil {
@@ -80,34 +103,17 @@ func dataDbList() ([]dbSlim, error) {
 }
 
 func dataDbAdd(name string, url string) (*db, error) {
-	if err := dataValidateSlug("name", name); err != nil {
-		return nil, err
-	}
-	if err := dataValidatePgUrl("url", url); err != nil {
-		return nil, err
-	}
-	sameNamed, err := dataCount("SELECT count(*) FROM dbs WHERE name=$1 and removed_at IS NULL", name)
-	if err != nil {
-		return nil, err
-	}
-	if sameNamed > 0 {
-		return nil, &pgpinError{
-			Id: "duplicate-db-name",
-			Message: "name is already used by another db",
-			HttpStatus: 400,
-		}
-	}
-	db := db{}
+	db := &db{}
 	db.Id = dataRandId()
 	db.Name = name
 	db.Url = url
 	db.AddedAt = time.Now()
-	_, err = dataConn.Exec("INSERT INTO dbs (id, name, url, added_at) VALUES ($1, $2, $3, $4)",
-		db.Id, db.Name, db.Url, db.AddedAt)
-	if err != nil {
-		return nil, err
+	err := dataDbValidate(db)
+	if err == nil {
+		_, err = dataConn.Exec("INSERT INTO dbs (id, name, url, added_at) VALUES ($1, $2, $3, $4)",
+			db.Id, db.Name, db.Url, db.AddedAt)
 	}
-	return &db, nil
+	return db, err
 }
 
 func dataDbGet(id string) (*db, error) {
@@ -133,8 +139,11 @@ func dataDbGet(id string) (*db, error) {
 }
 
 func dataDbUpdate(db *db) (*db, error) {
-	_, err := dataConn.Exec("UPDATE dbs SET name=$1, url=$2, added_at=$3, removed_at=$4 WHERE id=$5",
-		db.Name, db.Url, db.AddedAt, db.RemovedAt, db.Id)
+	err := dataDbValidate(db)
+	if err == nil {
+		_, err = dataConn.Exec("UPDATE dbs SET name=$1, url=$2, added_at=$3, removed_at=$4 WHERE id=$5",
+			db.Name, db.Url, db.AddedAt, db.RemovedAt, db.Id)
+	}
 	return db, err
 }
 
@@ -149,8 +158,8 @@ func dataDbRemove(id string) (*db, error) {
 	}
 	if numPins != 0 {
 		return nil, &pgpinError{
-			Id: "removing-db-with-pins",
-			Message: "cannot remove db with pins",
+			Id:         "removing-db-with-pins",
+			Message:    "cannot remove db with pins",
 			HttpStatus: 400,
 		}
 	}
@@ -180,23 +189,27 @@ func dataPinList() ([]pinSlim, error) {
 }
 
 func dataPinCreate(dbId string, name string, query string) (*pin, error) {
-	if err := dataValidateSlug("name", name); err != nil {
+	err := validateSlug("name", name)
+	if err != nil {
 		return nil, err
 	}
-	if err := dataValidateNonempty("query", query); err != nil {
+	err = validateNonempty("query", query)
+	if err != nil {
 		return nil, err
 	}
-	if _, err := dataDbGet(dbId); err != nil {
+	_, err = dataDbGet(dbId)
+	if err != nil {
 		return nil, err
 	}
-	if sameNamed, err := dataCount("SELECT count(*) FROM pins WHERE name=$1 and deleted_at IS NULL", name); err != nil {
+	sameNamed, err := dataCount("SELECT count(*) FROM pins WHERE name=$1 and deleted_at IS NULL", name)
+	if err != nil {
 		return nil, err
 	} else if sameNamed > 0 {
-			return nil, &pgpinError{
-				Id: "duplicate-pin-name",
-				Message: "name is already used by another pin",
-				HttpStatus: 400,
-			}
+		return nil, &pgpinError{
+			Id:         "duplicate-pin-name",
+			Message:    "name is already used by another pin",
+			HttpStatus: 400,
+		}
 	}
 	pin := pin{}
 	pin.Id = dataRandId()
@@ -204,7 +217,7 @@ func dataPinCreate(dbId string, name string, query string) (*pin, error) {
 	pin.Name = name
 	pin.Query = query
 	pin.CreatedAt = time.Now()
-	_, err := dataConn.Exec("INSERT INTO pins (id, db_id, name, query, created_at) VALUES ($1, $2, $3, $4, $5)",
+	_, err = dataConn.Exec("INSERT INTO pins (id, db_id, name, query, created_at) VALUES ($1, $2, $3, $4, $5)",
 		pin.Id, pin.DbId, pin.Name, pin.Query, pin.CreatedAt)
 	if err != nil {
 		return nil, err
