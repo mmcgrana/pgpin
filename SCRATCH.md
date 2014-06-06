@@ -18,39 +18,42 @@ Add a database:
 $ cat > /tmp/db-input.json <<EOF
 {
   "name": "pins",
-  "url": "postgres://postgres:secret@127.0.0.1:5432/pgpin"
+  "url": "postgres://postgres:secret@127.0.0.1:5432/pgpin-development"
 }
 EOF
 
 $ curl -i -X POST $PGPIN_API_URL/dbs -H "Content-Type: application/json" -d @/tmp/db-input.json
-HTTP/1.1 200 OK
+HTTP/1.1 201 Created
 Content-Type: application/json; charset=utf-8
-Date: Mon, 02 Jun 2014 18:53:57 GMT
-Content-Length: 175
+Date: Fri, 06 Jun 2014 22:06:39 GMT
+Content-Length: 215
 
 {
-  "id": "9b79ebc9a4d4",
+  "id": "7de1251b6e63",
   "name": "pins",
-  "url": "postgres://postgres:secret@127.0.0.1:5432/pgpin",
-  "added_at": "2014-06-02T18:53:57.585750287Z"
+  "url": "postgres://postgres:secret@127.0.0.1:5432/pgpin-development",
+  "added_at": "2014-06-06T22:06:39.655829803Z",
+  "updated_at": "2014-06-06T22:06:39.655838473Z"
 }
 ```
 
 Review db details:
 
 ```console
-curl -i -X GET $PGPIN_API_URL/dbs/9b79ebc9a4d4
+$ curl -i -X GET $PGPIN_API_URL/dbs/7de1251b6e63
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
-Date: Mon, 02 Jun 2014 20:13:13 GMT
-Content-Length: 149
+Date: Fri, 06 Jun 2014 22:06:55 GMT
+Content-Length: 208
 
 {
-  "id": "9b79ebc9a4d4",
+  "id": "7de1251b6e63",
   "name": "pins",
-  "url": "postgres://postgres:secret@127.0.0.1:5432/pgpin",
-  "added_at": "2014-06-02T18:53:57.58575Z"
+  "url": "postgres://postgres:secret@127.0.0.1:5432/pgpin-development",
+  "added_at": "2014-06-06T22:06:39.65583Z",
+  "updated_at": "2014-06-06T22:06:39.655838Z"
 }
+
 ```
 
 List dbs:
@@ -59,15 +62,14 @@ List dbs:
 $ curl -i -X GET $PGPIN_API_URL/dbs
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
-Date: Mon, 02 Jun 2014 18:58:28 GMT
-Content-Length: 112
+Date: Fri, 06 Jun 2014 22:07:03 GMT
+Content-Length: 57
 
 [
   {
-    "id": "9b79ebc9a4d4",
+    "id": "7de1251b6e63",
     "name": "pins"
-  },
-  ...
+  }
 ]
 ```
 
@@ -76,28 +78,29 @@ Create a pin:
 ```console
 $ cat > /tmp/pin-input.json <<EOF
 {
-  "db_id": "bf8029eb5b07",
-  "name": "pins-count",
-  "query": "select count(*) from pins"
+  "db_id": "7de1251b6e63",
+  "name": "pins-info",
+  "query": "select name, db_id, query, created_at from pins"
 }
 EOF
 
 $ curl -i -X POST $PGPIN_API_URL/pins -H "Content-Type: application/json" -d @/tmp/pin-input.json
-HTTP/1.1 200 OK
+HTTP/1.1 201 Created
 Content-Type: application/json; charset=utf-8
-Date: Mon, 02 Jun 2014 17:04:32 GMT
-Content-Length: 332
+Date: Fri, 06 Jun 2014 22:07:52 GMT
+Content-Length: 371
 
 {
-  "id": "103f992f0662",
-  "name": "pins count",
-  "db_id": "bf8029eb5b07",
-  "query": "select count(*) from pins",
-  "created_at": "2014-06-02T17:04:31.996089355Z",
+  "id": "0efd2428a380",
+  "name": "pins-info",
+  "db_id": "7de1251b6e63",
+  "query": "select name, db_id, query, created_at from pins",
+  "created_at": "2014-06-06T22:07:52.567717687Z",
+  "updated_at": "2014-06-06T22:07:52.567726076Z",
   "query_started_at": null,
   "query_finished_at": null,
-  "results_fields_json": null,
-  "results_rows_json": null,
+  "results_fields": null,
+  "results_rows": null,
   "results_error": null
 }
 ```
@@ -105,7 +108,7 @@ Content-Length: 332
 See what results it got:
 
 ```console
-$ curl -i -X GET $PGPIN_API_URL/pins/103f992f0662
+$ curl -i -X GET $PGPIN_API_URL/pins/0efd2428a380
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=utf-8
 Date: Mon, 02 Jun 2014 17:29:20 GMT

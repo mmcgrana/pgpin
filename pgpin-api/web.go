@@ -64,7 +64,6 @@ func webLogging(inner http.Handler) http.Handler {
 		start := time.Now()
 		method := r.Method
 		path := r.URL.Path
-		log.Println("wat")
 		log.Printf("web.request.start method=%s path=%s", method, path)
 		inner.ServeHTTP(w, r)
 		elapsed := float64(time.Since(start)) / 1000000.0

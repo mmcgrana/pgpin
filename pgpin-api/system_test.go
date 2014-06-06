@@ -61,6 +61,10 @@ func mustDataPinCreate(dbId string, name string, query string) *pin {
 	return pin
 }
 
+func withoutWhitespace(s string) string {
+	return strings.Replace(strings.Replace(s, " ", "", -1), "\n", "", -1)
+}
+
 // DB endpoints.
 
 func TestDbAdd(t *testing.T) {
@@ -176,8 +180,8 @@ func TestPinCreateAndGet(t *testing.T) {
 	assert.WithinDuration(t, time.Now(), pinOut.CreatedAt, 3*time.Second)
 	assert.True(t, pinOut.QueryStartedAt.After(pinOut.CreatedAt))
 	assert.True(t, pinOut.QueryFinishedAt.After(*pinOut.QueryStartedAt))
-	assert.Equal(t, `["count"]`, *pinOut.ResultsFieldsJson)
-	assert.Equal(t, `[[1]]`, *pinOut.ResultsRowsJson)
+	assert.Equal(t, `["count"]`, withoutWhitespace(string(pinOut.ResultsFields.Json)))
+	assert.Equal(t, `[[1]]`, withoutWhitespace(string(pinOut.ResultsRows.Json)))
 	assert.Nil(t, pinOut.ResultsError)
 }
 

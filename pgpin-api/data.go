@@ -4,8 +4,8 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"fmt"
-	_ "github.com/lib/pq"
 	"github.com/darkhelmet/env"
+	_ "github.com/lib/pq"
 	"log"
 	"time"
 )
@@ -230,7 +230,7 @@ func dataPinCreate(dbId string, name string, query string) (*pin, error) {
 }
 
 func dataPinGetInternal(queryFrag string, queryVals ...interface{}) (*pin, error) {
-	res, err := dataConn.Query(`SELECT id, db_id, name, query, created_at, updated_at, query_started_at, query_finished_at, results_fields_json, results_rows_json, results_error FROM pins WHERE deleted_at IS NULL AND `+queryFrag+` LIMIT 1`, queryVals...)
+	res, err := dataConn.Query(`SELECT id, db_id, name, query, created_at, updated_at, query_started_at, query_finished_at, results_fields, results_rows, results_error FROM pins WHERE deleted_at IS NULL AND `+queryFrag+` LIMIT 1`, queryVals...)
 	if err != nil {
 		return nil, err
 	}
@@ -240,7 +240,7 @@ func dataPinGetInternal(queryFrag string, queryVals ...interface{}) (*pin, error
 		return nil, nil
 	}
 	pin := pin{}
-	err = res.Scan(&pin.Id, &pin.DbId, &pin.Name, &pin.Query, &pin.CreatedAt, &pin.UpdatedAt, &pin.QueryStartedAt, &pin.QueryFinishedAt, &pin.ResultsFieldsJson, &pin.ResultsRowsJson, &pin.ResultsError)
+	err = res.Scan(&pin.Id, &pin.DbId, &pin.Name, &pin.Query, &pin.CreatedAt, &pin.UpdatedAt, &pin.QueryStartedAt, &pin.QueryFinishedAt, &pin.ResultsFields, &pin.ResultsRows, &pin.ResultsError)
 	if err != nil {
 		return nil, err
 	}
@@ -272,8 +272,8 @@ func dataPinUpdate(pin *pin) error {
 		return err
 	}
 	pin.UpdatedAt = time.Now()
-	_, err = dataConn.Exec("UPDATE pins SET db_id=$1, name=$2, query=$3, created_at=$4, updated_at=$5, query_started_at=$6, query_finished_at=$7, results_fields_json=$8, results_rows_json=$9, results_error=$10, deleted_at=$11 WHERE id=$12",
-		pin.DbId, pin.Name, pin.Query, pin.CreatedAt, pin.UpdatedAt, pin.QueryStartedAt, pin.QueryFinishedAt, pin.ResultsFieldsJson, pin.ResultsRowsJson, pin.ResultsError, pin.DeletedAt, pin.Id)
+	_, err = dataConn.Exec("UPDATE pins SET db_id=$1, name=$2, query=$3, created_at=$4, updated_at=$5, query_started_at=$6, query_finished_at=$7, results_fields=$8, results_rows=$9, results_error=$10, deleted_at=$11 WHERE id=$12",
+		pin.DbId, pin.Name, pin.Query, pin.CreatedAt, pin.UpdatedAt, pin.QueryStartedAt, pin.QueryFinishedAt, pin.ResultsFields, pin.ResultsRows, pin.ResultsError, pin.DeletedAt, pin.Id)
 	if err != nil {
 		return err
 	}

@@ -2,7 +2,7 @@
 
 - Timeout user query duration (pending ml)
 - Timeout control plane queries/connections (pending ml)
-* Inline JSON instead of text
+* Maybe remove optional json bits
 * Limit result rows
 * Limit result size
 * Refresh results periodically

@@ -56,8 +56,11 @@ func workerQuery(p *pin) error {
 		return err
 	}
 	log.Printf("worker.query.read pin_id=%s", p.Id)
-	resultsFieldsJsonB, _ := json.Marshal(buffer.ColumnName)
-	resultsFieldsJson := string(resultsFieldsJsonB)
+	resultsFieldsJson, err := json.Marshal(buffer.ColumnName)
+	if err != nil {
+		return err
+	}
+	p.ResultsFields = NullJson{Valid: true, Json: resultsFieldsJson}
 	resultsRows := make([][]interface{}, len(buffer.Rows))
 	for i, row := range buffer.Rows {
 		resultsRows[i] = make([]interface{}, len(row.Data))
@@ -70,11 +73,12 @@ func workerQuery(p *pin) error {
 			}
 		}
 	}
-	resultsRowsJsonB, _ := json.Marshal(resultsRows)
-	resultsRowsJson := string(resultsRowsJsonB)
+	resultsRowsJson, err := json.Marshal(resultsRows)
+	if err != nil {
+		return err
+	}
 	log.Printf("worker.query.commit pin_id=%s", p.Id)
-	p.ResultsFieldsJson = &resultsFieldsJson
-	p.ResultsRowsJson = &resultsRowsJson
+	p.ResultsRows = NullJson{Valid: true, Json: resultsRowsJson}
 	err = dataPinUpdate(p)
 	if err != nil {
 		return err
