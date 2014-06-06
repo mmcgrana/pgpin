@@ -4,7 +4,7 @@ import (
 	"crypto/rand"
 	"database/sql"
 	"fmt"
-	"github.com/bmizerany/pq"
+	_ "github.com/lib/pq"
 	"github.com/darkhelmet/env"
 	"log"
 	"time"
@@ -20,14 +20,6 @@ func dataRandId() string {
 		panic(err)
 	}
 	return fmt.Sprintf("%x", bytes)
-}
-
-func dataMustParseDatabaseUrl(s string) string {
-	conf, err := pq.ParseURL(s)
-	if err != nil {
-		panic(err)
-	}
-	return conf
 }
 
 func dataCount(query string, args ...interface{}) (int, error) {
@@ -51,8 +43,7 @@ var dataConn *sql.DB
 
 func dataStart() {
 	log.Print("data.start")
-	conf := dataMustParseDatabaseUrl(env.String("DATABASE_URL"))
-	conn, err := sql.Open("postgres", conf)
+	conn, err := sql.Open("postgres", env.String("DATABASE_URL"))
 	if err != nil {
 		panic(err)
 	}

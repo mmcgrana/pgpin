@@ -4,7 +4,7 @@ import (
 	"bitbucket.org/kardianos/table"
 	"database/sql"
 	"encoding/json"
-	"github.com/bmizerany/pq"
+	"github.com/lib/pq"
 	"log"
 	"time"
 )
@@ -34,7 +34,7 @@ func workerQuery(p *pin) error {
 		return err
 	}
 	log.Printf("worker.query.open pin_id=%s", p.Id)
-	resourceDb, err := sql.Open("postgres", dataMustParseDatabaseUrl(dbUrl))
+	resourceDb, err := sql.Open("postgres", dbUrl)
 	if err != nil {
 		return err
 	}
