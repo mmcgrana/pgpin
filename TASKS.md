@@ -1,7 +1,7 @@
 ## Todo
 
-* Limit user query duration
-* Timeout control plane queries/connections
+- Timeout user query duration (pending ml)
+- Timeout control plane queries/connections (pending ml)
 * Inline JSON instead of text
 * Limit result rows
 * Limit result size
