@@ -1,11 +1,12 @@
 ## Todo
 
-* Refresh results periodically
+* Limit user query duration
+* Timeout control plane queries/connections
 * Inline JSON instead of text
-* Limit query duration
 * Limit result rows
 * Limit result size
-
+* Refresh results periodically
+* Web request timeout middleware
 * Run db bootstrap on test start
 * Try other types, including bytes
 * JSON data type instead of text
@@ -33,7 +34,7 @@
 * Capturing status in logger
 * Graceful stop worker
 * Investigate goji request logging
-* Godeps
+* Godeps 
 * pg conn application_name
 * pg conn timeouts
 * Better url validation
