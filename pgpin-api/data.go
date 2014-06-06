@@ -47,6 +47,7 @@ func dataStart() {
 	if err != nil {
 		panic(err)
 	}
+	conn.SetMaxOpenConns(20)
 	dataConn = conn
 }
 
