@@ -40,7 +40,7 @@
 * Better url validation
 * Validate names are unique
 * Generic not found vs. e.g. db not found
-* Testing
+* One-off scratch scripts
 
 ## Topics
 
