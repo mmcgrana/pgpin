@@ -57,8 +57,14 @@ func webRespond(resp http.ResponseWriter, status int, data interface{}, err erro
 		panic(err)
 	}
 	resp.WriteHeader(status)
-	resp.Write(b)
-	resp.Write([]byte("\n"))
+	_, err = resp.Write(b)
+	if err != nil {
+		log.Printf("web.ioerror %s", err.Error())
+	}
+	_, err = resp.Write([]byte("\n"))
+	if err != nil {
+		log.Printf("web.ioerror %s", err.Error())
+	}
 }
 
 // Middleware.
@@ -208,8 +214,8 @@ func webStatus(resp http.ResponseWriter, req *http.Request) {
 
 func webError(resp http.ResponseWriter, req *http.Request) {
 	err := PgpinError{
-		Id:      "error",
-		Message: "web error",
+		Id:      "triggered-error",
+		Message: "triggered web error",
 	}
 	webRespond(resp, 0, nil, err)
 }
@@ -220,6 +226,8 @@ func webPanic(resp http.ResponseWriter, req *http.Request) {
 
 func webTimeout(resp http.ResponseWriter, req *http.Request) {
 	time.Sleep(webTimeoutDuration + time.Second)
+	status :=&Status{Message: "late"}
+	webRespond(resp, 200, status, nil)
 }
 
 func webNotFound(resp http.ResponseWriter, req *http.Request) {

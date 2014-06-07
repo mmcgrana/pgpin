@@ -11,7 +11,7 @@ type PgpinError struct {
 }
 
 func (e PgpinError) Error() string {
-	return fmt.Sprintf("pgpin: %s - %s", e.Id, e.Message)
+	return fmt.Sprintf("pgpin: %s: %s", e.Id, e.Message)
 }
 
 func must(err error) {
