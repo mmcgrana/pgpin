@@ -162,7 +162,7 @@ func webPinList(resp http.ResponseWriter, req *http.Request) {
 }
 
 func webPinCreate(resp http.ResponseWriter, req *http.Request) {
-	pin := &pin{}
+	pin := &Pin{}
 	err := webRead(req, pin)
 	if err == nil {
 		pin, err = dataPinCreate(pin.DbId, pin.Name, pin.Query)
@@ -171,8 +171,8 @@ func webPinCreate(resp http.ResponseWriter, req *http.Request) {
 }
 
 func webPinUpdate(c web.C, resp http.ResponseWriter, req *http.Request) {
-	pinUpdate := &pin{}
-	pin := &pin{}
+	pinUpdate := &Pin{}
+	pin := &Pin{}
 	err := webRead(req, pinUpdate)
 	if err == nil {
 		pin, err = dataPinGet(c.URLParams["id"])

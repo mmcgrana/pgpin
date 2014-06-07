@@ -37,7 +37,7 @@ func workerCoerceType(in interface{}) interface{} {
 // workerQuery queries the pn db at pinDbUrl and updates the
 // passed pin according to the results/errors. System errors
 // are returned.
-func workerQuery(p *pin, pinDbUrl string) error {
+func workerQuery(p *Pin, pinDbUrl string) error {
 	log.Print("worker.query.start pin_id=%s", p.Id)
 	pinDb, err := sql.Open("postgres", pinDbUrl)
 	if err != nil {
@@ -95,7 +95,7 @@ func workerQuery(p *pin, pinDbUrl string) error {
 // system database accordingly. User-caused errors are
 // reflected in the updated pin record and will not cause a
 // returned error. System-caused errors are returned.
-func workerProcess(p *pin) error {
+func workerProcess(p *Pin) error {
 	log.Printf("worker.process.start pin_id=%s", p.Id)
 	pinDbUrl, err := dataPinDbUrl(p)
 	if err != nil {

@@ -156,7 +156,7 @@ func dataDbRemove(id string) (*Db, error) {
 
 // Pin operations.
 
-func dataPinValidate(pin *pin) error {
+func dataPinValidate(pin *Pin) error {
 	err := validateSlug("name", pin.Name)
 	if err != nil {
 		return err
@@ -200,8 +200,8 @@ func dataPinList() ([]PinSlim, error) {
 	return pins, nil
 }
 
-func dataPinCreate(dbId string, name string, query string) (*pin, error) {
-	pin := &pin{}
+func dataPinCreate(dbId string, name string, query string) (*Pin, error) {
+	pin := &Pin{}
 	pin.Id = dataRandId()
 	pin.DbId = dbId
 	pin.Name = name
@@ -220,9 +220,9 @@ func dataPinCreate(dbId string, name string, query string) (*pin, error) {
 	return pin, nil
 }
 
-func dataPinGetInternal(queryFrag string, queryVals ...interface{}) (*pin, error) {
+func dataPinGetInternal(queryFrag string, queryVals ...interface{}) (*Pin, error) {
 	row := dataConn.QueryRow(`SELECT id, db_id, name, query, created_at, updated_at, query_started_at, query_finished_at, results_fields, results_rows, results_error FROM pins WHERE deleted_at IS NULL AND `+queryFrag+` LIMIT 1`, queryVals...)
-	pin := pin{}
+	pin := Pin{}
 	err := row.Scan(&pin.Id, &pin.DbId, &pin.Name, &pin.Query, &pin.CreatedAt, &pin.UpdatedAt, &pin.QueryStartedAt, &pin.QueryFinishedAt, &pin.ResultsFields, &pin.ResultsRows, &pin.ResultsError)
 	switch {
 	case err == sql.ErrNoRows:
@@ -234,7 +234,7 @@ func dataPinGetInternal(queryFrag string, queryVals ...interface{}) (*pin, error
 	}
 }
 
-func dataPinGet(id string) (*pin, error) {
+func dataPinGet(id string) (*Pin, error) {
 	pin, err := dataPinGetInternal("id=$1", id)
 	if err != nil {
 		return nil, err
@@ -249,11 +249,11 @@ func dataPinGet(id string) (*pin, error) {
 	return pin, nil
 }
 
-func dataPinForQuery() (*pin, error) {
+func dataPinForQuery() (*Pin, error) {
 	return dataPinGetInternal("query_started_at IS NULL AND deleted_at IS NULL")
 }
 
-func dataPinUpdate(pin *pin) error {
+func dataPinUpdate(pin *Pin) error {
 	err := dataPinValidate(pin)
 	if err != nil {
 		return err
@@ -267,7 +267,7 @@ func dataPinUpdate(pin *pin) error {
 	return nil
 }
 
-func dataPinDelete(id string) (*pin, error) {
+func dataPinDelete(id string) (*Pin, error) {
 	pin, err := dataPinGet(id)
 	if err != nil {
 		return nil, err
@@ -281,7 +281,7 @@ func dataPinDelete(id string) (*pin, error) {
 	return pin, nil
 }
 
-func dataPinDbUrl(pin *pin) (string, error) {
+func dataPinDbUrl(pin *Pin) (string, error) {
 	db, err := dataDbGet(pin.DbId)
 	if err != nil {
 		return "", err

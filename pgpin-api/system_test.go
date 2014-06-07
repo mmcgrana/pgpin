@@ -54,7 +54,7 @@ func mustDataDbAdd(name string, url string) *Db {
 	return db
 }
 
-func mustDataPinCreate(dbId string, name string, query string) *pin {
+func mustDataPinCreate(dbId string, name string, query string) *Pin {
 	pin, err := dataPinCreate(dbId, name, query)
 	must(err)
 	return pin
@@ -171,7 +171,7 @@ func TestPinCreateAndGet(t *testing.T) {
 	b := bytes.NewReader([]byte(`{"name": "pin-1", "db_id": "` + dbIn.Id + `", "query": "select count(*) from pins"}`))
 	res := mustRequest("POST", "/pins", b)
 	assert.Equal(t, 201, res.Code)
-	pinOut := &pin{}
+	pinOut := &Pin{}
 	mustDecode(res, pinOut)
 	mustWorkerTick()
 	res = mustRequest("GET", "/pins/"+pinOut.Id, nil)
@@ -209,12 +209,12 @@ func TestPinRename(t *testing.T) {
 	b := bytes.NewReader([]byte(`{"name": "pins-1a"}`))
 	res := mustRequest("PUT", "/pins/"+pinIn.Id, b)
 	assert.Equal(t, 200, res.Code)
-	pinPutOut := &pin{}
+	pinPutOut := &Pin{}
 	mustDecode(res, pinPutOut)
 	assert.Equal(t, "pins-1a", pinPutOut.Name)
 	res = mustRequest("GET", "/pins/"+pinIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
-	pinGetOut := &pin{}
+	pinGetOut := &Pin{}
 	mustDecode(res, pinGetOut)
 	assert.Equal(t, "pins-1a", pinGetOut.Name)
 	assert.True(t, pinGetOut.UpdatedAt.After(pinIn.UpdatedAt))
@@ -227,7 +227,7 @@ func TestPinMultipleColumns(t *testing.T) {
 	mustWorkerTick()
 	res := mustRequest("GET", "/pins/"+pinInId.Id, nil)
 	assert.Equal(t, 200, res.Code)
-	pinOut := &pin{}
+	pinOut := &Pin{}
 	mustDecode(res, pinOut)
 	assert.Equal(t, `["name","query"]`, withoutWhitespace(pinOut.ResultsFields.String()))
 	assert.Equal(t, `[["pins-1","selectname,queryfrompins"]]`, withoutWhitespace(pinOut.ResultsRows.String()))
@@ -241,7 +241,7 @@ func TestPinTooManyRows(t *testing.T) {
 	mustWorkerTick()
 	res := mustRequest("GET", "/pins/"+pinInId.Id, nil)
 	assert.Equal(t, 200, res.Code)
-	pinOut := &pin{}
+	pinOut := &Pin{}
 	mustDecode(res, pinOut)
 	assert.Equal(t, "null", pinOut.ResultsFields.String())
 	assert.Equal(t, "null", pinOut.ResultsRows.String())
@@ -254,7 +254,7 @@ func TestPinDelete(t *testing.T) {
 	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
 	res := mustRequest("DELETE", "/pins/"+pinIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
-	pinOut := &pin{}
+	pinOut := &Pin{}
 	mustDecode(res, pinOut)
 	assert.Equal(t, "pins-1", pinOut.Name)
 	res = mustRequest("GET", "/pins/"+pinIn.Id, nil)
@@ -270,7 +270,7 @@ func TestPinList(t *testing.T) {
 	must(err)
 	res := mustRequest("GET", "/pins", nil)
 	assert.Equal(t, 200, res.Code)
-	pinsOut := []*pin{}
+	pinsOut := []*Pin{}
 	mustDecode(res, &pinsOut)
 	assert.Equal(t, len(pinsOut), 1)
 	assert.Equal(t, pinIn2.Id, pinsOut[0].Id)
