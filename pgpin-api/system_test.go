@@ -12,7 +12,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"strings"
 	"testing"
 	"time"
 )
@@ -60,13 +59,18 @@ func mustDataPinCreate(dbId string, name string, query string) *Pin {
 	return pin
 }
 
-func withoutWhitespace(s string) string {
-	return strings.Replace(strings.Replace(s, " ", "", -1), "\n", "", -1)
-}
-
 func mustWorkerTick() {
 	_, err := workerTick()
 	must(err)
+}
+
+func mustCanonicalizeJson(in []byte) string {
+	data := make([]interface{}, 0)
+	must(json.Unmarshal(in, &data))
+	out, err := json.Marshal(data)
+	must(err)
+	return string(out)
+
 }
 
 // DB endpoints.
@@ -184,8 +188,8 @@ func TestPinCreateAndGet(t *testing.T) {
 	assert.WithinDuration(t, time.Now(), pinOut.CreatedAt, 3*time.Second)
 	assert.True(t, pinOut.QueryStartedAt.After(pinOut.CreatedAt))
 	assert.True(t, pinOut.QueryFinishedAt.After(*pinOut.QueryStartedAt))
-	assert.Equal(t, `["count"]`, withoutWhitespace(pinOut.ResultsFields.String()))
-	assert.Equal(t, `[[1]]`, withoutWhitespace(pinOut.ResultsRows.String()))
+	assert.Equal(t, `["count"]`, mustCanonicalizeJson(pinOut.ResultsFields))
+	assert.Equal(t, `[[1]]`, mustCanonicalizeJson(pinOut.ResultsRows))
 	assert.Nil(t, pinOut.ResultsError)
 }
 
@@ -229,8 +233,8 @@ func TestPinMultipleColumns(t *testing.T) {
 	assert.Equal(t, 200, res.Code)
 	pinOut := &Pin{}
 	mustDecode(res, pinOut)
-	assert.Equal(t, `["name","query"]`, withoutWhitespace(pinOut.ResultsFields.String()))
-	assert.Equal(t, `[["pins-1","selectname,queryfrompins"]]`, withoutWhitespace(pinOut.ResultsRows.String()))
+	assert.Equal(t, `["name","query"]`, mustCanonicalizeJson(pinOut.ResultsFields))
+	assert.Equal(t, `[["pins-1","select name, query from pins"]]`, mustCanonicalizeJson(pinOut.ResultsRows))
 	assert.Nil(t, pinOut.ResultsError)
 }
 
@@ -243,8 +247,8 @@ func TestPinTooManyRows(t *testing.T) {
 	assert.Equal(t, 200, res.Code)
 	pinOut := &Pin{}
 	mustDecode(res, pinOut)
-	assert.Equal(t, "null", pinOut.ResultsFields.String())
-	assert.Equal(t, "null", pinOut.ResultsRows.String())
+	assert.Equal(t, "null", string([]byte(pinOut.ResultsFields)))
+	assert.Equal(t, "null", string([]byte(pinOut.ResultsRows)))
 	assert.Equal(t, "too many rows in query results", *pinOut.ResultsError)
 }
 
