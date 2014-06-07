@@ -223,9 +223,9 @@ func TestPinRename(t *testing.T) {
 func TestPinMultipleColumns(t *testing.T) {
 	defer clear()
 	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
-	pinInId := mustDataPinCreate(dbIn.Id, "pins-1", "select name, query from pins")
+	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select name, query from pins")
 	mustWorkerTick()
-	res := mustRequest("GET", "/pins/"+pinInId.Id, nil)
+	res := mustRequest("GET", "/pins/"+pinIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
 	pinOut := &Pin{}
 	mustDecode(res, pinOut)
