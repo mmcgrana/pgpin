@@ -48,7 +48,7 @@ func mustDecode(res *httptest.ResponseRecorder, data interface{}) {
 	must(json.NewDecoder(res.Body).Decode(data))
 }
 
-func mustDataDbAdd(name string, url string) *db {
+func mustDataDbAdd(name string, url string) *Db {
 	db, err := dataDbAdd(name, url)
 	must(err)
 	return db
@@ -76,7 +76,7 @@ func TestDbAdd(t *testing.T) {
 	b := bytes.NewReader([]byte(`{"name": "dbs-1", "url": "postgres://u:p@h:1234/d-1"}`))
 	res := mustRequest("POST", "/dbs", b)
 	assert.Equal(t, 201, res.Code)
-	dbOut := &db{}
+	dbOut := &Db{}
 	mustDecode(res, dbOut)
 	assert.Equal(t, "dbs-1", dbOut.Name)
 	assert.Equal(t, "postgres://u:p@h:1234/d-1", dbOut.Url)
@@ -101,7 +101,7 @@ func TestDbGet(t *testing.T) {
 	dbIn := mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
 	res := mustRequest("GET", "/dbs/"+dbIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
-	dbOut := &db{}
+	dbOut := &Db{}
 	mustDecode(res, dbOut)
 	assert.Equal(t, dbIn.Id, dbOut.Id)
 	assert.Equal(t, "dbs-1", dbOut.Name)
@@ -116,12 +116,12 @@ func TestDbRename(t *testing.T) {
 	b := bytes.NewReader([]byte(`{"name": "dbs-1a"}`))
 	res := mustRequest("PUT", "/dbs/"+dbIn.Id, b)
 	assert.Equal(t, 200, res.Code)
-	dbPutOut := &db{}
+	dbPutOut := &Db{}
 	mustDecode(res, dbPutOut)
 	assert.Equal(t, "dbs-1a", dbPutOut.Name)
 	res = mustRequest("GET", "/dbs/"+dbIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
-	dbGetOut := &db{}
+	dbGetOut := &Db{}
 	mustDecode(res, dbGetOut)
 	assert.Equal(t, "dbs-1a", dbGetOut.Name)
 	assert.True(t, dbGetOut.UpdatedAt.After(dbIn.UpdatedAt))
@@ -156,7 +156,7 @@ func TestDbList(t *testing.T) {
 	must(err)
 	res := mustRequest("GET", "/dbs", nil)
 	assert.Equal(t, 200, res.Code)
-	dbsOut := []*db{}
+	dbsOut := []*Db{}
 	mustDecode(res, &dbsOut)
 	assert.Equal(t, len(dbsOut), 1)
 	assert.Equal(t, dbIn1.Id, dbsOut[0].Id)

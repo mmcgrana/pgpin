@@ -4,13 +4,13 @@ import (
 	"fmt"
 )
 
-type pgpinError struct {
+type PgpinError struct {
 	Id         string `json:"id"`
 	Message    string `json:"message"`
 	HttpStatus int    `json:"-"`
 }
 
-func (e pgpinError) Error() string {
+func (e PgpinError) Error() string {
 	return fmt.Sprintf("pgpin: %s - %s", e.Id, e.Message)
 }
 

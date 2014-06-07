@@ -9,7 +9,7 @@ var emptyRegexp = regexp.MustCompile("\\A\\s*\\z")
 
 func validateNonempty(f string, s string) error {
 	if emptyRegexp.MatchString(s) {
-		return &pgpinError{
+		return &PgpinError{
 			Id:         "invalid",
 			Message:    fmt.Sprintf("field %s must be nonempty", f),
 			HttpStatus: 400,
@@ -22,7 +22,7 @@ var slugRegexp = regexp.MustCompile("\\A[a-z0-9-]+\\z")
 
 func validateSlug(f string, s string) error {
 	if !slugRegexp.MatchString(s) {
-		return &pgpinError{
+		return &PgpinError{
 			Id:         "invalid",
 			Message:    fmt.Sprintf("field %s must be of the form [a-z0-9-]+", f),
 			HttpStatus: 400,

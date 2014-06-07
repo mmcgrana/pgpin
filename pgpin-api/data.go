@@ -62,7 +62,7 @@ func dataDbValidate(db *Db) error {
 		return err
 	}
 	if sameNamed > 0 {
-		return &pgpinError{
+		return &PgpinError{
 			Id:         "duplicate-db-name",
 			Message:    "name is already used by another db",
 			HttpStatus: 400,
@@ -110,7 +110,7 @@ func dataDbGet(id string) (*Db, error) {
 	err := row.Scan(&db.Id, &db.Name, &db.Url, &db.AddedAt, &db.UpdatedAt)
 	switch {
 	case err == sql.ErrNoRows:
-		return nil, &pgpinError{
+		return nil, &PgpinError{
 			Id:         "not-found",
 			Message:    "db not found",
 			HttpStatus: 404,
@@ -142,7 +142,7 @@ func dataDbRemove(id string) (*Db, error) {
 		return nil, err
 	}
 	if numPins != 0 {
-		return nil, &pgpinError{
+		return nil, &PgpinError{
 			Id:         "removing-db-with-pins",
 			Message:    "cannot remove db with pins",
 			HttpStatus: 400,
@@ -173,7 +173,7 @@ func dataPinValidate(pin *pin) error {
 	if err != nil {
 		return err
 	} else if sameNamed > 0 {
-		return &pgpinError{
+		return &PgpinError{
 			Id:         "duplicate-pin-name",
 			Message:    "name is already used by another pin",
 			HttpStatus: 400,
@@ -240,7 +240,7 @@ func dataPinGet(id string) (*pin, error) {
 		return nil, err
 	}
 	if pin == nil {
-		return nil, &pgpinError{
+		return nil, &PgpinError{
 			Id:         "not-found",
 			Message:    "pin not found",
 			HttpStatus: 404,

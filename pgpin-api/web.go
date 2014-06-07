@@ -24,7 +24,7 @@ var webTimeoutDuration = time.Second * 5
 func webRead(req *http.Request, dataRef interface{}) error {
 	err := json.NewDecoder(req.Body).Decode(dataRef)
 	if err != nil {
-		err := &pgpinError{
+		err := &PgpinError{
 			Id:         "bad-request",
 			Message:    "malformed JSON body",
 			HttpStatus: 400,
@@ -36,13 +36,13 @@ func webRead(req *http.Request, dataRef interface{}) error {
 
 // webRespond writes an HTTP response to the given resp, either
 // according to status and data if err is nil, or according to err
-// if it's non-nil. It will attempt to coerce err into a pgpinError
+// if it's non-nil. It will attempt to coerce err into a PgpinError
 // and respond with an appropriate error message, falling back to
 // a generic 500 error if it can't. All web responses should go
 // through this function.
 func webRespond(resp http.ResponseWriter, status int, data interface{}, err error) {
 	if err != nil {
-		pgerr, ok := err.(*pgpinError)
+		pgerr, ok := err.(*PgpinError)
 		if ok {
 			status = pgerr.HttpStatus
 			data = pgerr
@@ -77,7 +77,7 @@ func webRecoverer(h http.Handler) http.Handler {
 			if err := recover(); err != nil {
 				log.Printf("panic: %#v\n", err)
 				debug.PrintStack()
-				webRespond(resp, 0, nil, &pgpinError{
+				webRespond(resp, 0, nil, &PgpinError{
 					Id:         "internal-error",
 					Message:    "internal server error",
 					HttpStatus: 500,
@@ -207,7 +207,7 @@ func webStatus(resp http.ResponseWriter, req *http.Request) {
 }
 
 func webError(resp http.ResponseWriter, req *http.Request) {
-	err := pgpinError{
+	err := PgpinError{
 		Id:      "error",
 		Message: "web error",
 	}
@@ -223,7 +223,7 @@ func webTimeout(resp http.ResponseWriter, req *http.Request) {
 }
 
 func webNotFound(resp http.ResponseWriter, req *http.Request) {
-	err := &pgpinError{
+	err := &PgpinError{
 		Id:         "not-found",
 		Message:    "not found",
 		HttpStatus: 404,
