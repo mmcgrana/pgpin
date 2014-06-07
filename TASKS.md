@@ -3,7 +3,6 @@
 - Timeout user query duration (pending ml)
 - Timeout control plane queries/connections (pending ml)
 * Refresh results periodically
-* Web request timeout middleware
 * Run db bootstrap on test start
 * Try other types, including bytes
 * Encrypt resource URL
@@ -24,6 +23,7 @@
 * JSON schema
 * Implement pgpin
 * Implement pgpin-web
+* Web request timeout and panic recovery compatability
 * API versioning
 * API authorization
 * HTTP basic auth

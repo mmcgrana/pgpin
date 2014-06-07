@@ -13,6 +13,10 @@ import (
 	"time"
 )
 
+// Constants.
+
+var webTimeoutDuration = time.Second * 10
+
 // Helpers.
 
 // webRead reads the JSON request body into the given dataRef. It
@@ -52,7 +56,6 @@ func webRespond(resp http.ResponseWriter, status int, data interface{}, err erro
 	if err != nil {
 		panic(err)
 	}
-	resp.Header().Set("Content-Type", "application/json; charset=utf-8")
 	resp.WriteHeader(status)
 	resp.Write(b)
 	resp.Write([]byte("\n"))
@@ -60,7 +63,15 @@ func webRespond(resp http.ResponseWriter, status int, data interface{}, err erro
 
 // Middleware.
 
-func webFailsafe(h http.Handler) http.Handler {
+func webJsoner(inner http.Handler) http.Handler {
+	outer := func(resp http.ResponseWriter, req *http.Request) {
+		resp.Header().Set("Content-Type", "application/json; charset=utf-8")
+		inner.ServeHTTP(resp, req)
+	}
+	return http.HandlerFunc(outer)
+}
+
+func webRecoverer(h http.Handler) http.Handler {
 	fn := func(resp http.ResponseWriter, req *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
@@ -68,7 +79,7 @@ func webFailsafe(h http.Handler) http.Handler {
 				debug.PrintStack()
 				webRespond(resp, 500, nil, &pgpinError{
 					Id: "internal-error",
-					Message: "panic'd",
+					Message: "internal server error",
 				})
 			}
 		}()
@@ -77,7 +88,7 @@ func webFailsafe(h http.Handler) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
-func webLogging(inner http.Handler) http.Handler {
+func webLogger(inner http.Handler) http.Handler {
 	outer := func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		method := r.Method
@@ -88,6 +99,18 @@ func webLogging(inner http.Handler) http.Handler {
 		log.Printf("web.request.finish method=%s path=%s elapsed=%f", method, path, elapsed)
 	}
 	return http.HandlerFunc(outer)
+}
+
+func webTimer(timeout time.Duration) func(http.Handler) http.Handler {
+	return func(inner http.Handler) http.Handler {
+		data := &map[string]string{
+			"id": "request-timeout",
+			"message": "request timed out",
+		}
+		body, err := json.MarshalIndent(data, "", "  ")
+		must(err)
+		return http.TimeoutHandler(inner, timeout, string(body)+"\n")
+	}
 }
 
 // Db endpoints.
@@ -194,6 +217,10 @@ func webPanic(resp http.ResponseWriter, req *http.Request) {
 	panic("panic")
 }
 
+func webTimeout(resp http.ResponseWriter, req *http.Request) {
+	time.Sleep(webTimeoutDuration + time.Second)
+}
+
 func webNotFound(resp http.ResponseWriter, req *http.Request) {
 	err := &pgpinError{
 		Id:         "not-found",
@@ -208,8 +235,10 @@ func webNotFound(resp http.ResponseWriter, req *http.Request) {
 func webBuild() {
 	goji.Abandon(middleware.Logger)
 	goji.Abandon(middleware.Recoverer)
-	goji.Use(webFailsafe)
-	goji.Use(webLogging)
+	goji.Use(webJsoner)
+	// goji.Use(webRecoverer)
+	goji.Use(webLogger)
+	goji.Use(webTimer(webTimeoutDuration))
 	goji.Get("/dbs", webDbList)
 	goji.Post("/dbs", webDbAdd)
 	goji.Put("/dbs/:id", webDbUpdate)
@@ -223,6 +252,7 @@ func webBuild() {
 	goji.Get("/status", webStatus)
 	goji.Get("/error", webError)
 	goji.Get("/panic", webPanic)
+	goji.Get("/timeout", webTimeout)
 	goji.NotFound(webNotFound)
 }
 
