@@ -4,7 +4,6 @@
 - Timeout control plane queries/connections (pending ml)
 * Think about other serialization approaches, esp for slim
 * Refresh results periodically, update readme
-* Run db bootstrap on test start
 * Try other types, including bytes
 * Encrypt resource URL
 * Encrypt other sensitive fields
