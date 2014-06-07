@@ -23,7 +23,6 @@
 * JSON schema
 * Implement pgpin
 * Implement pgpin-web
-* Web request timeout and panic recovery compatability
 * API versioning
 * API authorization
 * HTTP basic auth

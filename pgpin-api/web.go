@@ -15,7 +15,7 @@ import (
 
 // Constants.
 
-var webTimeoutDuration = time.Second * 10
+var webTimeoutDuration = time.Second * 5
 
 // Helpers.
 
@@ -77,9 +77,10 @@ func webRecoverer(h http.Handler) http.Handler {
 			if err := recover(); err != nil {
 				log.Printf("panic: %#v\n", err)
 				debug.PrintStack()
-				webRespond(resp, 500, nil, &pgpinError{
+				webRespond(resp, 0, nil, &pgpinError{
 					Id: "internal-error",
 					Message: "internal server error",
+					HttpStatus: 500,
 				})
 			}
 		}()
@@ -236,9 +237,9 @@ func webBuild() {
 	goji.Abandon(middleware.Logger)
 	goji.Abandon(middleware.Recoverer)
 	goji.Use(webJsoner)
-	// goji.Use(webRecoverer)
 	goji.Use(webLogger)
 	goji.Use(webTimer(webTimeoutDuration))
+	goji.Use(webRecoverer)
 	goji.Get("/dbs", webDbList)
 	goji.Post("/dbs", webDbAdd)
 	goji.Put("/dbs/:id", webDbUpdate)
