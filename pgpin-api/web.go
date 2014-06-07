@@ -78,8 +78,8 @@ func webRecoverer(h http.Handler) http.Handler {
 				log.Printf("panic: %#v\n", err)
 				debug.PrintStack()
 				webRespond(resp, 0, nil, &pgpinError{
-					Id: "internal-error",
-					Message: "internal server error",
+					Id:         "internal-error",
+					Message:    "internal server error",
 					HttpStatus: 500,
 				})
 			}
@@ -105,7 +105,7 @@ func webLogger(inner http.Handler) http.Handler {
 func webTimer(timeout time.Duration) func(http.Handler) http.Handler {
 	return func(inner http.Handler) http.Handler {
 		data := &map[string]string{
-			"id": "request-timeout",
+			"id":      "request-timeout",
 			"message": "request timed out",
 		}
 		body, err := json.MarshalIndent(data, "", "  ")
@@ -208,7 +208,7 @@ func webStatus(resp http.ResponseWriter, req *http.Request) {
 
 func webError(resp http.ResponseWriter, req *http.Request) {
 	err := pgpinError{
-		Id: "error",
+		Id:      "error",
 		Message: "web error",
 	}
 	webRespond(resp, 0, nil, err)

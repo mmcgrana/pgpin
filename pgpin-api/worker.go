@@ -12,8 +12,8 @@ var resultsRowsMax = 10000
 func workerExtractPgerror(err error) (*string, error) {
 	pgerr, ok := err.(pq.PGError)
 	if ok {
-	        msg := pgerr.Get('M')
-	        return &msg, nil
+		msg := pgerr.Get('M')
+		return &msg, nil
 	}
 	return nil, err
 }

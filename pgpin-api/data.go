@@ -23,14 +23,9 @@ func dataRandId() string {
 }
 
 func dataCount(query string, args ...interface{}) (int, error) {
-	rows, err := dataConn.Query(query, args...)
-	if err != nil {
-		return 0, err
-	}
-	defer rows.Close()
-	rows.Next()
+	row := dataConn.QueryRow(query, args...)
 	var count int
-	err = rows.Scan(&count)
+	err := row.Scan(&count)
 	if err != nil {
 		return 0, err
 	}
@@ -110,25 +105,21 @@ func dataDbAdd(name string, url string) (*db, error) {
 }
 
 func dataDbGet(id string) (*db, error) {
-	res, err := dataConn.Query(`SELECT id, name, url, added_at, updated_at FROM dbs WHERE id=$1 AND removed_at IS NULL LIMIT 1`, id)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Close()
-	ok := res.Next()
-	if !ok {
+	row := dataConn.QueryRow(`SELECT id, name, url, added_at, updated_at FROM dbs WHERE id=$1 AND removed_at IS NULL LIMIT 1`, id)
+	db := db{}
+	err := row.Scan(&db.Id, &db.Name, &db.Url, &db.AddedAt, &db.UpdatedAt)
+	switch {
+	case err == sql.ErrNoRows:
 		return nil, &pgpinError{
 			Id:         "not-found",
 			Message:    "db not found",
 			HttpStatus: 404,
 		}
-	}
-	db := db{}
-	err = res.Scan(&db.Id, &db.Name, &db.Url, &db.AddedAt, &db.UpdatedAt)
-	if err != nil {
+	case err != nil:
 		return nil, err
+	default:
+		return &db, nil
 	}
-	return &db, nil
 }
 
 func dataDbUpdate(db *db) error {
@@ -230,21 +221,17 @@ func dataPinCreate(dbId string, name string, query string) (*pin, error) {
 }
 
 func dataPinGetInternal(queryFrag string, queryVals ...interface{}) (*pin, error) {
-	res, err := dataConn.Query(`SELECT id, db_id, name, query, created_at, updated_at, query_started_at, query_finished_at, results_fields, results_rows, results_error FROM pins WHERE deleted_at IS NULL AND `+queryFrag+` LIMIT 1`, queryVals...)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Close()
-	ok := res.Next()
-	if !ok {
-		return nil, nil
-	}
+	row := dataConn.QueryRow(`SELECT id, db_id, name, query, created_at, updated_at, query_started_at, query_finished_at, results_fields, results_rows, results_error FROM pins WHERE deleted_at IS NULL AND `+queryFrag+` LIMIT 1`, queryVals...)
 	pin := pin{}
-	err = res.Scan(&pin.Id, &pin.DbId, &pin.Name, &pin.Query, &pin.CreatedAt, &pin.UpdatedAt, &pin.QueryStartedAt, &pin.QueryFinishedAt, &pin.ResultsFields, &pin.ResultsRows, &pin.ResultsError)
-	if err != nil {
+	err := row.Scan(&pin.Id, &pin.DbId, &pin.Name, &pin.Query, &pin.CreatedAt, &pin.UpdatedAt, &pin.QueryStartedAt, &pin.QueryFinishedAt, &pin.ResultsFields, &pin.ResultsRows, &pin.ResultsError)
+	switch {
+	case err == sql.ErrNoRows:
+		return nil, nil
+	case err != nil:
 		return nil, err
+	default:
+		return &pin, nil
 	}
-	return &pin, nil
 }
 
 func dataPinGet(id string) (*pin, error) {

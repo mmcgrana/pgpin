@@ -1,6 +1,5 @@
 ## Todo
 
-* User QueryRow where appropriate
 * Upper-cased types
 * Figure out better JSON testing story
 * Update directions to reflect db url helpers
