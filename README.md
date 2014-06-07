@@ -153,7 +153,6 @@ $ cd src/github.com/mmcgrana/pgpin/pgpin-api
 To start a development version of app:
 
 ```
-$ export DATABASE_URL=$DEVELOPMENT_DATABASE_URL
 $ cat db/* | psql $DATABASE_URL
 $ go get
 $ goreman start

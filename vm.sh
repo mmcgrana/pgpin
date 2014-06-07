@@ -39,6 +39,7 @@ sudo -u postgres createdb pgpin-test
 cat >> /home/vagrant/.profile <<EOF
 export DEVELOPMENT_DATABASE_URL=postgres://postgres:secret@127.0.0.1:5432/pgpin-development
 export TEST_DATABASE_URL=postgres://postgres:secret@127.0.0.1:5432/pgpin-test
+export DATABASE_URL=\$DATABASE_URL
 EOF
 
 # Goreman
