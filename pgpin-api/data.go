@@ -182,15 +182,15 @@ func dataPinValidate(pin *pin) error {
 	return nil
 }
 
-func dataPinList() ([]pinSlim, error) {
+func dataPinList() ([]PinSlim, error) {
 	res, err := dataConn.Query("SELECT id, name FROM pins where deleted_at IS NULL")
 	if err != nil {
 		return nil, err
 	}
 	defer res.Close()
-	pins := []pinSlim{}
+	pins := []PinSlim{}
 	for res.Next() {
-		pin := pinSlim{}
+		pin := PinSlim{}
 		err = res.Scan(&pin.Id, &pin.Name)
 		if err != nil {
 			return nil, err

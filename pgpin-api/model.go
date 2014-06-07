@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-type pinSlim struct {
+type PinSlim struct {
 	Id   string `json:"id"`
 	Name string `json:"name"`
 }
