@@ -1,6 +1,5 @@
 ## Todo
 
-* Update directions to reflect db url helpers
 * Use QueryRow where appropriate
 * Test multiple column case
 * Add back in user query error handling
