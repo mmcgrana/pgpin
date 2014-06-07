@@ -152,16 +152,22 @@ $ cd src/github.com/mmcgrana/pgpin/pgpin-api
 
 To start a development version of app:
 
-```
+```console
 $ cat db/* | psql $DATABASE_URL
-$ go get
+$ godep go install
+$ goreman start
+```
+
+To apply changes:
+
+```console
+$ godep go install
 $ goreman start
 ```
 
 To run tests:
 
 ```console
-$ go get github.com/stretchr/testify/assert
 $ cat db/* | psql $DATABASE_URL
-$ go test
+$ godep go test
 ```

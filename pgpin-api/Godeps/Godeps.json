@@ -1,0 +1,22 @@
+{
+	"ImportPath": "github.com/mmcgrana/pgpin/pgpin-api",
+	"GoVersion": "go1.2.2",
+	"Deps": [
+		{
+			"ImportPath": "github.com/darkhelmet/env",
+			"Rev": "d1827543acd996dc90693a2ae0b1a18e33e0df17"
+		},
+		{
+			"ImportPath": "github.com/lib/pq",
+			"Rev": "50a04ed4e5268fb34ca6d885202b569ef89c0a7a"
+		},
+		{
+			"ImportPath": "github.com/stretchr/testify/assert",
+			"Rev": "410219ae829b24af99a4d48a79858f23d0be42ee"
+		},
+		{
+			"ImportPath": "github.com/zenazn/goji",
+			"Rev": "bdefa16a3ec570f695bc6227fbc441998fd4be15"
+		}
+	]
+}
