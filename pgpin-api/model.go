@@ -29,7 +29,7 @@ type DbSlim struct {
 	Name string `json:"name"`
 }
 
-type db struct {
+type Db struct {
 	Id        string     `json:"id"`
 	Name      string     `json:"name"`
 	Url       string     `json:"url"`

@@ -48,7 +48,7 @@ func dataStart() {
 
 // Db operations.
 
-func dataDbValidate(db *db) error {
+func dataDbValidate(db *Db) error {
 	err := validateSlug("name", db.Name)
 	if err != nil {
 		return err
@@ -89,8 +89,8 @@ func dataDbList() ([]DbSlim, error) {
 	return dbs, nil
 }
 
-func dataDbAdd(name string, url string) (*db, error) {
-	db := &db{}
+func dataDbAdd(name string, url string) (*Db, error) {
+	db := &Db{}
 	db.Id = dataRandId()
 	db.Name = name
 	db.Url = url
@@ -104,9 +104,9 @@ func dataDbAdd(name string, url string) (*db, error) {
 	return db, err
 }
 
-func dataDbGet(id string) (*db, error) {
+func dataDbGet(id string) (*Db, error) {
 	row := dataConn.QueryRow(`SELECT id, name, url, added_at, updated_at FROM dbs WHERE id=$1 AND removed_at IS NULL LIMIT 1`, id)
-	db := db{}
+	db := Db{}
 	err := row.Scan(&db.Id, &db.Name, &db.Url, &db.AddedAt, &db.UpdatedAt)
 	switch {
 	case err == sql.ErrNoRows:
@@ -122,7 +122,7 @@ func dataDbGet(id string) (*db, error) {
 	}
 }
 
-func dataDbUpdate(db *db) error {
+func dataDbUpdate(db *Db) error {
 	err := dataDbValidate(db)
 	if err == nil {
 		db.UpdatedAt = time.Now()
@@ -132,7 +132,7 @@ func dataDbUpdate(db *db) error {
 	return err
 }
 
-func dataDbRemove(id string) (*db, error) {
+func dataDbRemove(id string) (*Db, error) {
 	db, err := dataDbGet(id)
 	if err != nil {
 		return nil, err

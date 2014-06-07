@@ -122,7 +122,7 @@ func webDbList(resp http.ResponseWriter, req *http.Request) {
 }
 
 func webDbAdd(resp http.ResponseWriter, req *http.Request) {
-	db := &db{}
+	db := &Db{}
 	err := webRead(req, db)
 	if err == nil {
 		db, err = dataDbAdd(db.Name, db.Url)
@@ -131,8 +131,8 @@ func webDbAdd(resp http.ResponseWriter, req *http.Request) {
 }
 
 func webDbUpdate(c web.C, resp http.ResponseWriter, req *http.Request) {
-	dbUpdate := &db{}
-	db := &db{}
+	dbUpdate := &Db{}
+	db := &Db{}
 	err := webRead(req, dbUpdate)
 	if err == nil {
 		db, err = dataDbGet(c.URLParams["id"])
