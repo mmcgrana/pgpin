@@ -8,7 +8,7 @@
 * Add back in user query error handling
 - Timeout user query duration (pending ml)
 - Timeout control plane queries/connections (pending ml)
-- Limit result rows
+* Think about other serialization approaches, esp for slim
 * Upper-cased types
 * Figure out better JSON testing story
 * Update directions to reflect db url helpers
