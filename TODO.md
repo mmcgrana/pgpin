@@ -7,9 +7,10 @@
 * Try other types, including bytes
 * Encrypt resource URL
 * Encrypt other sensitive fields
-* Worker error handling / looping
+* Worker leasing and non-looping on errors
 * Multiple workers / concurrent workers
 * Operational metrics
+* Remove scratch
 * Handling extra input fields on JSON
 * Exception logging and actionable reporting
 * Request Ids

@@ -145,9 +145,8 @@ func workerStart() {
 		processed, err := workerTick()
 		if err != nil {
 			log.Print("worker.error %s", err.Error())
-			panic(err)
 		}
-		if !processed {
+		if err != nil || !processed {
 			time.Sleep(time.Millisecond)
 		}
 	}
