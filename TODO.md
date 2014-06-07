@@ -1,16 +1,9 @@
 ## Todo
 
-* Use QueryRow where appropriate
-* Test multiple column case
-* Add back in user query error handling
 - Timeout user query duration (pending ml)
 - Timeout control plane queries/connections (pending ml)
 * Think about other serialization approaches, esp for slim
-* Upper-cased types
-* Figure out better JSON testing story
-* Update directions to reflect db url helpers
-* Limit result size
-* Refresh results periodically
+* Refresh results periodically, update readme
 * Run db bootstrap on test start
 * Try other types, including bytes
 * Encrypt resource URL
