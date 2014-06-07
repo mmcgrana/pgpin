@@ -2,7 +2,6 @@
 
 - Timeout user query duration (pending ml)
 - Timeout control plane queries/connections (pending ml)
-* Limit result size
 * Refresh results periodically
 * Web request timeout middleware
 * Run db bootstrap on test start
