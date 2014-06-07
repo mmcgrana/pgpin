@@ -196,14 +196,14 @@ func webPinDelete(c web.C, resp http.ResponseWriter, req *http.Request) {
 
 // Misc endpoints.
 
-type status struct {
+type Status struct {
 	Message string `json:"message"`
 }
 
 func webStatus(resp http.ResponseWriter, req *http.Request) {
 	err := dataConn.Ping()
-	ok := &status{Message: "ok"}
-	webRespond(resp, 200, ok, err)
+	status := &Status{Message: "ok"}
+	webRespond(resp, 200, status, err)
 }
 
 func webError(resp http.ResponseWriter, req *http.Request) {

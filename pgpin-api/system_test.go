@@ -291,7 +291,7 @@ func TestNotFound(t *testing.T) {
 func TestStatus(t *testing.T) {
 	res := mustRequest("GET", "/status", nil)
 	assert.Equal(t, 200, res.Code)
-	status := &status{}
+	status := &Status{}
 	mustDecode(res, status)
 	assert.Equal(t, "ok", status.Message)
 }
