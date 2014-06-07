@@ -9,6 +9,15 @@ import (
 
 var resultsRowsMax = 10000
 
+func workerCoerceType(in interface{}) interface{} {
+	switch in := in.(type) {
+	case []byte:
+		return string(in)
+	default:
+		return in
+	}
+}
+
 func workerPoll() (*pin, error) {
 	pin, err := dataPinForQuery()
 	if err != nil {
@@ -63,6 +72,9 @@ func workerQuery(p *pin) error {
 		err := resultsRows.Scan(resultsRowPointers...)
 		if err != nil {
 			return err
+		}
+		for i, _ := range resultsRowData {
+			resultsRowData[i] = workerCoerceType(resultsRowData[i])
 		}
 		resultsRowsData = append(resultsRowsData, resultsRowData)
 	}

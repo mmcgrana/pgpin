@@ -184,6 +184,20 @@ func TestPinCreateAndGet(t *testing.T) {
 	assert.Nil(t, pinOut.ResultsError)
 }
 
+func TestPinCreateMultiColumnQuery(t *testing.T) {
+	defer clear()
+	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
+	pinInId := mustDataPinCreate(dbIn.Id, "pins-1", "select name, query from pins")
+	workerTick()
+	res := mustRequest("GET", "/pins/"+pinInId.Id, nil)
+	assert.Equal(t, 200, res.Code)
+	pinOut := &pin{}
+	mustDecode(res, pinOut)
+	assert.Equal(t, `["name","query"]`, withoutWhitespace(pinOut.ResultsFields.String()))
+	assert.Equal(t, `[["pins-1","select name, query from pins"]]`, withoutWhitespace(pinOut.ResultsRows.String()))
+	assert.Nil(t, pinOut.ResultsError)
+}
+
 func TestPinCreateDuplicateName(t *testing.T) {
 	defer clear()
 	dbIn := mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
