@@ -1,5 +1,9 @@
 ## Todo
 
+* User QueryRow where appropriate
+* Upper-cased types
+* Figure out better JSON testing story
+* Update directions to reflect db url helpers
 * Use QueryRow where appropriate
 * Test multiple column case
 * Add back in user query error handling
@@ -11,13 +15,12 @@
 * Update directions to reflect db url helpers
 * Limit result size
 * Refresh results periodically
-* Web request timeout middleware
 * Run db bootstrap on test start
 * Try other types, including bytes
-* JSON data type instead of text
 * Encrypt resource URL
 * Encrypt other sensitive fields
-* Multiple workers/ concurrent workers
+* Worker error handling / looping
+* Multiple workers / concurrent workers
 * Operational metrics
 * Handling extra input fields on JSON
 * Exception logging and actionable reporting
@@ -48,8 +51,3 @@
 * One-off scratch scripts
 * Move off of goji onto raw web
 * Ping DB at create-time
-
-## Topics
-
-* CLI aesthetic
-* CLI implementation, ref hk and zk
