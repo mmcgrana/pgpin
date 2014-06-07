@@ -28,7 +28,7 @@ func clear() {
 
 func init() {
 	log.SetOutput(ioutil.Discard)
-	os.Setenv("DATABASE_URL", os.Getenv("TEST_DATABASE_URL"))
+	os.Setenv("DATABASE_URL", env.String("TEST_DATABASE_URL"))
 	dataStart()
 	clear()
 	webBuild()
@@ -62,6 +62,11 @@ func mustDataPinCreate(dbId string, name string, query string) *pin {
 
 func withoutWhitespace(s string) string {
 	return strings.Replace(strings.Replace(s, " ", "", -1), "\n", "", -1)
+}
+
+func mustWorkerTick() {
+	_, err := workerTick()
+	must(err)
 }
 
 // DB endpoints.
@@ -168,7 +173,7 @@ func TestPinCreateAndGet(t *testing.T) {
 	assert.Equal(t, 201, res.Code)
 	pinOut := &pin{}
 	mustDecode(res, pinOut)
-	workerTick()
+	mustWorkerTick()
 	res = mustRequest("GET", "/pins/"+pinOut.Id, nil)
 	assert.Equal(t, 200, res.Code)
 	mustDecode(res, pinOut)
@@ -181,20 +186,6 @@ func TestPinCreateAndGet(t *testing.T) {
 	assert.True(t, pinOut.QueryFinishedAt.After(*pinOut.QueryStartedAt))
 	assert.Equal(t, `["count"]`, withoutWhitespace(pinOut.ResultsFields.String()))
 	assert.Equal(t, `[[1]]`, withoutWhitespace(pinOut.ResultsRows.String()))
-	assert.Nil(t, pinOut.ResultsError)
-}
-
-func TestPinCreateMultiColumnQuery(t *testing.T) {
-	defer clear()
-	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
-	pinInId := mustDataPinCreate(dbIn.Id, "pins-1", "select name, query from pins")
-	workerTick()
-	res := mustRequest("GET", "/pins/"+pinInId.Id, nil)
-	assert.Equal(t, 200, res.Code)
-	pinOut := &pin{}
-	mustDecode(res, pinOut)
-	assert.Equal(t, `["name","query"]`, withoutWhitespace(pinOut.ResultsFields.String()))
-	assert.Equal(t, `[["pins-1","select name, query from pins"]]`, withoutWhitespace(pinOut.ResultsRows.String()))
 	assert.Nil(t, pinOut.ResultsError)
 }
 
@@ -227,6 +218,34 @@ func TestPinRename(t *testing.T) {
 	mustDecode(res, pinGetOut)
 	assert.Equal(t, "pins-1a", pinGetOut.Name)
 	assert.True(t, pinGetOut.UpdatedAt.After(pinIn.UpdatedAt))
+}
+
+func TestPinMultipleColumns(t *testing.T) {
+	defer clear()
+	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
+	pinInId := mustDataPinCreate(dbIn.Id, "pins-1", "select name, query from pins")
+	mustWorkerTick()
+	res := mustRequest("GET", "/pins/"+pinInId.Id, nil)
+	assert.Equal(t, 200, res.Code)
+	pinOut := &pin{}
+	mustDecode(res, pinOut)
+	assert.Equal(t, `["name","query"]`, withoutWhitespace(pinOut.ResultsFields.String()))
+	assert.Equal(t, `[["pins-1","selectname,queryfrompins"]]`, withoutWhitespace(pinOut.ResultsRows.String()))
+	assert.Nil(t, pinOut.ResultsError)
+}
+
+func TestPinTooManyRows(t *testing.T) {
+	defer clear()
+	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
+	pinInId := mustDataPinCreate(dbIn.Id, "pins-1", "select generate_series(0, 10000)")
+	mustWorkerTick()
+	res := mustRequest("GET", "/pins/"+pinInId.Id, nil)
+	assert.Equal(t, 200, res.Code)
+	pinOut := &pin{}
+	mustDecode(res, pinOut)
+	assert.Equal(t, "null", pinOut.ResultsFields.String())
+	assert.Equal(t, "null", pinOut.ResultsRows.String())
+	assert.Equal(t, "too many rows in query results", *pinOut.ResultsError)
 }
 
 func TestPinDelete(t *testing.T) {

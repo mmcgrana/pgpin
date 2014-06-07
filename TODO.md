@@ -6,6 +6,9 @@
 - Timeout user query duration (pending ml)
 - Timeout control plane queries/connections (pending ml)
 - Limit result rows
+* Upper-cased types
+* Figure out better JSON testing story
+* Update directions to reflect db url helpers
 * Limit result size
 * Refresh results periodically
 * Web request timeout middleware

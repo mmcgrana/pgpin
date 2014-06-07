@@ -2,7 +2,6 @@
 
 - Timeout user query duration (pending ml)
 - Timeout control plane queries/connections (pending ml)
-* Limit result rows
 * Limit result size
 * Refresh results periodically
 * Web request timeout middleware
@@ -10,7 +9,8 @@
 * Try other types, including bytes
 * Encrypt resource URL
 * Encrypt other sensitive fields
-* Multiple workers/ concurrent workers
+* Multiple workers / concurrent workers
+* Worker error handling / looping
 * Operational metrics
 * Handling extra input fields on JSON
 * Exception logging and actionable reporting
