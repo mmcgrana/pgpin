@@ -18,8 +18,8 @@ type pin struct {
 	UpdatedAt       time.Time  `json:"updated_at"`
 	QueryStartedAt  *time.Time `json:"query_started_at"`
 	QueryFinishedAt *time.Time `json:"query_finished_at"`
-	ResultsFields   NullJson   `json:"results_fields"`
-	ResultsRows     NullJson   `json:"results_rows"`
+	ResultsFields   PgJson     `json:"results_fields"`
+	ResultsRows     PgJson     `json:"results_rows"`
 	ResultsError    *string    `json:"results_error"`
 	DeletedAt       *time.Time `json:"-"`
 }

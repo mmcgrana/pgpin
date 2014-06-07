@@ -42,7 +42,7 @@ func webRespond(resp http.ResponseWriter, status int, data interface{}, err erro
 			status = pgerr.HttpStatus
 			data = pgerr
 		} else {
-			log.Printf("web.error %+v", err)
+			log.Printf("web.error %+s", err.Error())
 			status = 500
 			data = &map[string]string{"id": "internal-error", "message": "internal server error"}
 		}

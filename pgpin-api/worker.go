@@ -60,25 +60,25 @@ func workerQuery(p *pin) error {
 	if err != nil {
 		return err
 	}
-	p.ResultsFields = NullJson{Valid: true, Json: resultsFieldsJson}
-	resultsRows := make([][]interface{}, len(buffer.Rows))
+	p.ResultsFields = PgJson(resultsFieldsJson)
+	resultsRowsData := make([][]interface{}, len(buffer.Rows))
 	for i, row := range buffer.Rows {
-		resultsRows[i] = make([]interface{}, len(row.Data))
+		resultsRowsData[i] = make([]interface{}, len(row.Data))
 		for j, rowDatum := range row.Data {
 			switch rowValue := rowDatum.(type) {
 			case []byte:
-				resultsRows[i][j] = string(rowValue)
+				resultsRowsData[i][j] = string(rowValue)
 			default:
-				resultsRows[i][j] = rowValue
+				resultsRowsData[i][j] = rowValue
 			}
 		}
 	}
-	resultsRowsJson, err := json.Marshal(resultsRows)
+	resultsRowsJson, err := json.Marshal(resultsRowsData)
 	if err != nil {
 		return err
 	}
+	p.ResultsRows = PgJson(resultsRowsJson)
 	log.Printf("worker.query.commit pin_id=%s", p.Id)
-	p.ResultsRows = NullJson{Valid: true, Json: resultsRowsJson}
 	err = dataPinUpdate(p)
 	if err != nil {
 		return err

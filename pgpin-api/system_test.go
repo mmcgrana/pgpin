@@ -180,8 +180,8 @@ func TestPinCreateAndGet(t *testing.T) {
 	assert.WithinDuration(t, time.Now(), pinOut.CreatedAt, 3*time.Second)
 	assert.True(t, pinOut.QueryStartedAt.After(pinOut.CreatedAt))
 	assert.True(t, pinOut.QueryFinishedAt.After(*pinOut.QueryStartedAt))
-	assert.Equal(t, `["count"]`, withoutWhitespace(string(pinOut.ResultsFields.Json)))
-	assert.Equal(t, `[[1]]`, withoutWhitespace(string(pinOut.ResultsRows.Json)))
+	assert.Equal(t, `["count"]`, withoutWhitespace(pinOut.ResultsFields.String()))
+	assert.Equal(t, `[[1]]`, withoutWhitespace(pinOut.ResultsRows.String()))
 	assert.Nil(t, pinOut.ResultsError)
 }
 
