@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql/driver"
+	"encoding/json"
 	"errors"
 )
 
@@ -44,6 +45,17 @@ func (p PgJson) Value() (driver.Value, error) {
 	return []byte(p), nil
 }
 
+// String returns a string representation of the struct's
+// JSON data.
 func (p *PgJson) String() string {
 	return string([]byte(*p))
+}
+
+// MustNewPgJson returns a PgJson struct corresponding to
+// the given data, which shuold be a data structure (not an
+// allready-encoded JSON string).
+func MustNewPgJson(data interface{}) PgJson {
+	encoded, err := json.Marshal(data)
+	must(err)
+	return PgJson(encoded)
 }

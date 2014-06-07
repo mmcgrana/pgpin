@@ -1,8 +1,11 @@
 ## Todo
 
+* Use QueryRow where appropriate
+* Test multiple column case
+* Add back in user query error handling
 - Timeout user query duration (pending ml)
 - Timeout control plane queries/connections (pending ml)
-* Limit result rows
+- Limit result rows
 * Limit result size
 * Refresh results periodically
 * Web request timeout middleware
@@ -41,6 +44,7 @@
 * Generic not found vs. e.g. db not found
 * One-off scratch scripts
 * Move off of goji onto raw web
+* Ping DB at create-time
 
 ## Topics
 

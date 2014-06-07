@@ -1,13 +1,13 @@
 package main
 
 import (
-	"bitbucket.org/kardianos/table"
 	"database/sql"
-	"encoding/json"
-	"github.com/lib/pq"
+	"errors"
 	"log"
 	"time"
 )
+
+var resultsRowsMax = 10000
 
 func workerPoll() (*pin, error) {
 	pin, err := dataPinForQuery()
@@ -22,7 +22,7 @@ func workerPoll() (*pin, error) {
 
 func workerQuery(p *pin) error {
 	log.Printf("worker.query.start pin_id=%s", p.Id)
-	dbUrl, err := dataPinDbUrl(p)
+	pinDbUrl, err := dataPinDbUrl(p)
 	if err != nil {
 		return err
 	}
@@ -33,51 +33,47 @@ func workerQuery(p *pin) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("worker.query.open pin_id=%s", p.Id)
-	resourceDb, err := sql.Open("postgres", dbUrl)
+	log.Printf("worker.query.call pin_id=%s", p.Id)
+	pinDb, err := sql.Open("postgres", pinDbUrl)
 	if err != nil {
 		return err
 	}
-	log.Printf("worker.query.exec pin_id=%s", p.Id)
-	buffer, err := table.Get(resourceDb, p.Query)
-	finishedAt := time.Now()
-	p.QueryFinishedAt = &finishedAt
+	resultsRows, err := pinDb.Query(p.Query)
+	defer resultsRows.Close()
 	if err != nil {
-		if pgerr, ok := err.(pq.PGError); ok {
-			log.Printf("worker.query.usererror pin_id=%s", p.Id)
-			msg := pgerr.Get('M')
-			p.ResultsError = &msg
-			err = dataPinUpdate(p)
-			if err != nil {
-				return err
-			}
-			return nil
-		}
 		return err
 	}
 	log.Printf("worker.query.read pin_id=%s", p.Id)
-	resultsFieldsJson, err := json.Marshal(buffer.ColumnName)
+	resultsFieldsData, err := resultsRows.Columns()
 	if err != nil {
 		return err
 	}
-	p.ResultsFields = PgJson(resultsFieldsJson)
-	resultsRowsData := make([][]interface{}, len(buffer.Rows))
-	for i, row := range buffer.Rows {
-		resultsRowsData[i] = make([]interface{}, len(row.Data))
-		for j, rowDatum := range row.Data {
-			switch rowValue := rowDatum.(type) {
-			case []byte:
-				resultsRowsData[i][j] = string(rowValue)
-			default:
-				resultsRowsData[i][j] = rowValue
-			}
+	resultsRowsData := make([][]interface{}, 0)
+	resultsRowsSeen := 0
+	for resultsRows.Next() {
+		resultsRowsSeen += 1
+		if resultsRowsSeen > resultsRowsMax {
+			return errors.New("too many rows")
 		}
+		resultsRowData := make([]interface{}, len(resultsFieldsData))
+		resultsRowPointers := make([]interface{}, len(resultsFieldsData))
+		for i, _ := range resultsRowData {
+			resultsRowPointers[i] = &resultsRowData[i]
+		}
+		err := resultsRows.Scan(resultsRowPointers...)
+		if err != nil {
+			return err
+		}
+		resultsRowsData = append(resultsRowsData, resultsRowData)
 	}
-	resultsRowsJson, err := json.Marshal(resultsRowsData)
+	err = resultsRows.Err()
 	if err != nil {
-		return err
+		return nil
 	}
-	p.ResultsRows = PgJson(resultsRowsJson)
+	p.ResultsFields = MustNewPgJson(resultsFieldsData)
+	p.ResultsRows = MustNewPgJson(resultsRowsData)
+	finishedAt := time.Now()
+	p.QueryFinishedAt = &finishedAt
 	log.Printf("worker.query.commit pin_id=%s", p.Id)
 	err = dataPinUpdate(p)
 	if err != nil {

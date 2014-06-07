@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"strings"
 	"testing"
 	"time"
@@ -27,9 +28,7 @@ func clear() {
 
 func init() {
 	log.SetOutput(ioutil.Discard)
-	if !strings.HasSuffix(env.String("DATABASE_URL"), "-test") {
-		panic("Doesn't look like a test database")
-	}
+	os.Setenv("DATABASE_URL", os.Getenv("TEST_DATABASE_URL"))
 	dataStart()
 	clear()
 	webBuild()
