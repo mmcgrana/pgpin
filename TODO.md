@@ -33,7 +33,6 @@
 * Investigate goji request logging
 * Godeps 
 * pg conn application_name
-* pg conn timeouts
 * Better url validation
 * Validate names are unique
 * Generic not found vs. e.g. db not found
