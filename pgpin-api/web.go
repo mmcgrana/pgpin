@@ -9,6 +9,7 @@ import (
 	"github.com/zenazn/goji/web/middleware"
 	"log"
 	"net/http"
+	"runtime/debug"
 	"time"
 )
 
@@ -58,6 +59,23 @@ func webRespond(resp http.ResponseWriter, status int, data interface{}, err erro
 }
 
 // Middleware.
+
+func webFailsafe(h http.Handler) http.Handler {
+	fn := func(resp http.ResponseWriter, req *http.Request) {
+		defer func() {
+			if err := recover(); err != nil {
+				log.Printf("panic: %#v\n", err)
+				debug.PrintStack()
+				webRespond(resp, 500, nil, &pgpinError{
+					Id: "internal-error",
+					Message: "panic'd",
+				})
+			}
+		}()
+		h.ServeHTTP(resp, req)
+	}
+	return http.HandlerFunc(fn)
+}
 
 func webLogging(inner http.Handler) http.Handler {
 	outer := func(w http.ResponseWriter, r *http.Request) {
@@ -164,6 +182,18 @@ func webStatus(resp http.ResponseWriter, req *http.Request) {
 	webRespond(resp, 200, ok, err)
 }
 
+func webError(resp http.ResponseWriter, req *http.Request) {
+	err := pgpinError{
+		Id: "error",
+		Message: "web error",
+	}
+	webRespond(resp, 0, nil, err)
+}
+
+func webPanic(resp http.ResponseWriter, req *http.Request) {
+	panic("panic")
+}
+
 func webNotFound(resp http.ResponseWriter, req *http.Request) {
 	err := &pgpinError{
 		Id:         "not-found",
@@ -176,8 +206,10 @@ func webNotFound(resp http.ResponseWriter, req *http.Request) {
 // Server builder.
 
 func webBuild() {
-	goji.Use(webLogging)
 	goji.Abandon(middleware.Logger)
+	goji.Abandon(middleware.Recoverer)
+	goji.Use(webFailsafe)
+	goji.Use(webLogging)
 	goji.Get("/dbs", webDbList)
 	goji.Post("/dbs", webDbAdd)
 	goji.Put("/dbs/:id", webDbUpdate)
@@ -189,6 +221,8 @@ func webBuild() {
 	goji.Get("/pins/:id", webPinGet)
 	goji.Delete("/pins/:id", webPinDelete)
 	goji.Get("/status", webStatus)
+	goji.Get("/error", webError)
+	goji.Get("/panic", webPanic)
 	goji.NotFound(webNotFound)
 }
 

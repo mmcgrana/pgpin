@@ -2,7 +2,6 @@
 
 - Timeout user query duration (pending ml)
 - Timeout control plane queries/connections (pending ml)
-* Internal server error failsafe
 * Limit result rows
 * Limit result size
 * Refresh results periodically
@@ -41,6 +40,7 @@
 * Validate names are unique
 * Generic not found vs. e.g. db not found
 * One-off scratch scripts
+* Move off of goji onto raw web
 
 ## Topics
 
