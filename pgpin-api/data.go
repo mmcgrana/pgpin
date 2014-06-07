@@ -71,15 +71,15 @@ func dataDbValidate(db *db) error {
 	return nil
 }
 
-func dataDbList() ([]dbSlim, error) {
+func dataDbList() ([]DbSlim, error) {
 	res, err := dataConn.Query("SELECT id, name FROM dbs where removed_at IS NULL")
 	if err != nil {
 		return nil, err
 	}
 	defer res.Close()
-	dbs := []dbSlim{}
+	dbs := []DbSlim{}
 	for res.Next() {
-		db := dbSlim{}
+		db := DbSlim{}
 		err = res.Scan(&db.Id, &db.Name)
 		if err != nil {
 			return nil, err

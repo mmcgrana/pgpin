@@ -24,7 +24,7 @@ type pin struct {
 	DeletedAt       *time.Time `json:"-"`
 }
 
-type dbSlim struct {
+type DbSlim struct {
 	Id   string `json:"id"`
 	Name string `json:"name"`
 }
