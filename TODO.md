@@ -31,7 +31,6 @@
 * Capturing status in logger
 * Graceful stop worker
 * Investigate goji request logging
-* Godeps 
 * pg conn application_name
 * Better url validation
 * Validate names are unique
