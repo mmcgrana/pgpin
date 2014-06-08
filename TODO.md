@@ -3,6 +3,7 @@
 - Timeout user query duration (pending ml)
 - Timeout control plane queries/connections (pending ml)
 * Think about other serialization approaches, esp for slim
+* Tests for sample endpoints
 * Refresh results periodically, update readme
 * Try other types, including bytes
 * Encrypt resource URL
