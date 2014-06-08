@@ -123,13 +123,17 @@ func workerProcess(p *Pin) error {
 // workerTick processes 1 pending pin, if such a pin is
 // available. It returns true iff a pin is processed.
 func workerTick() (bool, error) {
-	p, err := dataPinForQuery()
+	p, err := dataPinReserve()
 	if err != nil {
 		return false, err
 	}
 	if p != nil {
 		log.Print("worker.tick.found pin_id=%s", p.Id)
 		err = workerProcess(p)
+		if err != nil {
+			return false, err
+		}
+		err = dataPinRelease(p)
 		if err != nil {
 			return false, err
 		}

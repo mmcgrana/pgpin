@@ -249,8 +249,12 @@ func dataPinGet(id string) (*Pin, error) {
 	return pin, nil
 }
 
-func dataPinForQuery() (*Pin, error) {
+func dataPinReserve() (*Pin, error) {
 	return dataPinGetInternal("query_started_at IS NULL AND deleted_at IS NULL")
+}
+
+func dataPinRelease(*Pin) error {
+	return nil
 }
 
 func dataPinUpdate(pin *Pin) error {
