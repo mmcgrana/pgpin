@@ -298,3 +298,11 @@ func TestStatus(t *testing.T) {
 	mustDecode(res, status)
 	assert.Equal(t, "ok", status.Message)
 }
+
+// Worker behaviour.
+
+func TestWorkerNoop(t *testing.T) {
+	processed, err := workerTick()
+	assert.False(t, processed)
+	assert.Nil(t, err)
+}
