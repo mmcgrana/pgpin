@@ -163,7 +163,7 @@ func workerStart() {
 		// Attempt to work one job, log an error if seen.
 		processed, err := workerTick()
 		if err != nil {
-			log.Print("worker.error %s", err.Error())
+			log.Printf("worker.error %s", err.Error())
 		}
 		// Check for shutdown command.
 		select {
