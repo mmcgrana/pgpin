@@ -106,10 +106,6 @@ func workerProcess(p *Pin) error {
 	}
 	startedAt := time.Now()
 	p.QueryStartedAt = &startedAt
-	err = dataPinUpdate(p)
-	if err != nil {
-		return err
-	}
 	err = workerQuery(p, pinDbUrl)
 	if err != nil {
 		return err
