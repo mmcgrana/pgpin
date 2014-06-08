@@ -42,8 +42,9 @@ export TEST_DATABASE_URL=postgres://postgres:secret@127.0.0.1:5432/pgpin-test
 export DATABASE_URL=\$DATABASE_URL
 EOF
 
-# Goreman
+# Goreman and Godep
 sudo -u vagrant -i go get github.com/mattn/goreman
+sudo -u vagrant -i go get github.com/tools/godep
 
 # Config
 cat >> /home/vagrant/.profile <<EOF
