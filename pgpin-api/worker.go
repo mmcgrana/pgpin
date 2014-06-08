@@ -145,10 +145,10 @@ func workerTrap() chan bool {
 	done := make(chan bool, 1)
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
-        <-sig
-        log.Print("worker.trap")
-        done <- true
-    }()
+		<-sig
+		log.Print("worker.trap")
+		done <- true
+	}()
 	return done
 }
 
@@ -163,7 +163,7 @@ func workerStart() {
 		}
 		// Check for shutdown command.
 		select {
-		case <- done:
+		case <-done:
 			log.Print("worker.exit")
 			os.Exit(0)
 		default:

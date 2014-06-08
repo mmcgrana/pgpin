@@ -224,7 +224,7 @@ func webPanic(resp http.ResponseWriter, req *http.Request) {
 
 func webTimeout(resp http.ResponseWriter, req *http.Request) {
 	time.Sleep(webTimeoutDuration + time.Second)
-	status :=&Status{Message: "late"}
+	status := &Status{Message: "late"}
 	webRespond(resp, 200, status, nil)
 }
 

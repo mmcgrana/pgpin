@@ -44,6 +44,7 @@ func (p *PgJson) Scan(value interface{}) error {
 func (p PgJson) Value() (driver.Value, error) {
 	return []byte(p), nil
 }
+
 // MustNewPgJson returns a PgJson struct corresponding to
 // the given data, which shuold be a data structure (not an
 // allready-encoded JSON string).
