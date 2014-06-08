@@ -35,5 +35,4 @@
 * Validate names are unique
 * Generic not found vs. e.g. db not found
 * One-off scratch scripts
-* Move off of goji onto raw web
 * Ping DB at create-time

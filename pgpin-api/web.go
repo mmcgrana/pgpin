@@ -2,11 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/zenazn/goji"
 	"github.com/zenazn/goji/bind"
 	"github.com/zenazn/goji/graceful"
 	"github.com/zenazn/goji/web"
-	"github.com/zenazn/goji/web/middleware"
 	"log"
 	"net/http"
 	"runtime/debug"
@@ -241,28 +239,29 @@ func webNotFound(resp http.ResponseWriter, req *http.Request) {
 
 // Server builder.
 
+var webMux *web.Mux
+
 func webBuild() {
-	goji.Abandon(middleware.Logger)
-	goji.Abandon(middleware.Recoverer)
-	goji.Use(webJsoner)
-	goji.Use(webLogger)
-	goji.Use(webTimer(webTimeoutDuration))
-	goji.Use(webRecoverer)
-	goji.Get("/dbs", webDbList)
-	goji.Post("/dbs", webDbAdd)
-	goji.Put("/dbs/:id", webDbUpdate)
-	goji.Get("/dbs/:id", webDbGet)
-	goji.Delete("/dbs/:id", webDbRemove)
-	goji.Get("/pins", webPinList)
-	goji.Post("/pins", webPinCreate)
-	goji.Put("/pins/:id", webPinUpdate)
-	goji.Get("/pins/:id", webPinGet)
-	goji.Delete("/pins/:id", webPinDelete)
-	goji.Get("/status", webStatus)
-	goji.Get("/error", webError)
-	goji.Get("/panic", webPanic)
-	goji.Get("/timeout", webTimeout)
-	goji.NotFound(webNotFound)
+	webMux = web.New()
+	webMux.Use(webJsoner)
+	webMux.Use(webLogger)
+	webMux.Use(webTimer(webTimeoutDuration))
+	webMux.Use(webRecoverer)
+	webMux.Get("/dbs", webDbList)
+	webMux.Post("/dbs", webDbAdd)
+	webMux.Put("/dbs/:id", webDbUpdate)
+	webMux.Get("/dbs/:id", webDbGet)
+	webMux.Delete("/dbs/:id", webDbRemove)
+	webMux.Get("/pins", webPinList)
+	webMux.Post("/pins", webPinCreate)
+	webMux.Put("/pins/:id", webPinUpdate)
+	webMux.Get("/pins/:id", webPinGet)
+	webMux.Delete("/pins/:id", webPinDelete)
+	webMux.Get("/status", webStatus)
+	webMux.Get("/error", webError)
+	webMux.Get("/panic", webPanic)
+	webMux.Get("/timeout", webTimeout)
+	webMux.NotFound(webNotFound)
 }
 
 func webStart() {
@@ -270,6 +269,6 @@ func webStart() {
 	webBuild()
 	listener := bind.Default()
 	bind.Ready()
-	must(graceful.Serve(listener, goji.DefaultMux))
+	must(graceful.Serve(listener, webMux))
 	graceful.Wait()
 }

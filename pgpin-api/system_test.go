@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"github.com/darkhelmet/env"
 	"github.com/stretchr/testify/assert"
-	"github.com/zenazn/goji"
 	"io"
 	"io/ioutil"
 	"log"
@@ -39,7 +38,7 @@ func mustRequest(method, url string, body io.Reader) *httptest.ResponseRecorder 
 	req, err := http.NewRequest(method, url, body)
 	must(err)
 	res := httptest.NewRecorder()
-	goji.DefaultMux.ServeHTTP(res, req)
+	webMux.ServeHTTP(res, req)
 	return res
 }
 
