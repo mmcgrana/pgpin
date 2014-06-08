@@ -138,6 +138,8 @@ func workerTick() (bool, error) {
 	return false, nil
 }
 
+// workerTrap returns a chanel that will be populated when
+// an INT or TERM signals is received.
 func workerTrap() chan bool {
 	sig := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
