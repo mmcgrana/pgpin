@@ -1,5 +1,6 @@
 ## Todo
 
+* Investigate data pin update, updated_at, mem vs db order
 - Timeout user query duration (pending ml)
 - Timeout control plane queries/connections (pending ml)
 * Think about other serialization approaches, esp for slim
@@ -10,6 +11,7 @@
 * Encrypt other sensitive fields
 * Worker leasing and non-looping on errors
 * Multiple workers / concurrent workers
+* Handle dangling reservations
 * Operational metrics
 * Handling extra input fields on JSON
 * Exception logging and actionable reporting

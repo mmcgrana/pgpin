@@ -21,6 +21,7 @@ type Pin struct {
 	ResultsFields   PgJson     `json:"results_fields"`
 	ResultsRows     PgJson     `json:"results_rows"`
 	ResultsError    *string    `json:"results_error"`
+	ReservedAt      *time.Time `json:"-"`
 	DeletedAt       *time.Time `json:"-"`
 }
 

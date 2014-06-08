@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+// Constants.
+
+var dataPinRefreshInterval = time.Minute
+
 // Data helpers.
 
 func dataRandId() string {
@@ -169,7 +173,7 @@ func dataPinValidate(pin *Pin) error {
 	if err != nil {
 		return err
 	}
-	sameNamed, err := dataCount("SELECT count(*) FROM pins WHERE name=$1 AND id!=$2 and deleted_at IS NULL", pin.Name, pin.Id)
+	sameNamed, err := dataCount("SELECT count(*) FROM pins WHERE name=$1 AND id!=$2 AND deleted_at IS NULL", pin.Name, pin.Id)
 	if err != nil {
 		return err
 	} else if sameNamed > 0 {
@@ -250,10 +254,29 @@ func dataPinGet(id string) (*Pin, error) {
 }
 
 func dataPinReserve() (*Pin, error) {
-	return dataPinGetInternal("query_started_at IS NULL AND deleted_at IS NULL")
+	refreshSince := time.Now().Add(-1 * dataPinRefreshInterval)
+	pin, err := dataPinGetInternal("((query_started_at is NULL) OR (query_started_at < $1)) AND reserved_at IS NULL AND deleted_at IS NULL", refreshSince)
+	if err != nil {
+		return nil, err
+	}
+	if pin == nil {
+		return nil, nil
+	}
+	reservedAt := time.Now()
+	_, err = dataConn.Exec("UPDATE pins SET reserved_at=$1 WHERE id=$2", reservedAt, pin.Id)
+	if err != nil {
+		return nil, err
+	}
+	pin.ReservedAt = &reservedAt
+	return pin, nil
 }
 
-func dataPinRelease(*Pin) error {
+func dataPinRelease(pin *Pin) error {
+	_, err := dataConn.Exec("UPDATE pins SET reserved_at=null WHERE id=$1", pin.Id)
+	if err != nil {
+		return err
+	}
+	pin.ReservedAt = nil
 	return nil
 }
 

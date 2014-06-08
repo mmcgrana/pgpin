@@ -41,7 +41,7 @@ func workerCoerceType(in interface{}) interface{} {
 // passed pin according to the results/errors. System errors
 // are returned.
 func workerQuery(p *Pin, pinDbUrl string) error {
-	log.Print("worker.query.start pin_id=%s", p.Id)
+	log.Printf("worker.query.start pin_id=%s", p.Id)
 	pinDb, err := sql.Open("postgres", pinDbUrl)
 	if err != nil {
 		p.ResultsError, err = workerExtractPgerror(err)
@@ -89,7 +89,7 @@ func workerQuery(p *Pin, pinDbUrl string) error {
 	}
 	p.ResultsFields = MustNewPgJson(resultsFieldsData)
 	p.ResultsRows = MustNewPgJson(resultsRowsData)
-	log.Print("worker.query.finish pin_id=%s", p.Id)
+	log.Printf("worker.query.finish pin_id=%s", p.Id)
 	return nil
 }
 
@@ -128,7 +128,7 @@ func workerTick() (bool, error) {
 		return false, err
 	}
 	if p != nil {
-		log.Print("worker.tick.found pin_id=%s", p.Id)
+		log.Printf("worker.tick.found pin_id=%s", p.Id)
 		err = workerProcess(p)
 		if err != nil {
 			return false, err
@@ -150,14 +150,14 @@ func workerTrap() chan bool {
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		<-sig
-		log.Print("worker.trap")
+		log.Printf("worker.trap")
 		done <- true
 	}()
 	return done
 }
 
 func workerStart() {
-	log.Print("worker.start")
+	log.Printf("worker.start")
 	done := workerTrap()
 	for {
 		// Attempt to work one job, log an error if seen.
@@ -168,7 +168,7 @@ func workerStart() {
 		// Check for shutdown command.
 		select {
 		case <-done:
-			log.Print("worker.exit")
+			log.Printf("worker.exit")
 			os.Exit(0)
 		default:
 		}
