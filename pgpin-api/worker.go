@@ -4,6 +4,9 @@ import (
 	"database/sql"
 	"github.com/lib/pq"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -139,13 +142,37 @@ func workerTick() (bool, error) {
 	return false, nil
 }
 
+func workerTrap() chan bool {
+	sig := make(chan os.Signal, 1)
+	done := make(chan bool, 1)
+	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+        <-sig
+        log.Print("worker.trap")
+        done <- true
+    }()
+	return done
+}
+
 func workerStart() {
 	log.Print("worker.start")
+	done := workerTrap()
 	for {
+		// Attempt to work one job, log an error if seen.
 		processed, err := workerTick()
 		if err != nil {
 			log.Print("worker.error %s", err.Error())
 		}
+		// Check for shutdown command.
+		select {
+		case <- done:
+			log.Print("worker.exit")
+			os.Exit(0)
+		default:
+		}
+		// Wait a bit before looping again if we either go
+		// an error last time or didn't find anything to
+		// process.
 		if err != nil || !processed {
 			time.Sleep(time.Millisecond)
 		}

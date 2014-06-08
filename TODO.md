@@ -10,7 +10,6 @@
 * Worker leasing and non-looping on errors
 * Multiple workers / concurrent workers
 * Operational metrics
-* Remove scratch
 * Handling extra input fields on JSON
 * Exception logging and actionable reporting
 * Request Ids
@@ -24,12 +23,13 @@
 * JSON schema
 * Implement pgpin
 * Implement pgpin-web
+* Remove goji gracefull stuff from worker output
 * API versioning
 * API authorization
+* Remove scratch
 * HTTP basic auth
 * Validation library
 * Capturing status in logger
-* Graceful stop worker
 * Investigate goji request logging
 * pg conn application_name
 * Better url validation
