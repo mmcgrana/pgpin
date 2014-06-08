@@ -13,7 +13,6 @@
 * Handling extra input fields on JSON
 * Exception logging and actionable reporting
 * Request Ids
-* Rename database
 * Cross-check against pliny
 * Cross-check against design guide
 * Publish blog post
