@@ -253,33 +253,6 @@ func dataPinGet(id string) (*Pin, error) {
 	return pin, nil
 }
 
-func dataPinReserve() (*Pin, error) {
-	refreshSince := time.Now().Add(-1 * dataPinRefreshInterval)
-	pin, err := dataPinGetInternal("((query_started_at is NULL) OR (query_started_at < $1)) AND reserved_at IS NULL AND deleted_at IS NULL", refreshSince)
-	if err != nil {
-		return nil, err
-	}
-	if pin == nil {
-		return nil, nil
-	}
-	reservedAt := time.Now()
-	_, err = dataConn.Exec("UPDATE pins SET reserved_at=$1 WHERE id=$2", reservedAt, pin.Id)
-	if err != nil {
-		return nil, err
-	}
-	pin.ReservedAt = &reservedAt
-	return pin, nil
-}
-
-func dataPinRelease(pin *Pin) error {
-	_, err := dataConn.Exec("UPDATE pins SET reserved_at=null WHERE id=$1", pin.Id)
-	if err != nil {
-		return err
-	}
-	pin.ReservedAt = nil
-	return nil
-}
-
 func dataPinUpdate(pin *Pin) error {
 	err := dataPinValidate(pin)
 	if err != nil {
@@ -292,6 +265,26 @@ func dataPinUpdate(pin *Pin) error {
 		return err
 	}
 	return nil
+}
+
+func dataPinReserve() (*Pin, error) {
+	refreshSince := time.Now().Add(-1 * dataPinRefreshInterval)
+	pin, err := dataPinGetInternal("((query_started_at is NULL) OR (query_started_at < $1)) AND reserved_at IS NULL AND deleted_at IS NULL", refreshSince)
+	if err != nil {
+		return nil, err
+	}
+	if pin == nil {
+		return nil, nil
+	}
+	reservedAt := time.Now()
+	pin.ReservedAt = &reservedAt
+	err = dataPinUpdate(pin)
+	return pin, err
+}
+
+func dataPinRelease(pin *Pin) error {
+	pin.ReservedAt = nil
+	return dataPinUpdate(pin)
 }
 
 func dataPinDelete(id string) (*Pin, error) {
