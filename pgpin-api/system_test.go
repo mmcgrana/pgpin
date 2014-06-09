@@ -331,16 +331,17 @@ func TestError(t *testing.T) {
 	assert.Equal(t, 500, res.Code)
 	data := make(map[string]string)
 	mustDecode(res, &data)
-	assert.Equal(t, "triggered-error", data["id"])
-	assert.Equal(t, "triggered web error", data["message"])
+	assert.Equal(t, "internal-error", data["id"])
+	assert.Equal(t, "internal server error", data["message"])
 }
 
 func TestPanic(t *testing.T) {
-	res := mustRequest("GET", "/error", nil)
+	res := mustRequest("GET", "/panic", nil)
 	assert.Equal(t, 500, res.Code)
 	data := make(map[string]string)
-	assert.Equal(t, "", data["id"])
-	assert.Equal(t, "", data["message"])
+	mustDecode(res, &data)
+	assert.Equal(t, "internal-error", data["id"])
+	assert.Equal(t, "internal server error", data["message"])
 }
 
 func TestNotFound(t *testing.T) {

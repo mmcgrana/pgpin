@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/zenazn/goji/bind"
 	"github.com/zenazn/goji/graceful"
 	"github.com/zenazn/goji/web"
@@ -47,7 +48,10 @@ func webRespond(resp http.ResponseWriter, status int, data interface{}, err erro
 		} else {
 			log.Printf("web.error %+s", err.Error())
 			status = 500
-			data = &map[string]string{"id": "internal-error", "message": "internal server error"}
+			data = &map[string]string{
+				"id": "internal-error",
+				"message": "internal server error",
+			}
 		}
 	}
 	b, err := json.MarshalIndent(data, "", "  ")
@@ -79,8 +83,8 @@ func webRecoverer(h http.Handler) http.Handler {
 	fn := func(resp http.ResponseWriter, req *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
-				log.Printf("panic: %#v\n", err)
-				debug.PrintStack()
+				log.Printf("web.panic: %s", err)
+				log.Print(string(debug.Stack()))
 				webRespond(resp, 0, nil, &PgpinError{
 					Id:         "internal-error",
 					Message:    "internal server error",
@@ -211,11 +215,7 @@ func webStatus(resp http.ResponseWriter, req *http.Request) {
 }
 
 func webError(resp http.ResponseWriter, req *http.Request) {
-	err := &PgpinError{
-		Id:      "triggered-error",
-		Message: "triggered web error",
-		HttpStatus: 500,
-	}
+	err := errors.New("a problem occurred")
 	webRespond(resp, 0, nil, err)
 }
 
