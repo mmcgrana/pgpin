@@ -145,7 +145,12 @@ func webDbUpdate(c web.C, resp http.ResponseWriter, req *http.Request) {
 	if err == nil {
 		db, err = dataDbGet(c.URLParams["id"])
 		if err == nil {
-			db.Name = dbUpdate.Name
+			if dbUpdate.Name != "" {
+				db.Name = dbUpdate.Name
+			}
+			if dbUpdate.Url != "" {
+				db.Url = dbUpdate.Url
+			}
 			err = dataDbUpdate(db)
 		}
 	}

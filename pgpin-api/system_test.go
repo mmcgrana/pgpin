@@ -121,7 +121,7 @@ func TestDbGet(t *testing.T) {
 	assert.WithinDuration(t, time.Now(), dbOut.UpdatedAt, 3*time.Second)
 }
 
-func TestDbRename(t *testing.T) {
+func TestDbUpdateName(t *testing.T) {
 	defer clear()
 	dbIn := mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
 	b := bytes.NewReader([]byte(`{"name": "dbs-1a"}`))
@@ -135,6 +135,25 @@ func TestDbRename(t *testing.T) {
 	dbGetOut := &Db{}
 	mustDecode(res, dbGetOut)
 	assert.Equal(t, "dbs-1a", dbGetOut.Name)
+	assert.True(t, dbGetOut.UpdatedAt.After(dbIn.UpdatedAt))
+}
+
+func TestDbUpdateUrl(t *testing.T) {
+	defer clear()
+	dbIn := mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
+	b := bytes.NewReader([]byte(`{"url": "postgres://u:p@h:1234/d-1a"}`))
+	res := mustRequest("PUT", "/dbs/"+dbIn.Id, b)
+	assert.Equal(t, 200, res.Code)
+	dbPutOut := &Db{}
+	mustDecode(res, dbPutOut)
+	assert.Equal(t, "dbs-1", dbPutOut.Name)
+	assert.Equal(t, "postgres://u:p@h:1234/d-1a", dbPutOut.Url)
+	res = mustRequest("GET", "/dbs/"+dbIn.Id, nil)
+	assert.Equal(t, 200, res.Code)
+	dbGetOut := &Db{}
+	mustDecode(res, dbGetOut)
+	assert.Equal(t, "dbs-1", dbPutOut.Name)
+	assert.Equal(t, "postgres://u:p@h:1234/d-1a", dbPutOut.Url)
 	assert.True(t, dbGetOut.UpdatedAt.After(dbIn.UpdatedAt))
 }
 

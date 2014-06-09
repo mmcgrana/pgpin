@@ -4,10 +4,10 @@
 - Timeout control plane queries/connections (pending ml)
 * Think about other serialization approaches, esp for slim
 * Test for timeout endpoint
+* Test for worker panic handling
 * Try other types, including bytes
 * Encrypt resource URL
 * Encrypt other sensitive fields
-* Update database URL in addition to name
 * Worker leasing and non-looping on errors
 * Multiple workers / concurrent workers
 * Handle dangling reservations
