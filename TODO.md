@@ -3,7 +3,6 @@
 ### Meta
 
 * Enumerate other relevant example apps
-* License
 * Get something observable on GitHub
 
 ### Docs

@@ -73,3 +73,7 @@ with:
 ```console
 $ TEST_LOGS=true godep go test
 ```
+
+### License
+
+See [LICENSE.md](LICENSE.md).
