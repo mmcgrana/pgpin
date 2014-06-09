@@ -8,7 +8,6 @@
 * Try other types, including bytes
 * Encrypt resource URL
 * Encrypt other sensitive fields
-* Worker leasing and non-looping on errors
 * Multiple workers / concurrent workers
 * Handle dangling reservations
 * Operational metrics
