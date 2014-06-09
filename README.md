@@ -1,19 +1,21 @@
 ## pgpin
 
-pgpin is a toy clone of [Heroku Dataclips](https://dataclips.heroku.com),
-written as an example Go app with an API, CLI, and web interface.
+pgpin is a toy clone of [Heroku Dataclips](https://dataclips.heroku.com)
+aiming to provide an open-source example Go app backed by
+Postgres that includes an API, CLI, and web interface.
 
-Like Dataclips, pgpin lets you construct SQL queries, continuously
-refreshes query results in the background, stores queries for later
-review, shows most recent query view results on the web, and allows
-sharing of results with colleagues using secret URLs. It's like gist
-for SQL queries.
+Like Dataclips, pgpin lets you construct SQL queries,
+continuously refreshes query results in the background,
+stores queries for later review, shows most recent query
+view results on the web, and allows sharing of results with
+colleagues using secret URLs. It's like gist for SQL
+queries.
 
-For more info on the Go example code within pgpin, please see the
-blog post [An example Go app: pgpin](https://mmcgrana.github.io/posts/2014-06-example-go-app-pgpin.html).
+For more info on the Go example code within pgpin, please
+see the blog post [An example Go app: pgpin](https://mmcgrana.github.io/posts/2014-06-example-go-app-pgpin.html).
 
-For pgpin usage and for deploying and developing the service, please
-see below.
+For pgpin usage and for deploying and developing the
+service, please see below.
 
 * [Usage](#usage)
 * [Deploying](#deploying)
@@ -21,8 +23,9 @@ see below.
 
 ### Usage
 
-We'll use the CLI interface to show basic usage of pgpin. Similar
-functionality is available on the web interface and the [API](api-docs).
+We'll use the CLI interface to show basic usage of pgpin.
+Similar functionality is available on the web interface and
+the [API](api-docs).
 
 To start using the CLI, configure it with a `PGPIN_API_URL`:
 
@@ -58,15 +61,16 @@ Commands:
   help        Show help
 ```
 
-To start, we'll need to add a database against which we can make
-pins:
+To start, we'll need to add a database against which we can
+make pins:
 
 ```console
 $ pgpin db-add --name test-database --url "postgres://user:pass@host:1234/database"
 33d03fe9ac28
 ```
 
-See that it's indeed registered, and check the registered details:
+See that it's indeed registered, and check the registered
+details:
 
 ```console
 $ pgpin dbs
@@ -123,14 +127,16 @@ $ pgpin db-remove test-database
 
 ### Deploying
 
-Deploy an instance of `pgping-api` and `pgpin-web` to Heroku with:
+Deploy an instance of `pgping-api` and `pgpin-web` to Heroku
+with:
 
 ```console
 $ export DEPLOY=you
 $ bin/deploy-setup
 ```
 
-This will give apps e.g. `pgping-api-you` and `pgpin-web-you`.
+This will give apps e.g. `pgping-api-you` and
+`pgpin-web-you`.
 
 Tear these apps down with:
 
@@ -140,9 +146,9 @@ $ bin/deploy-teardown
 
 ### Developing
 
-A [Vagrant](http://www.vagrantup.com/) development environment is
-provided. Install a recent version of Vagrant and Virtualbox and
-run:
+A [Vagrant](http://www.vagrantup.com/) development
+environment is provided. Install a recent version of Vagrant
+and Virtualbox and run:
 
 ```console
 $ vagrant up
