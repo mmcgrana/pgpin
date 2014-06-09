@@ -1,13 +1,11 @@
 ## Todo
 
-### Meta
-
-* Enumerate other relevant example apps
-* Get something observable on GitHub
-
 ### Docs
 
 * Initial features list
+* Enumerate other relevant example apps
+* Get something observable on GitHub
+* Twitter input
 * Blog post
 
 ### API
