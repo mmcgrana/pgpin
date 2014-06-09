@@ -1,16 +1,15 @@
 ## pgpin
 
-pgpin is a toy clone of [Heroku Dataclips](https://dataclips.heroku.com),
+`pgpin` is a toy clone of [Heroku Dataclips](https://dataclips.heroku.com),
 aiming to be an open-source example of building
 database-backed services in Go.
 
-pgpin is an in-progress experiment. We hope to learn:
+`pgpin` is an in-progress experiment. We hope to learn:
 
-* What an idiomatic database-backed service in Go looks
-  like.
+* How to build idiomatic, database-backed service in Go.
 
-* How viable it is to develop such services in Go, vs. e.g.
-  the Sinatra/Sequel stack.
+* How developing such services in Go compares to other
+  stacks, such as Ruby/Sinatra/Sequel.
 
 If the experiment is successful, we should end up with some
 nice artifacts:
@@ -19,10 +18,6 @@ nice artifacts:
 
 * A list of key functionalities for such services and
   example implementation snippets in the app.
-
-* Documentation on development workflow around the app,
-  including setting up a dev environment, running tests,
-  deploying, etc.
 
 ### Status
 
