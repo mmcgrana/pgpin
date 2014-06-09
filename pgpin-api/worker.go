@@ -6,11 +6,10 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"syscall"
 	"time"
 )
-
-var resultsRowsMax = 10000
 
 func workerExtractPgerror(err error) (*string, error) {
 	pgerr, ok := err.(pq.PGError)
@@ -66,7 +65,7 @@ func workerQuery(p *Pin, pinDbUrl string) error {
 	resultsRowsSeen := 0
 	for resultsRows.Next() {
 		resultsRowsSeen += 1
-		if resultsRowsSeen > resultsRowsMax {
+		if resultsRowsSeen > dataPinResultsRowsMax {
 			message := "too many rows in query results"
 			p.ResultsError = &message
 			return nil
@@ -160,27 +159,48 @@ func workerTrap() chan bool {
 	return done
 }
 
-func workerStart() {
-	log.Printf("worker.start")
-	done := workerTrap()
-	for {
-		// Attempt to work one job, log an error if seen.
-		processed, err := workerTick()
-		if err != nil {
-			log.Printf("worker.error %s", err.Error())
-		}
-		// Check for shutdown command.
-		select {
+var workerCooloff = time.Millisecond*500
+
+func workerCheckPanic() {
+	err := recover()
+	if err != nil {
+		log.Printf("worker.panic: %s", err)
+		log.Print(string(debug.Stack()))
+		time.Sleep(workerCooloff)
+	}
+}
+
+func workerHandleError(err error) {
+	log.Printf("worker.error %s", err.Error())
+	time.Sleep(workerCooloff)
+}
+
+func workerCheckExit(done chan bool) {
+	select {
 		case <-done:
 			log.Printf("worker.exit")
 			os.Exit(0)
 		default:
-		}
-		// Wait a bit before looping again if we either go
-		// an error last time or didn't find anything to
-		// process.
-		if err != nil || !processed {
-			time.Sleep(time.Millisecond)
-		}
+	}
+}
+
+func workerLoop(done chan bool) {
+	log.Printf("worker.loop")
+	defer workerCheckPanic()
+	processed, err := workerTick()
+	if err != nil {
+		workerHandleError(err)
+	}
+	workerCheckExit(done)
+	if err == nil && !processed {
+		time.Sleep(workerCooloff)
+	}
+}
+
+func workerStart() {
+	log.Printf("worker.start")
+	done := workerTrap()
+	for {
+		workerLoop(done)
 	}
 }

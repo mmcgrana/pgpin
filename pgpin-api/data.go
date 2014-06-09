@@ -13,6 +13,7 @@ import (
 // Constants.
 
 var dataPinRefreshInterval = 10 * time.Minute
+var dataPinResultsRowsMax = 10000
 
 // Data helpers.
 
