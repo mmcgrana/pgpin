@@ -3,7 +3,6 @@
 - Timeout user query duration (pending ml)
 - Timeout control plane queries/connections (pending ml)
 * Worker recover panics
-* Doc curling
 * Think about other serialization approaches, esp for slim
 * Test for timeout endpoint
 * Try other types, including bytes

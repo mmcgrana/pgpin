@@ -158,7 +158,14 @@ $ godep go install
 $ goreman start
 ```
 
-To apply changes:
+An environment variable is provided to make testing with
+curl easy:
+
+```console
+$ curl $PGPIN_API_URL/status
+```
+
+To apply code changes:
 
 ```console
 $ godep go install
