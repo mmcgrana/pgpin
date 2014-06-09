@@ -6,7 +6,7 @@ database-backed services in Go.
 
 `pgpin` is an in-progress experiment. We hope to learn:
 
-* How to build idiomatic, database-backed service in Go.
+* How to build database-backed services in idiomatic Go.
 
 * How developing such services in Go compares to other
   stacks, such as Ruby/Sinatra/Sequel.
@@ -14,7 +14,8 @@ database-backed services in Go.
 If the experiment is successful, we should end up with some
 nice artifacts:
 
-* A non-trivial example service in Go.
+* A non-trivial example service in Go, including associated
+  documentation.
 
 * A list of key functionalities for such services and
   example implementation snippets in the app.
