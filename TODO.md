@@ -4,7 +4,6 @@
 
 * Enumerate other relevant example apps
 * License
-* Move scratch out of source control
 * Get something observable on GitHub
 
 ### Docs
