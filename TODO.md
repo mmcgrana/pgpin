@@ -1,8 +1,21 @@
 ## Todo
 
+### Meta
+
+* Readme additions
+* Enumerate other relevant example apps
+* License
+* Move scratch out of source control
+* Get something observable on GitHub
+
+### Docs
+
+* Blog post
+
+### API
+
 - Timeout user query duration (pending ml)
-- Timeout control plane queries/connections (pending ml)
-* Get something on GitHub
+- Timeout control plane queries / connections (pending ml)
 * Think about other serialization approaches, esp for slim
 * Test for timeout endpoint
 * Test for worker panic handling
@@ -16,7 +29,7 @@
 * Exception logging and actionable reporting
 * Request Ids
 * Cross-check against pliny
-* Cross-check against design guide
+* Cross-check against HTTP API design guide
 * Publish blog post
 * Share on Twitter
 * Share on golang-nuts
@@ -24,17 +37,25 @@
 * JSON schema
 * Implement pgpin
 * Implement pgpin-web
-* Remove goji gracefull stuff from worker output
+* Remove goji graceful stuff from worker output
 * API versioning
 * API authorization
 * Remove scratch
-* HTTP basic auth
+* HTTP basic authentication
 * Validation library
 * Capturing status in logger
 * Investigate goji request logging
 * pg conn application_name
-* Better url validation
+* Better URL validation
 * Validate names are unique
 * Generic not found vs. e.g. db not found
 * One-off scratch scripts
 * Ping DB at create-time
+
+### CLI
+
+* Implement proof of concept using hk/zk skeleton
+
+### Web
+
+* Implement proof of concept with Ember or React
