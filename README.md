@@ -171,3 +171,10 @@ To run tests:
 $ cat db/* | psql $DATABASE_URL
 $ godep go test
 ```
+
+By default logs are silenced during tests. Turn them on
+with:
+
+```console
+$ export TEST_LOGS=true
+```

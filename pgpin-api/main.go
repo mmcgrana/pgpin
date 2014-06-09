@@ -6,13 +6,16 @@ import (
 	"os"
 )
 
+func init() {
+		log.SetFlags(0)
+}
+
 func usage() {
 	fmt.Fprintln(os.Stderr, "Usage: datapins-api [web|worker]")
 	os.Exit(1)
 }
 
 func main() {
-	log.SetFlags(0)
 	if len(os.Args) < 2 {
 		usage()
 	}

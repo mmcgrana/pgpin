@@ -25,7 +25,9 @@ func clear() {
 }
 
 func init() {
-	log.SetOutput(ioutil.Discard)
+	if env.StringDefault("TEST_LOGS", "false") != "true" {
+		log.SetOutput(ioutil.Discard)
+	}
 	os.Setenv("DATABASE_URL", env.String("TEST_DATABASE_URL"))
 	dataStart()
 	clear()
