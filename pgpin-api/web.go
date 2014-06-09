@@ -211,9 +211,10 @@ func webStatus(resp http.ResponseWriter, req *http.Request) {
 }
 
 func webError(resp http.ResponseWriter, req *http.Request) {
-	err := PgpinError{
+	err := &PgpinError{
 		Id:      "triggered-error",
 		Message: "triggered web error",
+		HttpStatus: 500,
 	}
 	webRespond(resp, 0, nil, err)
 }

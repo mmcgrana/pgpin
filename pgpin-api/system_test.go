@@ -318,6 +318,23 @@ func TestPinList(t *testing.T) {
 
 // Misc endpoints.
 
+func TestStatus(t *testing.T) {
+	res := mustRequest("GET", "/status", nil)
+	assert.Equal(t, 200, res.Code)
+	status := &Status{}
+	mustDecode(res, status)
+	assert.Equal(t, "ok", status.Message)
+}
+
+func TestError(t *testing.T) {
+	res := mustRequest("GET", "/error", nil)
+	assert.Equal(t, 500, res.Code)
+	data := make(map[string]string)
+	mustDecode(res, &data)
+	assert.Equal(t, "triggered-error", data["id"])
+	assert.Equal(t, "triggered web error", data["message"])
+}
+
 func TestNotFound(t *testing.T) {
 	res := mustRequest("GET", "/wat", nil)
 	assert.Equal(t, 404, res.Code)
@@ -325,14 +342,6 @@ func TestNotFound(t *testing.T) {
 	mustDecode(res, &data)
 	assert.Equal(t, "not-found", data["id"])
 	assert.Equal(t, "not found", data["message"])
-}
-
-func TestStatus(t *testing.T) {
-	res := mustRequest("GET", "/status", nil)
-	assert.Equal(t, 200, res.Code)
-	status := &Status{}
-	mustDecode(res, status)
-	assert.Equal(t, "ok", status.Message)
 }
 
 // Worker behaviour.
