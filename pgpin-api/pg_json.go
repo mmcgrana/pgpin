@@ -35,7 +35,10 @@ func (p *PgJson) Scan(value interface{}) error {
 		*p = nullValue
 		return nil
 	}
-	*p = PgJson(value.([]byte))
+	bytes := value.([]byte)
+	bytesCopy := make([]byte, len(bytes))
+	copy(bytesCopy, bytes)
+	*p = PgJson(bytesCopy)
 	return nil
 }
 
