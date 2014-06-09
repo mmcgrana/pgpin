@@ -12,8 +12,8 @@
 
 ### API
 
-- Timeout user query duration (pending ml)
-- Timeout control plane queries / connections (pending ml)
+* Timeout user query duration (pending ml)
+* Timeout control plane queries / connections (pending ml)
 * Think about other serialization approaches, esp for slim
 * Test for timeout endpoint
 * Test for worker panic handling
