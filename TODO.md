@@ -2,7 +2,6 @@
 
 ### Meta
 
-* Readme additions
 * Enumerate other relevant example apps
 * License
 * Move scratch out of source control
@@ -10,6 +9,7 @@
 
 ### Docs
 
+* Initial features list
 * Blog post
 
 ### API
