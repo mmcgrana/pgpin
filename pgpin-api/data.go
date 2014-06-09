@@ -12,7 +12,7 @@ import (
 
 // Constants.
 
-var dataPinRefreshInterval = 10*time.Minute
+var dataPinRefreshInterval = 10 * time.Minute
 
 // Data helpers.
 

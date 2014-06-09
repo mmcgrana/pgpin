@@ -248,9 +248,9 @@ func TestPinMultipleColumns(t *testing.T) {
 func TestPinTooManyRows(t *testing.T) {
 	defer clear()
 	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
-	pinInId := mustDataPinCreate(dbIn.Id, "pins-1", "select generate_series(0, 10000)")
+	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select generate_series(0, 10000)")
 	mustWorkerTick()
-	res := mustRequest("GET", "/pins/"+pinInId.Id, nil)
+	res := mustRequest("GET", "/pins/"+pinIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
 	pinOut := &Pin{}
 	mustDecode(res, pinOut)
@@ -262,15 +262,29 @@ func TestPinTooManyRows(t *testing.T) {
 func TestPinBadQuery(t *testing.T) {
 	defer clear()
 	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
-	pinInId := mustDataPinCreate(dbIn.Id, "pins-1", "select wat")
+	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select wat")
 	mustWorkerTick()
-	res := mustRequest("GET", "/pins/"+pinInId.Id, nil)
+	res := mustRequest("GET", "/pins/"+pinIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
 	pinOut := &Pin{}
 	mustDecode(res, pinOut)
 	assert.Equal(t, "null", string([]byte(pinOut.ResultsFields)))
 	assert.Equal(t, "null", string([]byte(pinOut.ResultsRows)))
 	assert.Equal(t, "column \"wat\" does not exist", *pinOut.ResultsError)
+}
+
+func TestPinBadDbUrl(t *testing.T) {
+	defer clear()
+	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL")+"-moar")
+	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
+	mustWorkerTick()
+	res := mustRequest("GET", "/pins/"+pinIn.Id, nil)
+	assert.Equal(t, 200, res.Code)
+	pinOut := &Pin{}
+	mustDecode(res, pinOut)
+	assert.Equal(t, "null", string([]byte(pinOut.ResultsFields)))
+	assert.Equal(t, "null", string([]byte(pinOut.ResultsRows)))
+	assert.Equal(t, "could not connect to database", *pinOut.ResultsError)
 }
 
 func TestPinDelete(t *testing.T) {
@@ -346,7 +360,7 @@ func TestWorkerPinRefreshReady(t *testing.T) {
 	defer func() {
 		dataPinRefreshInterval = dataPinRefreshIntervalPrev
 	}()
-	dataPinRefreshInterval = 0*time.Second
+	dataPinRefreshInterval = 0 * time.Second
 	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
 	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select now()")
 	mustWorkerTick()

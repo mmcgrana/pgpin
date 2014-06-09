@@ -18,6 +18,10 @@ func workerExtractPgerror(err error) (*string, error) {
 		msg := pgerr.Get('M')
 		return &msg, nil
 	}
+	if err.Error() == "driver: bad connection" {
+		msg := "could not connect to database"
+		return &msg, nil
+	}
 	return nil, err
 }
 

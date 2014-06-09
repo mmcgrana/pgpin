@@ -2,7 +2,6 @@
 
 - Timeout user query duration (pending ml)
 - Timeout control plane queries/connections (pending ml)
-* Test user database connection errors
 * Think about other serialization approaches, esp for slim
 * Tests for sample endpoints
 * Try other types, including bytes
