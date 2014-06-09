@@ -190,7 +190,12 @@ func webPinUpdate(c web.C, resp http.ResponseWriter, req *http.Request) {
 	if err == nil {
 		pin, err = dataPinGet(c.URLParams["id"])
 		if err == nil {
-			pin.Name = pinUpdate.Name
+			if pinUpdate.Name != "" {
+				pin.Name = pinUpdate.Name
+			}
+			if pinUpdate.Query != "" {
+				pin.Query = pinUpdate.Query
+			}
 			err = dataPinUpdate(pin)
 		}
 	}

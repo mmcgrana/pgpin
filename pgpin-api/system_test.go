@@ -232,7 +232,7 @@ func TestPinCreateDuplicateName(t *testing.T) {
 	assert.NotEmpty(t, data["message"])
 }
 
-func TestPinRename(t *testing.T) {
+func TestPinUpdateName(t *testing.T) {
 	defer clear()
 	dbIn := mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
 	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
@@ -247,6 +247,25 @@ func TestPinRename(t *testing.T) {
 	pinGetOut := &Pin{}
 	mustDecode(res, pinGetOut)
 	assert.Equal(t, "pins-1a", pinGetOut.Name)
+	assert.True(t, pinGetOut.UpdatedAt.After(pinIn.UpdatedAt))
+}
+
+func TestPinUpdateQuery(t *testing.T) {
+	defer clear()
+	dbIn := mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
+	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
+	b := bytes.NewReader([]byte(`{"query": "select now()"}`))
+	res := mustRequest("PUT", "/pins/"+pinIn.Id, b)
+	assert.Equal(t, 200, res.Code)
+	pinPutOut := &Pin{}
+	mustDecode(res, pinPutOut)
+	assert.Equal(t, "select now()", pinPutOut.Query)
+	res = mustRequest("GET", "/pins/"+pinIn.Id, nil)
+	assert.Equal(t, 200, res.Code)
+	pinGetOut := &Pin{}
+	mustDecode(res, pinGetOut)
+	assert.Equal(t, "pins-1", pinGetOut.Name)
+	assert.Equal(t, "select now()", pinGetOut.Query)
 	assert.True(t, pinGetOut.UpdatedAt.After(pinIn.UpdatedAt))
 }
 
