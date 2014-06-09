@@ -1,6 +1,5 @@
 ## Todo
 
-* Investigate data pin update, updated_at, mem vs db order
 - Timeout user query duration (pending ml)
 - Timeout control plane queries/connections (pending ml)
 * Test user database timeouts and syntax errors
