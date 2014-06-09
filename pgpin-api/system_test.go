@@ -60,6 +60,12 @@ func mustDataPinCreate(dbId string, name string, query string) *Pin {
 	return pin
 }
 
+func mustDataPinGet(id string) *Pin {
+	pin, err := dataPinGet(id)
+	must(err)
+	return pin
+}
+
 func mustWorkerTick() {
 	_, err := workerTick()
 	must(err)
@@ -307,4 +313,20 @@ func TestWorkerNoop(t *testing.T) {
 	processed, err := workerTick()
 	assert.False(t, processed)
 	assert.Nil(t, err)
+}
+
+func TestWorkerPinRefresh(t *testing.T) {
+	defer clear()
+	dataPinRefreshIntervalPrev := dataPinRefreshInterval
+	defer func() {
+		dataPinRefreshInterval = dataPinRefreshIntervalPrev
+	}()
+	dataPinRefreshInterval = 0*time.Second
+	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
+	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select now()")
+	mustWorkerTick()
+	pinOut1 := mustDataPinGet(pinIn.Id)
+	mustWorkerTick()
+	pinOut2 := mustDataPinGet(pinIn.Id)
+	assert.NotEqual(t, string([]byte(pinOut1.ResultsRows)), string([]byte(pinOut2.ResultsRows)))
 }
