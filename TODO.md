@@ -6,7 +6,6 @@
 * Test user database timeouts and syntax errors
 * Think about other serialization approaches, esp for slim
 * Tests for sample endpoints
-* Refresh results periodically, update readme
 * Try other types, including bytes
 * Encrypt resource URL
 * Encrypt other sensitive fields
