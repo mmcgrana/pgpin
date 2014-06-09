@@ -48,11 +48,11 @@ func workerQuery(p *Pin, pinDbUrl string) error {
 		return err
 	}
 	resultsRows, err := pinDb.Query(p.Query)
-	defer resultsRows.Close()
 	if err != nil {
 		p.ResultsError, err = workerExtractPgerror(err)
 		return err
 	}
+	defer resultsRows.Close()
 	resultsFieldsData, err := resultsRows.Columns()
 	if err != nil {
 		p.ResultsError, err = workerExtractPgerror(err)

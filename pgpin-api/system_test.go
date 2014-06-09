@@ -259,6 +259,20 @@ func TestPinTooManyRows(t *testing.T) {
 	assert.Equal(t, "too many rows in query results", *pinOut.ResultsError)
 }
 
+func TestPinBadQuery(t *testing.T) {
+	defer clear()
+	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
+	pinInId := mustDataPinCreate(dbIn.Id, "pins-1", "select wat")
+	mustWorkerTick()
+	res := mustRequest("GET", "/pins/"+pinInId.Id, nil)
+	assert.Equal(t, 200, res.Code)
+	pinOut := &Pin{}
+	mustDecode(res, pinOut)
+	assert.Equal(t, "null", string([]byte(pinOut.ResultsFields)))
+	assert.Equal(t, "null", string([]byte(pinOut.ResultsRows)))
+	assert.Equal(t, "column \"wat\" does not exist", *pinOut.ResultsError)
+}
+
 func TestPinDelete(t *testing.T) {
 	defer clear()
 	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
