@@ -176,5 +176,5 @@ By default logs are silenced during tests. Turn them on
 with:
 
 ```console
-$ export TEST_LOGS=true
+$ TEST_LOGS=true godep go test
 ```
