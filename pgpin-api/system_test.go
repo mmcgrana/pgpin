@@ -335,6 +335,14 @@ func TestError(t *testing.T) {
 	assert.Equal(t, "triggered web error", data["message"])
 }
 
+func TestPanic(t *testing.T) {
+	res := mustRequest("GET", "/error", nil)
+	assert.Equal(t, 500, res.Code)
+	data := make(map[string]string)
+	assert.Equal(t, "", data["id"])
+	assert.Equal(t, "", data["message"])
+}
+
 func TestNotFound(t *testing.T) {
 	res := mustRequest("GET", "/wat", nil)
 	assert.Equal(t, 404, res.Code)
