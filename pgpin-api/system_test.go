@@ -17,13 +17,6 @@ import (
 
 // Setup and teardown.
 
-func clear() {
-	_, err := dataConn.Exec("DELETE from pins")
-	must(err)
-	_, err = dataConn.Exec("DELETE from dbs")
-	must(err)
-}
-
 func init() {
 	if env.StringDefault("TEST_LOGS", "false") != "true" {
 		log.SetOutput(ioutil.Discard)
@@ -32,6 +25,13 @@ func init() {
 	dataStart()
 	clear()
 	webBuild()
+}
+
+func clear() {
+	_, err := dataConn.Exec("DELETE from pins")
+	must(err)
+	_, err = dataConn.Exec("DELETE from dbs")
+	must(err)
 }
 
 // Helpers.
