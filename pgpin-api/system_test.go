@@ -315,7 +315,18 @@ func TestWorkerNoop(t *testing.T) {
 	assert.Nil(t, err)
 }
 
-func TestWorkerPinRefresh(t *testing.T) {
+func TestWorkerPinRefreshNotReady(t *testing.T) {
+	defer clear()
+	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
+	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select now()")
+	mustWorkerTick()
+	pinOut1 := mustDataPinGet(pinIn.Id)
+	mustWorkerTick()
+	pinOut2 := mustDataPinGet(pinIn.Id)
+	assert.Equal(t, string([]byte(pinOut1.ResultsRows)), string([]byte(pinOut2.ResultsRows)))
+}
+
+func TestWorkerPinRefreshReady(t *testing.T) {
 	defer clear()
 	dataPinRefreshIntervalPrev := dataPinRefreshInterval
 	defer func() {
