@@ -17,8 +17,8 @@ nice artifacts:
 * A non-trivial example service in Go, including associated
   documentation.
 
-* A list of key functionalities for such services and
-  example implementation snippets in the app.
+* A list of key features for such services and example
+  implementation snippets in the app.
 
 ### Status
 
