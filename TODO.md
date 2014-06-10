@@ -23,6 +23,7 @@
 * Handling extra input fields on JSON
 * Exception logging and actionable reporting
 * Request Ids
+* Review Go docker image at https://github.com/GoogleCloudPlatform/golang-docker/blob/master/base/Dockerfile
 * Cross-check against pliny
 * Cross-check against HTTP API design guide
 * Publish blog post
