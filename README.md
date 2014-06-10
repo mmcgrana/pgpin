@@ -77,3 +77,11 @@ $ TEST_LOGS=true godep go test
 ### License
 
 See [LICENSE.md](LICENSE.md).
+
+### References
+
+Some other projects we've looked to in writing the `pgpin`
+example app:
+
+* [Interagent HTTP API design guide](https://github.com/interagent/http-api-design)
+* [Pliny Ruby toolkit](https://github.com/interagent/pliny)
