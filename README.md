@@ -1,8 +1,10 @@
 ## pgpin
 
-`pgpin` is a toy clone of [Heroku Dataclips](https://dataclips.heroku.com),
-aiming to be an open-source example of building
-database-backed services in Go.
+`pgpin` is an open-source example app showing how to build
+a database-backed service in Go.
+
+The example is a clone of [Heroku Dataclips](https://dataclips.heroku.com),
+basically a "pastbin for SQL queries and results".
 
 `pgpin` is an in-progress experiment. We hope to learn:
 
