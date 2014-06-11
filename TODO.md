@@ -22,7 +22,7 @@
 * Handle dangling reservations
 * Operational metrics
 * Handling extra input fields on JSON
-* Exception logging and actionable reporting
+* Exception reporting
 * Request Ids
 * Review Go docker image at https://github.com/GoogleCloudPlatform/golang-docker/blob/master/base/Dockerfile
 * Cross-check against pliny
