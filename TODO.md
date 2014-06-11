@@ -3,15 +3,17 @@
 ### Docs
 
 * Initial features list
-* Review todo list
 * Get something observable on GitHub
-* Twitter input
-* Blog post
+* Twitter
+* Publish: blog
+* Publish: golang-nuts
 
 ### API
 
+* Set application_name for control and user queries
 * Timeout user query duration (pending golang-nuts)
 * Timeout control plane queries / connections (pending golang-nuts)
+* Standard UUIds for ids, associated Postgres data type
 * Think about other serialization approaches, esp for slim
 * Test for timeout endpoint
 * Test for worker panic handling
@@ -27,27 +29,25 @@
 * Review Go docker image at https://github.com/GoogleCloudPlatform/golang-docker/blob/master/base/Dockerfile
 * Cross-check against pliny
 * Cross-check against HTTP API design guide
-* Publish blog post
-* Share on Twitter
-* Share on golang-nuts
-* pgpin-go generated client
 * JSON schema
-* Implement pgpin
-* Implement pgpin-web
 * Remove goji graceful stuff from worker output
 * API versioning
 * API authorization
-* Remove scratch
 * HTTP basic authentication
-* Validation library
-* Capturing status in logger
-* Investigate goji request logging
-* pg conn application_name
-* Better URL validation
+* Investigate validation libraries
+* Validate URL for well-formedness
+* Validate URL for reachability at create-time
 * Validate names are unique
+* Capturing HTTP response status in logger
 * Generic not found vs. e.g. db not found
-* One-off scratch scripts
-* Ping DB at create-time
+* Figure out how to write one-off scratch scripts
+* Review and catalog error ids
+* Apply tool to check for missing error handles
+* Hook standard go tools into git
+
+### Clent
+
+* Implement proof of concept using Schematic
 
 ### CLI
 
