@@ -3,14 +3,15 @@
 ### Docs
 
 * Initial features list
+* Review todo list
 * Get something observable on GitHub
 * Twitter input
 * Blog post
 
 ### API
 
-* Timeout user query duration (pending ml)
-* Timeout control plane queries / connections (pending ml)
+* Timeout user query duration (pending golang-nuts)
+* Timeout control plane queries / connections (pending golang-nuts)
 * Think about other serialization approaches, esp for slim
 * Test for timeout endpoint
 * Test for worker panic handling
