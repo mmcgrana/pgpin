@@ -6,27 +6,23 @@ a database-backed service in Go.
 The example is a clone of [Heroku Dataclips](https://dataclips.heroku.com),
 basically a "pastebin for SQL queries".
 
-`pgpin` is an in-progress experiment. We hope to learn:
+Work on `pgpin` is in progress. The current version of the app has
+some but not all of the user-facing features and robustness
+properties we eventually want.
 
-* How to build database-backed services in idiomatic Go.
+In working through this example app we hope to learn:
+
+* How to build database-backed services in idiomatic Go, with an
+  eye towards robustness and operability.
 
 * How developing such services in Go compares to other
   stacks, such as Ruby/Sinatra/Sequel.
 
-If the experiment is successful, we should end up with some
-nice artifacts:
+The scope of finished and outstanding work is described in,
+respectively:
 
-* A non-trivial example service in Go, including associated
-  documentation.
-
-* A list of key features for such services and example
-  implementation snippets in the app.
-
-### Status
-
-* [FEATURES.md](FEATURES.md): things we've done and
-  therefore have useful examples of.
-* [TODO.md](TODO.md): things we'd like to do or investigate.
+* [FEATURES.md](FEATURES.md)
+* [TODO.md](TODO.md)
 
 ### Developing
 
@@ -85,5 +81,11 @@ See [LICENSE.md](LICENSE.md).
 Some other projects we've looked to in writing the `pgpin`
 example app:
 
+* [Gddo server for godoc.org](https://github.com/golang/gddo)
 * [Interagent HTTP API design guide](https://github.com/interagent/http-api-design)
 * [Pliny Ruby toolkit](https://github.com/interagent/pliny)
+
+We are interested in collecting other examples of non-trivial,
+open-source, database-backed (Postgres or otherwise) services
+written in Go. Please send suggestions to the
+[author](https://twitter.com/mmcgrana).
