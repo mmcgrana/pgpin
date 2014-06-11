@@ -3,7 +3,7 @@
 ### Docs
 
 * Get something observable on GitHub
-* Twitter
+* Publish: Twitter
 * Publish: blog
 * Publish: golang-nuts
 
@@ -24,7 +24,8 @@
 * Operational metrics
 * Handling extra input fields on JSON
 * Exception reporting
-* Request Ids
+* Request Ids on requests
+* Request Ids passed through
 * Review Go docker image at https://github.com/GoogleCloudPlatform/golang-docker/blob/master/base/Dockerfile
 * Cross-check against pliny
 * Cross-check against HTTP API design guide
