@@ -34,6 +34,7 @@
 * API versioning
 * API authorization
 * HTTP basic authentication
+* Remove goji/bind dependency?
 * Investigate validation libraries
 * Validate URL for well-formedness
 * Validate URL for reachability at create-time
