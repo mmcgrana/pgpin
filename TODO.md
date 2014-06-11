@@ -2,7 +2,6 @@
 
 ### Docs
 
-* Initial features list
 * Get something observable on GitHub
 * Twitter
 * Publish: blog
