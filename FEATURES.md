@@ -37,9 +37,10 @@
 * Config extracted from the Unix environment
 * Config validation via github.com/darkhelmet/env
 * Logs in key=value style with consistent type keys
-* Tests exercise full application stack
+* Test exercising full application stack
 * Test assertions via github.com/stretchr/testify/assert
+* Test workflow documentation
 * Godep pegs application dependencies
 * Procfile communicates process types
-* Development and testing workflow instructions
-* Vagrant development container
+* Development container in Vagrant
+* Development workflow instructions
