@@ -4,7 +4,7 @@
 a database-backed service in Go.
 
 The example is a clone of [Heroku Dataclips](https://dataclips.heroku.com),
-basically a "pastbin for SQL queries and results".
+basically a "pastebin for SQL queries".
 
 `pgpin` is an in-progress experiment. We hope to learn:
 
