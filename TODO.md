@@ -15,7 +15,7 @@
 * Think about other serialization approaches, esp for slim
 * Test for timeout endpoint
 * Test for worker panic handling
-* Try other types, including bytes
+* Try other user query result types, including bytes
 * Encrypt resource URL
 * Encrypt other sensitive fields
 * Multiple workers / concurrent workers
