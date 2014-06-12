@@ -19,6 +19,7 @@
 * Data create/update timestamping
 * Data input validation
 * Data query results stored in Postgres json type
+* Data ids stored in Postgres uuid type
 * Data application_name for API and pin queries
 * Data statement_timeout and connect_timeout for API and pin queries
 * Web API in the style of interagent/http-api-design

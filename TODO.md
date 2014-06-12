@@ -8,7 +8,6 @@
 
 ### API
 
-* Standard UUIds for ids, associated Postgres data type
 * Think about other serialization approaches, esp for slim
 * Test for timeout endpoint
 * Test for worker panic handling
