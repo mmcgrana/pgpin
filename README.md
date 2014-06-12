@@ -58,6 +58,8 @@ $ godep go install
 $ goreman start
 ```
 
+### Testing
+
 To run tests:
 
 ```console
@@ -70,6 +72,30 @@ with:
 
 ```console
 $ TEST_LOGS=true godep go test
+```
+
+### Scripting
+
+To write and run one-off scripts that use the `pgpin-api` app code:
+
+```console
+$ cd pgpin-api
+$ cat > script/count_pins.go <<EOF
+package main
+
+import (
+	"log"
+	pgpin "../../pgpin-api"
+)
+
+func main() {
+    pgpin.DataStart()
+    count, _ := pgpin.DataCount("SELECT count(*) from pins")
+    log.Printf("pins.count total=%d", count)
+}
+EOF
+
+$ godep go run script/count_pins.go
 ```
 
 ### License

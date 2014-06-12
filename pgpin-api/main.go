@@ -24,8 +24,6 @@ func main() {
 		WebStart()
 	case "worker":
 		WorkerStart()
-	case "script":
-		ScriptStart()
 	default:
 		usage()
 	}

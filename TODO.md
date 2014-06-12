@@ -39,7 +39,6 @@
 * Validate names are unique
 * Capturing HTTP response status in logger
 * Generic not found vs. e.g. db not found
-* Figure out how to write one-off scratch scripts
 * Review and catalog error ids
 * Apply tool to check for missing error handles
 * Hook standard go tools into git

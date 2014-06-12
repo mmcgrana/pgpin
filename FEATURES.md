@@ -45,3 +45,4 @@
 * Procfile communicates process types
 * Development container in Vagrant
 * Development workflow instructions
+* Scripting workflow instructions
