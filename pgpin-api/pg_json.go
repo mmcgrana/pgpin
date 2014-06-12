@@ -53,6 +53,6 @@ func (p PgJson) Value() (driver.Value, error) {
 // allready-encoded JSON string).
 func MustNewPgJson(data interface{}) PgJson {
 	encoded, err := json.Marshal(data)
-	must(err)
+	Must(err)
 	return PgJson(encoded)
 }

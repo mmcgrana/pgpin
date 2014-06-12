@@ -22,60 +22,60 @@ func init() {
 		log.SetOutput(ioutil.Discard)
 	}
 	os.Setenv("DATABASE_URL", env.String("TEST_DATABASE_URL"))
-	dataStart()
+	DataStart()
 	clear()
-	webBuild()
+	WebBuild()
 }
 
 func clear() {
-	_, err := dataConn.Exec("DELETE from pins")
-	must(err)
-	_, err = dataConn.Exec("DELETE from dbs")
-	must(err)
+	_, err := DataConn.Exec("DELETE from pins")
+	Must(err)
+	_, err = DataConn.Exec("DELETE from dbs")
+	Must(err)
 }
 
 // Helpers.
 
 func mustRequest(method, url string, body io.Reader) *httptest.ResponseRecorder {
 	req, err := http.NewRequest(method, url, body)
-	must(err)
+	Must(err)
 	res := httptest.NewRecorder()
-	webMux.ServeHTTP(res, req)
+	WebMux.ServeHTTP(res, req)
 	return res
 }
 
 func mustDecode(res *httptest.ResponseRecorder, data interface{}) {
-	must(json.NewDecoder(res.Body).Decode(data))
+	Must(json.NewDecoder(res.Body).Decode(data))
 }
 
 func mustDataDbAdd(name string, url string) *Db {
-	db, err := dataDbAdd(name, url)
-	must(err)
+	db, err := DataDbAdd(name, url)
+	Must(err)
 	return db
 }
 
 func mustDataPinCreate(dbId string, name string, query string) *Pin {
-	pin, err := dataPinCreate(dbId, name, query)
-	must(err)
+	pin, err := DataPinCreate(dbId, name, query)
+	Must(err)
 	return pin
 }
 
 func mustDataPinGet(id string) *Pin {
-	pin, err := dataPinGet(id)
-	must(err)
+	pin, err := DataPinGet(id)
+	Must(err)
 	return pin
 }
 
 func mustWorkerTick() {
-	_, err := workerTick()
-	must(err)
+	_, err := WorkerTick()
+	Must(err)
 }
 
 func mustCanonicalizeJson(in []byte) string {
 	data := make([]interface{}, 0)
-	must(json.Unmarshal(in, &data))
+	Must(json.Unmarshal(in, &data))
 	out, err := json.Marshal(data)
-	must(err)
+	Must(err)
 	return string(out)
 
 }
@@ -182,8 +182,8 @@ func TestDbList(t *testing.T) {
 	defer clear()
 	dbIn1 := mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
 	dbIn2 := mustDataDbAdd("dbs-2", "postgres://u:p@h:1234/d-2")
-	_, err := dataDbRemove(dbIn2.Id)
-	must(err)
+	_, err := DataDbRemove(dbIn2.Id)
+	Must(err)
 	res := mustRequest("GET", "/dbs", nil)
 	assert.Equal(t, 200, res.Code)
 	dbsOut := []*Db{}
@@ -343,8 +343,8 @@ func TestPinList(t *testing.T) {
 	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
 	pinIn1 := mustDataPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
 	pinIn2 := mustDataPinCreate(dbIn.Id, "pins-2", "select * from pins")
-	_, err := dataPinDelete(pinIn1.Id)
-	must(err)
+	_, err := DataPinDelete(pinIn1.Id)
+	Must(err)
 	res := mustRequest("GET", "/pins", nil)
 	assert.Equal(t, 200, res.Code)
 	pinsOut := []*Pin{}
@@ -394,7 +394,7 @@ func TestNotFound(t *testing.T) {
 // Worker behaviour.
 
 func TestWorkerNoop(t *testing.T) {
-	processed, err := workerTick()
+	processed, err := WorkerTick()
 	assert.False(t, processed)
 	assert.Nil(t, err)
 }
@@ -412,11 +412,11 @@ func TestWorkerPinRefreshNotReady(t *testing.T) {
 
 func TestWorkerPinRefreshReady(t *testing.T) {
 	defer clear()
-	dataPinRefreshIntervalPrev := dataPinRefreshInterval
+	DataPinRefreshIntervalPrev := DataPinRefreshInterval
 	defer func() {
-		dataPinRefreshInterval = dataPinRefreshIntervalPrev
+		DataPinRefreshInterval = DataPinRefreshIntervalPrev
 	}()
-	dataPinRefreshInterval = 0 * time.Second
+	DataPinRefreshInterval = 0 * time.Second
 	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
 	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select now()")
 	mustWorkerTick()

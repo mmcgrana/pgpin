@@ -12,12 +12,27 @@ import (
 
 // Constants.
 
-var dataPinRefreshInterval = 10 * time.Minute
-var dataPinResultsRowsMax = 10000
+var DataPinRefreshInterval = 10 * time.Minute
+var DataPinResultsRowsMax = 10000
+
+// DB connection.
+
+var DataConn *sql.DB
+
+func DataStart() {
+	log.Print("data.start")
+	connUrl := fmt.Sprintf("%s?application_name=%s", env.String("DATABASE_URL"), "pgpin.api")
+	conn, err := sql.Open("postgres", connUrl)
+	if err != nil {
+		panic(err)
+	}
+	conn.SetMaxOpenConns(20)
+	DataConn = conn
+}
 
 // Data helpers.
 
-func dataRandId() string {
+func DataRandId() string {
 	num := 6
 	bytes := make([]byte, num)
 	_, err := rand.Read(bytes)
@@ -27,8 +42,8 @@ func dataRandId() string {
 	return fmt.Sprintf("%x", bytes)
 }
 
-func dataCount(query string, args ...interface{}) (int, error) {
-	row := dataConn.QueryRow(query, args...)
+func DataCount(query string, args ...interface{}) (int, error) {
+	row := DataConn.QueryRow(query, args...)
 	var count int
 	err := row.Scan(&count)
 	if err != nil {
@@ -37,33 +52,18 @@ func dataCount(query string, args ...interface{}) (int, error) {
 	return count, nil
 }
 
-// DB connection.
-
-var dataConn *sql.DB
-
-func dataStart() {
-	log.Print("data.start")
-	connUrl := fmt.Sprintf("%s?application_name=%s", env.String("DATABASE_URL"), "pgpin.api")
-	conn, err := sql.Open("postgres", connUrl)
-	if err != nil {
-		panic(err)
-	}
-	conn.SetMaxOpenConns(20)
-	dataConn = conn
-}
-
 // Db operations.
 
-func dataDbValidate(db *Db) error {
-	err := validateSlug("name", db.Name)
+func DataDbValidate(db *Db) error {
+	err := ValidateSlug("name", db.Name)
 	if err != nil {
 		return err
 	}
-	err = validatePgUrl("url", db.Url)
+	err = ValidatePgUrl("url", db.Url)
 	if err != nil {
 		return err
 	}
-	sameNamed, err := dataCount("SELECT count(*) FROM dbs WHERE name=$1 and id!=$2 and removed_at IS NULL", db.Name, db.Id)
+	sameNamed, err := DataCount("SELECT count(*) FROM dbs WHERE name=$1 and id!=$2 and removed_at IS NULL", db.Name, db.Id)
 	if err != nil {
 		return err
 	}
@@ -77,8 +77,8 @@ func dataDbValidate(db *Db) error {
 	return nil
 }
 
-func dataDbList() ([]DbSlim, error) {
-	res, err := dataConn.Query("SELECT id, name FROM dbs where removed_at IS NULL")
+func DataDbList() ([]DbSlim, error) {
+	res, err := DataConn.Query("SELECT id, name FROM dbs where removed_at IS NULL")
 	if err != nil {
 		return nil, err
 	}
@@ -95,23 +95,23 @@ func dataDbList() ([]DbSlim, error) {
 	return dbs, nil
 }
 
-func dataDbAdd(name string, url string) (*Db, error) {
+func DataDbAdd(name string, url string) (*Db, error) {
 	db := &Db{}
-	db.Id = dataRandId()
+	db.Id = DataRandId()
 	db.Name = name
 	db.Url = url
 	db.AddedAt = time.Now()
 	db.UpdatedAt = time.Now()
-	err := dataDbValidate(db)
+	err := DataDbValidate(db)
 	if err == nil {
-		_, err = dataConn.Exec("INSERT INTO dbs (id, name, url, added_at, updated_at) VALUES ($1, $2, $3, $4, $5)",
+		_, err = DataConn.Exec("INSERT INTO dbs (id, name, url, added_at, updated_at) VALUES ($1, $2, $3, $4, $5)",
 			db.Id, db.Name, db.Url, db.AddedAt, db.UpdatedAt)
 	}
 	return db, err
 }
 
-func dataDbGet(id string) (*Db, error) {
-	row := dataConn.QueryRow(`SELECT id, name, url, added_at, updated_at FROM dbs WHERE id=$1 AND removed_at IS NULL LIMIT 1`, id)
+func DataDbGet(id string) (*Db, error) {
+	row := DataConn.QueryRow(`SELECT id, name, url, added_at, updated_at FROM dbs WHERE id=$1 AND removed_at IS NULL LIMIT 1`, id)
 	db := Db{}
 	err := row.Scan(&db.Id, &db.Name, &db.Url, &db.AddedAt, &db.UpdatedAt)
 	switch {
@@ -128,22 +128,22 @@ func dataDbGet(id string) (*Db, error) {
 	}
 }
 
-func dataDbUpdate(db *Db) error {
-	err := dataDbValidate(db)
+func DataDbUpdate(db *Db) error {
+	err := DataDbValidate(db)
 	if err == nil {
 		db.UpdatedAt = time.Now()
-		_, err = dataConn.Exec("UPDATE dbs SET name=$1, url=$2, added_at=$3, updated_at=$4, removed_at=$5 WHERE id=$6",
+		_, err = DataConn.Exec("UPDATE dbs SET name=$1, url=$2, added_at=$3, updated_at=$4, removed_at=$5 WHERE id=$6",
 			db.Name, db.Url, db.AddedAt, db.UpdatedAt, db.RemovedAt, db.Id)
 	}
 	return err
 }
 
-func dataDbRemove(id string) (*Db, error) {
-	db, err := dataDbGet(id)
+func DataDbRemove(id string) (*Db, error) {
+	db, err := DataDbGet(id)
 	if err != nil {
 		return nil, err
 	}
-	numPins, err := dataCount("SELECT count(*) FROM pins WHERE db_id=$1 AND deleted_at IS NULL", db.Id)
+	numPins, err := DataCount("SELECT count(*) FROM pins WHERE db_id=$1 AND deleted_at IS NULL", db.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -156,26 +156,26 @@ func dataDbRemove(id string) (*Db, error) {
 	}
 	removedAt := time.Now()
 	db.RemovedAt = &removedAt
-	err = dataDbUpdate(db)
+	err = DataDbUpdate(db)
 	return db, err
 }
 
 // Pin operations.
 
-func dataPinValidate(pin *Pin) error {
-	err := validateSlug("name", pin.Name)
+func DataPinValidate(pin *Pin) error {
+	err := ValidateSlug("name", pin.Name)
 	if err != nil {
 		return err
 	}
-	err = validateNonempty("query", pin.Query)
+	err = ValidateNonempty("query", pin.Query)
 	if err != nil {
 		return err
 	}
-	_, err = dataDbGet(pin.DbId)
+	_, err = DataDbGet(pin.DbId)
 	if err != nil {
 		return err
 	}
-	sameNamed, err := dataCount("SELECT count(*) FROM pins WHERE name=$1 AND id!=$2 AND deleted_at IS NULL", pin.Name, pin.Id)
+	sameNamed, err := DataCount("SELECT count(*) FROM pins WHERE name=$1 AND id!=$2 AND deleted_at IS NULL", pin.Name, pin.Id)
 	if err != nil {
 		return err
 	} else if sameNamed > 0 {
@@ -188,8 +188,8 @@ func dataPinValidate(pin *Pin) error {
 	return nil
 }
 
-func dataPinList() ([]PinSlim, error) {
-	res, err := dataConn.Query("SELECT id, name FROM pins where deleted_at IS NULL")
+func DataPinList() ([]PinSlim, error) {
+	res, err := DataConn.Query("SELECT id, name FROM pins where deleted_at IS NULL")
 	if err != nil {
 		return nil, err
 	}
@@ -206,19 +206,19 @@ func dataPinList() ([]PinSlim, error) {
 	return pins, nil
 }
 
-func dataPinCreate(dbId string, name string, query string) (*Pin, error) {
+func DataPinCreate(dbId string, name string, query string) (*Pin, error) {
 	pin := &Pin{}
-	pin.Id = dataRandId()
+	pin.Id = DataRandId()
 	pin.DbId = dbId
 	pin.Name = name
 	pin.Query = query
 	pin.CreatedAt = time.Now()
 	pin.UpdatedAt = time.Now()
-	err := dataPinValidate(pin)
+	err := DataPinValidate(pin)
 	if err != nil {
 		return nil, err
 	}
-	_, err = dataConn.Exec("INSERT INTO pins (id, db_id, name, query, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)",
+	_, err = DataConn.Exec("INSERT INTO pins (id, db_id, name, query, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)",
 		pin.Id, pin.DbId, pin.Name, pin.Query, pin.CreatedAt, pin.UpdatedAt)
 	if err != nil {
 		return nil, err
@@ -226,8 +226,8 @@ func dataPinCreate(dbId string, name string, query string) (*Pin, error) {
 	return pin, nil
 }
 
-func dataPinGetInternal(queryFrag string, queryVals ...interface{}) (*Pin, error) {
-	row := dataConn.QueryRow(`SELECT id, db_id, name, query, created_at, updated_at, query_started_at, query_finished_at, results_fields, results_rows, results_error, reserved_at FROM pins WHERE deleted_at IS NULL AND `+queryFrag+` LIMIT 1`, queryVals...)
+func DataPinGetInternal(queryFrag string, queryVals ...interface{}) (*Pin, error) {
+	row := DataConn.QueryRow(`SELECT id, db_id, name, query, created_at, updated_at, query_started_at, query_finished_at, results_fields, results_rows, results_error, reserved_at FROM pins WHERE deleted_at IS NULL AND `+queryFrag+` LIMIT 1`, queryVals...)
 	pin := Pin{}
 	err := row.Scan(&pin.Id, &pin.DbId, &pin.Name, &pin.Query, &pin.CreatedAt, &pin.UpdatedAt, &pin.QueryStartedAt, &pin.QueryFinishedAt, &pin.ResultsFields, &pin.ResultsRows, &pin.ResultsError, &pin.ReservedAt)
 	switch {
@@ -240,8 +240,8 @@ func dataPinGetInternal(queryFrag string, queryVals ...interface{}) (*Pin, error
 	}
 }
 
-func dataPinGet(id string) (*Pin, error) {
-	pin, err := dataPinGetInternal("id=$1", id)
+func DataPinGet(id string) (*Pin, error) {
+	pin, err := DataPinGetInternal("id=$1", id)
 	if err != nil {
 		return nil, err
 	}
@@ -255,13 +255,13 @@ func dataPinGet(id string) (*Pin, error) {
 	return pin, nil
 }
 
-func dataPinUpdate(pin *Pin) error {
-	err := dataPinValidate(pin)
+func DataPinUpdate(pin *Pin) error {
+	err := DataPinValidate(pin)
 	if err != nil {
 		return err
 	}
 	pin.UpdatedAt = time.Now()
-	_, err = dataConn.Exec("UPDATE pins SET db_id=$1, name=$2, query=$3, created_at=$4, updated_at=$5, query_started_at=$6, query_finished_at=$7, results_fields=$8, results_rows=$9, results_error=$10, deleted_at=$11 WHERE id=$12",
+	_, err = DataConn.Exec("UPDATE pins SET db_id=$1, name=$2, query=$3, created_at=$4, updated_at=$5, query_started_at=$6, query_finished_at=$7, results_fields=$8, results_rows=$9, results_error=$10, deleted_at=$11 WHERE id=$12",
 		pin.DbId, pin.Name, pin.Query, pin.CreatedAt, pin.UpdatedAt, pin.QueryStartedAt, pin.QueryFinishedAt, pin.ResultsFields, pin.ResultsRows, pin.ResultsError, pin.DeletedAt, pin.Id)
 	if err != nil {
 		return err
@@ -269,9 +269,9 @@ func dataPinUpdate(pin *Pin) error {
 	return nil
 }
 
-func dataPinReserve() (*Pin, error) {
-	refreshSince := time.Now().Add(-1 * dataPinRefreshInterval)
-	pin, err := dataPinGetInternal("((query_started_at is NULL) OR (query_started_at < $1)) AND reserved_at IS NULL AND deleted_at IS NULL", refreshSince)
+func DataPinReserve() (*Pin, error) {
+	refreshSince := time.Now().Add(-1 * DataPinRefreshInterval)
+	pin, err := DataPinGetInternal("((query_started_at is NULL) OR (query_started_at < $1)) AND reserved_at IS NULL AND deleted_at IS NULL", refreshSince)
 	if err != nil {
 		return nil, err
 	}
@@ -280,31 +280,31 @@ func dataPinReserve() (*Pin, error) {
 	}
 	reservedAt := time.Now()
 	pin.ReservedAt = &reservedAt
-	err = dataPinUpdate(pin)
+	err = DataPinUpdate(pin)
 	return pin, err
 }
 
-func dataPinRelease(pin *Pin) error {
+func DataPinRelease(pin *Pin) error {
 	pin.ReservedAt = nil
-	return dataPinUpdate(pin)
+	return DataPinUpdate(pin)
 }
 
-func dataPinDelete(id string) (*Pin, error) {
-	pin, err := dataPinGet(id)
+func DataPinDelete(id string) (*Pin, error) {
+	pin, err := DataPinGet(id)
 	if err != nil {
 		return nil, err
 	}
 	deletedAt := time.Now()
 	pin.DeletedAt = &deletedAt
-	err = dataPinUpdate(pin)
+	err = DataPinUpdate(pin)
 	if err != nil {
 		return nil, err
 	}
 	return pin, nil
 }
 
-func dataPinDbUrl(pin *Pin) (string, error) {
-	db, err := dataDbGet(pin.DbId)
+func DataPinDbUrl(pin *Pin) (string, error) {
+	db, err := DataDbGet(pin.DbId)
 	if err != nil {
 		return "", err
 	}

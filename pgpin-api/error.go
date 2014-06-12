@@ -14,7 +14,7 @@ func (e PgpinError) Error() string {
 	return fmt.Sprintf("pgpin: %s: %s", e.Id, e.Message)
 }
 
-func must(err error) {
+func Must(err error) {
 	if err != nil {
 		panic(err)
 	}

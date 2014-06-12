@@ -5,10 +5,10 @@ import (
 	"regexp"
 )
 
-var emptyRegexp = regexp.MustCompile("\\A\\s*\\z")
+var EmptyRegexp = regexp.MustCompile("\\A\\s*\\z")
 
-func validateNonempty(f string, s string) error {
-	if emptyRegexp.MatchString(s) {
+func ValidateNonempty(f string, s string) error {
+	if EmptyRegexp.MatchString(s) {
 		return &PgpinError{
 			Id:         "invalid",
 			Message:    fmt.Sprintf("field %s must be nonempty", f),
@@ -18,10 +18,10 @@ func validateNonempty(f string, s string) error {
 	return nil
 }
 
-var slugRegexp = regexp.MustCompile("\\A[a-z0-9-]+\\z")
+var SlugRegexp = regexp.MustCompile("\\A[a-z0-9-]+\\z")
 
-func validateSlug(f string, s string) error {
-	if !slugRegexp.MatchString(s) {
+func ValidateSlug(f string, s string) error {
+	if !SlugRegexp.MatchString(s) {
 		return &PgpinError{
 			Id:         "invalid",
 			Message:    fmt.Sprintf("field %s must be of the form [a-z0-9-]+", f),
@@ -31,6 +31,6 @@ func validateSlug(f string, s string) error {
 	return nil
 }
 
-func validatePgUrl(f string, s string) error {
-	return validateNonempty(f, s)
+func ValidatePgUrl(f string, s string) error {
+	return ValidateNonempty(f, s)
 }

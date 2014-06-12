@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func workerExtractPgerror(err error) (*string, error) {
+func WorkerExtractPgerror(err error) (*string, error) {
 	pgerr, ok := err.(pq.PGError)
 	if ok {
 		msg := pgerr.Get('M')
@@ -25,14 +25,14 @@ func workerExtractPgerror(err error) (*string, error) {
 	return nil, err
 }
 
-// workerCoerceType returns a coerced version of the raw
+// WorkerCoerceType returns a coerced version of the raw
 // database value in, which we get from scanning into
 // interface{}s. We expect queries from the following
 // Postgres types to result in the following return values:
-// [Postgres] -> [Go: in] -> [Go: workerCoerceType'd]
+// [Postgres] -> [Go: in] -> [Go: WorkerCoerceType'd]
 // text          []byte      string
 // ???
-func workerCoerceType(in interface{}) interface{} {
+func WorkerCoerceType(in interface{}) interface{} {
 	switch in := in.(type) {
 	case []byte:
 		return string(in)
@@ -41,33 +41,33 @@ func workerCoerceType(in interface{}) interface{} {
 	}
 }
 
-// workerQuery queries the pn db at pinDbUrl and updates the
+// WorkerQuery queries the pn db at pinDbUrl and updates the
 // passed pin according to the results/errors. System errors
 // are returned.
-func workerQuery(p *Pin, pinDbUrl string) error {
+func WorkerQuery(p *Pin, pinDbUrl string) error {
 	log.Printf("worker.query.start pin_id=%s", p.Id)
 	pinDbConn := fmt.Sprintf("%s?application_name=pgpin.pin.%s", pinDbUrl, p.Id)
 	pinDb, err := sql.Open("postgres", pinDbConn)
 	if err != nil {
-		p.ResultsError, err = workerExtractPgerror(err)
+		p.ResultsError, err = WorkerExtractPgerror(err)
 		return err
 	}
 	resultsRows, err := pinDb.Query(p.Query)
 	if err != nil {
-		p.ResultsError, err = workerExtractPgerror(err)
+		p.ResultsError, err = WorkerExtractPgerror(err)
 		return err
 	}
 	defer resultsRows.Close()
 	resultsFieldsData, err := resultsRows.Columns()
 	if err != nil {
-		p.ResultsError, err = workerExtractPgerror(err)
+		p.ResultsError, err = WorkerExtractPgerror(err)
 		return err
 	}
 	resultsRowsData := make([][]interface{}, 0)
 	resultsRowsSeen := 0
 	for resultsRows.Next() {
 		resultsRowsSeen += 1
-		if resultsRowsSeen > dataPinResultsRowsMax {
+		if resultsRowsSeen > DataPinResultsRowsMax {
 			message := "too many rows in query results"
 			p.ResultsError = &message
 			return nil
@@ -79,17 +79,17 @@ func workerQuery(p *Pin, pinDbUrl string) error {
 		}
 		err := resultsRows.Scan(resultsRowPointers...)
 		if err != nil {
-			p.ResultsError, err = workerExtractPgerror(err)
+			p.ResultsError, err = WorkerExtractPgerror(err)
 			return err
 		}
 		for i, _ := range resultsRowData {
-			resultsRowData[i] = workerCoerceType(resultsRowData[i])
+			resultsRowData[i] = WorkerCoerceType(resultsRowData[i])
 		}
 		resultsRowsData = append(resultsRowsData, resultsRowData)
 	}
 	err = resultsRows.Err()
 	if err != nil {
-		p.ResultsError, err = workerExtractPgerror(err)
+		p.ResultsError, err = WorkerExtractPgerror(err)
 		return err
 	}
 	p.ResultsFields = MustNewPgJson(resultsFieldsData)
@@ -98,26 +98,26 @@ func workerQuery(p *Pin, pinDbUrl string) error {
 	return nil
 }
 
-// workerProcess performs a processes an update on the given
+// WorkerProcess performs a processes an update on the given
 // pin, running its query against its db and updating the
 // system database accordingly. User-caused errors are
 // reflected in the updated pin record and will not cause a
 // returned error. System-caused errors are returned.
-func workerProcess(p *Pin) error {
+func WorkerProcess(p *Pin) error {
 	log.Printf("worker.process.start pin_id=%s", p.Id)
-	pinDbUrl, err := dataPinDbUrl(p)
+	pinDbUrl, err := DataPinDbUrl(p)
 	if err != nil {
 		return err
 	}
 	startedAt := time.Now()
 	p.QueryStartedAt = &startedAt
-	err = workerQuery(p, pinDbUrl)
+	err = WorkerQuery(p, pinDbUrl)
 	if err != nil {
 		return err
 	}
 	finishedAt := time.Now()
 	p.QueryFinishedAt = &finishedAt
-	err = dataPinUpdate(p)
+	err = DataPinUpdate(p)
 	if err != nil {
 		return err
 	}
@@ -125,20 +125,20 @@ func workerProcess(p *Pin) error {
 	return nil
 }
 
-// workerTick processes 1 pending pin, if such a pin is
+// WorkerTick processes 1 pending pin, if such a pin is
 // available. It returns true iff a pin is processed.
-func workerTick() (bool, error) {
-	p, err := dataPinReserve()
+func WorkerTick() (bool, error) {
+	p, err := DataPinReserve()
 	if err != nil {
 		return false, err
 	}
 	if p != nil {
 		log.Printf("worker.tick.found pin_id=%s", p.Id)
-		err = workerProcess(p)
+		err = WorkerProcess(p)
 		if err != nil {
 			return false, err
 		}
-		err = dataPinRelease(p)
+		err = DataPinRelease(p)
 		if err != nil {
 			return false, err
 		}
@@ -147,9 +147,9 @@ func workerTick() (bool, error) {
 	return false, nil
 }
 
-// workerTrap returns a chanel that will be populated when
+// WorkerTrap returns a chanel that will be populated when
 // an INT or TERM signals is received.
-func workerTrap() chan bool {
+func WorkerTrap() chan bool {
 	sig := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
 	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
@@ -161,23 +161,23 @@ func workerTrap() chan bool {
 	return done
 }
 
-var workerCooloff = time.Millisecond*500
+var WorkerCooloff = time.Millisecond*500
 
-func workerCheckPanic() {
+func WorkerCheckPanic() {
 	err := recover()
 	if err != nil {
 		log.Printf("worker.panic: %s", err)
 		log.Print(string(debug.Stack()))
-		time.Sleep(workerCooloff)
+		time.Sleep(WorkerCooloff)
 	}
 }
 
-func workerHandleError(err error) {
+func WorkerHandleError(err error) {
 	log.Printf("worker.error %s", err.Error())
-	time.Sleep(workerCooloff)
+	time.Sleep(WorkerCooloff)
 }
 
-func workerCheckExit(done chan bool) {
+func WorkerCheckExit(done chan bool) {
 	select {
 		case <-done:
 			log.Printf("worker.exit")
@@ -186,23 +186,23 @@ func workerCheckExit(done chan bool) {
 	}
 }
 
-func workerLoop(done chan bool) {
+func WorkerLoop(done chan bool) {
 	log.Printf("worker.loop")
-	defer workerCheckPanic()
-	processed, err := workerTick()
+	defer WorkerCheckPanic()
+	processed, err := WorkerTick()
 	if err != nil {
-		workerHandleError(err)
+		WorkerHandleError(err)
 	}
-	workerCheckExit(done)
+	WorkerCheckExit(done)
 	if err == nil && !processed {
-		time.Sleep(workerCooloff)
+		time.Sleep(WorkerCooloff)
 	}
 }
 
-func workerStart() {
+func WorkerStart() {
 	log.Printf("worker.start")
-	done := workerTrap()
+	done := WorkerTrap()
 	for {
-		workerLoop(done)
+		WorkerLoop(done)
 	}
 }

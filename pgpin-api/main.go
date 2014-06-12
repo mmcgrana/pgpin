@@ -21,11 +21,11 @@ func main() {
 	}
 	switch os.Args[1] {
 	case "web":
-		dataStart()
-		webStart()
+		DataStart()
+		WebStart()
 	case "worker":
-		dataStart()
-		workerStart()
+		DataStart()
+		WorkerStart()
 	default:
 		usage()
 	}

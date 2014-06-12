@@ -14,13 +14,13 @@ import (
 
 // Constants.
 
-var webTimeoutDuration = time.Second * 5
+var WebTimeoutDuration = time.Second * 5
 
 // Helpers.
 
-// webRead reads the JSON request body into the given dataRef. It
+// WebRead reads the JSON request body into the given dataRef. It
 // returns an error if the read fails for any reason.
-func webRead(req *http.Request, dataRef interface{}) error {
+func WebRead(req *http.Request, dataRef interface{}) error {
 	err := json.NewDecoder(req.Body).Decode(dataRef)
 	if err != nil {
 		err := &PgpinError{
@@ -33,13 +33,13 @@ func webRead(req *http.Request, dataRef interface{}) error {
 	return nil
 }
 
-// webRespond writes an HTTP response to the given resp, either
+// WebRespond writes an HTTP response to the given resp, either
 // according to status and data if err is nil, or according to err
 // if it's non-nil. It will attempt to coerce err into a PgpinError
 // and respond with an appropriate error message, falling back to
 // a generic 500 error if it can't. All web responses should go
 // through this function.
-func webRespond(resp http.ResponseWriter, status int, data interface{}, err error) {
+func WebRespond(resp http.ResponseWriter, status int, data interface{}, err error) {
 	if err != nil {
 		pgerr, ok := err.(*PgpinError)
 		if ok {
@@ -71,7 +71,7 @@ func webRespond(resp http.ResponseWriter, status int, data interface{}, err erro
 
 // Middleware.
 
-func webJsoner(inner http.Handler) http.Handler {
+func WebJsoner(inner http.Handler) http.Handler {
 	outer := func(resp http.ResponseWriter, req *http.Request) {
 		resp.Header().Set("Content-Type", "application/json; charset=utf-8")
 		inner.ServeHTTP(resp, req)
@@ -79,13 +79,13 @@ func webJsoner(inner http.Handler) http.Handler {
 	return http.HandlerFunc(outer)
 }
 
-func webRecoverer(h http.Handler) http.Handler {
+func WebRecoverer(h http.Handler) http.Handler {
 	fn := func(resp http.ResponseWriter, req *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
 				log.Printf("web.panic: %s", err)
 				log.Print(string(debug.Stack()))
-				webRespond(resp, 0, nil, &PgpinError{
+				WebRespond(resp, 0, nil, &PgpinError{
 					Id:         "internal-error",
 					Message:    "internal server error",
 					HttpStatus: 500,
@@ -97,7 +97,7 @@ func webRecoverer(h http.Handler) http.Handler {
 	return http.HandlerFunc(fn)
 }
 
-func webLogger(inner http.Handler) http.Handler {
+func WebLogger(inner http.Handler) http.Handler {
 	outer := func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		method := r.Method
@@ -110,40 +110,40 @@ func webLogger(inner http.Handler) http.Handler {
 	return http.HandlerFunc(outer)
 }
 
-func webTimer(timeout time.Duration) func(http.Handler) http.Handler {
+func WebTimer(timeout time.Duration) func(http.Handler) http.Handler {
 	return func(inner http.Handler) http.Handler {
 		data := &map[string]string{
 			"id":      "request-timeout",
 			"message": "request timed out",
 		}
 		body, err := json.MarshalIndent(data, "", "  ")
-		must(err)
+		Must(err)
 		return http.TimeoutHandler(inner, timeout, string(body)+"\n")
 	}
 }
 
 // Db endpoints.
 
-func webDbList(resp http.ResponseWriter, req *http.Request) {
-	dbs, err := dataDbList()
-	webRespond(resp, 200, dbs, err)
+func WebDbList(resp http.ResponseWriter, req *http.Request) {
+	dbs, err := DataDbList()
+	WebRespond(resp, 200, dbs, err)
 }
 
-func webDbAdd(resp http.ResponseWriter, req *http.Request) {
+func WebDbAdd(resp http.ResponseWriter, req *http.Request) {
 	db := &Db{}
-	err := webRead(req, db)
+	err := WebRead(req, db)
 	if err == nil {
-		db, err = dataDbAdd(db.Name, db.Url)
+		db, err = DataDbAdd(db.Name, db.Url)
 	}
-	webRespond(resp, 201, db, err)
+	WebRespond(resp, 201, db, err)
 }
 
-func webDbUpdate(c web.C, resp http.ResponseWriter, req *http.Request) {
+func WebDbUpdate(c web.C, resp http.ResponseWriter, req *http.Request) {
 	dbUpdate := &Db{}
 	db := &Db{}
-	err := webRead(req, dbUpdate)
+	err := WebRead(req, dbUpdate)
 	if err == nil {
-		db, err = dataDbGet(c.URLParams["id"])
+		db, err = DataDbGet(c.URLParams["id"])
 		if err == nil {
 			if dbUpdate.Name != "" {
 				db.Name = dbUpdate.Name
@@ -151,44 +151,44 @@ func webDbUpdate(c web.C, resp http.ResponseWriter, req *http.Request) {
 			if dbUpdate.Url != "" {
 				db.Url = dbUpdate.Url
 			}
-			err = dataDbUpdate(db)
+			err = DataDbUpdate(db)
 		}
 	}
-	webRespond(resp, 200, db, err)
+	WebRespond(resp, 200, db, err)
 }
 
-func webDbGet(c web.C, resp http.ResponseWriter, req *http.Request) {
-	db, err := dataDbGet(c.URLParams["id"])
-	webRespond(resp, 200, db, err)
+func WebDbGet(c web.C, resp http.ResponseWriter, req *http.Request) {
+	db, err := DataDbGet(c.URLParams["id"])
+	WebRespond(resp, 200, db, err)
 }
 
-func webDbRemove(c web.C, resp http.ResponseWriter, req *http.Request) {
-	db, err := dataDbRemove(c.URLParams["id"])
-	webRespond(resp, 200, db, err)
+func WebDbRemove(c web.C, resp http.ResponseWriter, req *http.Request) {
+	db, err := DataDbRemove(c.URLParams["id"])
+	WebRespond(resp, 200, db, err)
 }
 
 // Pin endpoints.
 
-func webPinList(resp http.ResponseWriter, req *http.Request) {
-	pins, err := dataPinList()
-	webRespond(resp, 200, pins, err)
+func WebPinList(resp http.ResponseWriter, req *http.Request) {
+	pins, err := DataPinList()
+	WebRespond(resp, 200, pins, err)
 }
 
-func webPinCreate(resp http.ResponseWriter, req *http.Request) {
+func WebPinCreate(resp http.ResponseWriter, req *http.Request) {
 	pin := &Pin{}
-	err := webRead(req, pin)
+	err := WebRead(req, pin)
 	if err == nil {
-		pin, err = dataPinCreate(pin.DbId, pin.Name, pin.Query)
+		pin, err = DataPinCreate(pin.DbId, pin.Name, pin.Query)
 	}
-	webRespond(resp, 201, pin, err)
+	WebRespond(resp, 201, pin, err)
 }
 
-func webPinUpdate(c web.C, resp http.ResponseWriter, req *http.Request) {
+func WebPinUpdate(c web.C, resp http.ResponseWriter, req *http.Request) {
 	pinUpdate := &Pin{}
 	pin := &Pin{}
-	err := webRead(req, pinUpdate)
+	err := WebRead(req, pinUpdate)
 	if err == nil {
-		pin, err = dataPinGet(c.URLParams["id"])
+		pin, err = DataPinGet(c.URLParams["id"])
 		if err == nil {
 			if pinUpdate.Name != "" {
 				pin.Name = pinUpdate.Name
@@ -196,20 +196,20 @@ func webPinUpdate(c web.C, resp http.ResponseWriter, req *http.Request) {
 			if pinUpdate.Query != "" {
 				pin.Query = pinUpdate.Query
 			}
-			err = dataPinUpdate(pin)
+			err = DataPinUpdate(pin)
 		}
 	}
-	webRespond(resp, 200, pin, err)
+	WebRespond(resp, 200, pin, err)
 }
 
-func webPinGet(c web.C, resp http.ResponseWriter, req *http.Request) {
-	pin, err := dataPinGet(c.URLParams["id"])
-	webRespond(resp, 200, pin, err)
+func WebPinGet(c web.C, resp http.ResponseWriter, req *http.Request) {
+	pin, err := DataPinGet(c.URLParams["id"])
+	WebRespond(resp, 200, pin, err)
 }
 
-func webPinDelete(c web.C, resp http.ResponseWriter, req *http.Request) {
-	pin, err := dataPinDelete(c.URLParams["id"])
-	webRespond(resp, 200, pin, err)
+func WebPinDelete(c web.C, resp http.ResponseWriter, req *http.Request) {
+	pin, err := DataPinDelete(c.URLParams["id"])
+	WebRespond(resp, 200, pin, err)
 }
 
 // Misc endpoints.
@@ -218,68 +218,68 @@ type Status struct {
 	Message string `json:"message"`
 }
 
-func webStatus(resp http.ResponseWriter, req *http.Request) {
-	err := dataConn.Ping()
+func WebStatus(resp http.ResponseWriter, req *http.Request) {
+	err := DataConn.Ping()
 	status := &Status{Message: "ok"}
-	webRespond(resp, 200, status, err)
+	WebRespond(resp, 200, status, err)
 }
 
-func webError(resp http.ResponseWriter, req *http.Request) {
+func WebError(resp http.ResponseWriter, req *http.Request) {
 	err := errors.New("a problem occurred")
-	webRespond(resp, 0, nil, err)
+	WebRespond(resp, 0, nil, err)
 }
 
-func webPanic(resp http.ResponseWriter, req *http.Request) {
+func WebPanic(resp http.ResponseWriter, req *http.Request) {
 	panic("panic")
 }
 
-func webTimeout(resp http.ResponseWriter, req *http.Request) {
-	time.Sleep(webTimeoutDuration + time.Second)
+func WebTimeout(resp http.ResponseWriter, req *http.Request) {
+	time.Sleep(WebTimeoutDuration + time.Second)
 	status := &Status{Message: "late"}
-	webRespond(resp, 200, status, nil)
+	WebRespond(resp, 200, status, nil)
 }
 
-func webNotFound(resp http.ResponseWriter, req *http.Request) {
+func WebNotFound(resp http.ResponseWriter, req *http.Request) {
 	err := &PgpinError{
 		Id:         "not-found",
 		Message:    "not found",
 		HttpStatus: 404,
 	}
-	webRespond(resp, 0, nil, err)
+	WebRespond(resp, 0, nil, err)
 }
 
 // Server builder.
 
-var webMux *web.Mux
+var WebMux *web.Mux
 
-func webBuild() {
-	webMux = web.New()
-	webMux.Use(webJsoner)
-	webMux.Use(webLogger)
-	webMux.Use(webTimer(webTimeoutDuration))
-	webMux.Use(webRecoverer)
-	webMux.Get("/dbs", webDbList)
-	webMux.Post("/dbs", webDbAdd)
-	webMux.Put("/dbs/:id", webDbUpdate)
-	webMux.Get("/dbs/:id", webDbGet)
-	webMux.Delete("/dbs/:id", webDbRemove)
-	webMux.Get("/pins", webPinList)
-	webMux.Post("/pins", webPinCreate)
-	webMux.Put("/pins/:id", webPinUpdate)
-	webMux.Get("/pins/:id", webPinGet)
-	webMux.Delete("/pins/:id", webPinDelete)
-	webMux.Get("/status", webStatus)
-	webMux.Get("/error", webError)
-	webMux.Get("/panic", webPanic)
-	webMux.Get("/timeout", webTimeout)
-	webMux.NotFound(webNotFound)
+func WebBuild() {
+	WebMux = web.New()
+	WebMux.Use(WebJsoner)
+	WebMux.Use(WebLogger)
+	WebMux.Use(WebTimer(WebTimeoutDuration))
+	WebMux.Use(WebRecoverer)
+	WebMux.Get("/dbs", WebDbList)
+	WebMux.Post("/dbs", WebDbAdd)
+	WebMux.Put("/dbs/:id", WebDbUpdate)
+	WebMux.Get("/dbs/:id", WebDbGet)
+	WebMux.Delete("/dbs/:id", WebDbRemove)
+	WebMux.Get("/pins", WebPinList)
+	WebMux.Post("/pins", WebPinCreate)
+	WebMux.Put("/pins/:id", WebPinUpdate)
+	WebMux.Get("/pins/:id", WebPinGet)
+	WebMux.Delete("/pins/:id", WebPinDelete)
+	WebMux.Get("/status", WebStatus)
+	WebMux.Get("/error", WebError)
+	WebMux.Get("/panic", WebPanic)
+	WebMux.Get("/timeout", WebTimeout)
+	WebMux.NotFound(WebNotFound)
 }
 
-func webStart() {
+func WebStart() {
 	log.Print("web.start")
-	webBuild()
+	WebBuild()
 	listener := bind.Default()
 	bind.Ready()
-	must(graceful.Serve(listener, webMux))
+	Must(graceful.Serve(listener, WebMux))
 	graceful.Wait()
 }
