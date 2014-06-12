@@ -8,7 +8,6 @@
 
 ### API
 
-* Set application_name for user queries
 * Timeout user query duration (pending golang-nuts)
 * Timeout control plane queries / connections (pending golang-nuts)
 * Standard UUIds for ids, associated Postgres data type

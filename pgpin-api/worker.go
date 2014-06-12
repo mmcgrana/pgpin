@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"github.com/lib/pq"
 	"log"
 	"os"
@@ -45,7 +46,8 @@ func workerCoerceType(in interface{}) interface{} {
 // are returned.
 func workerQuery(p *Pin, pinDbUrl string) error {
 	log.Printf("worker.query.start pin_id=%s", p.Id)
-	pinDb, err := sql.Open("postgres", pinDbUrl)
+	pinDbConn := fmt.Sprintf("%s?application_name=pgpin.pin.%s", pinDbUrl, p.Id)
+	pinDb, err := sql.Open("postgres", pinDbConn)
 	if err != nil {
 		p.ResultsError, err = workerExtractPgerror(err)
 		return err
