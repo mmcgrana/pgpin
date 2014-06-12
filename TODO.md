@@ -2,7 +2,6 @@
 
 ### Docs
 
-* Get something observable on GitHub
 * Publish: Twitter
 * Publish: blog
 * Publish: golang-nuts
