@@ -14,7 +14,7 @@ import (
 
 // Constants.
 
-var WebTimeoutDuration = time.Second * 5
+var WebTimeout = time.Second * 5
 
 // Helpers.
 
@@ -224,17 +224,17 @@ func WebStatus(resp http.ResponseWriter, req *http.Request) {
 	WebRespond(resp, 200, status, err)
 }
 
-func WebError(resp http.ResponseWriter, req *http.Request) {
+func WebTriggerError(resp http.ResponseWriter, req *http.Request) {
 	err := errors.New("a problem occurred")
 	WebRespond(resp, 0, nil, err)
 }
 
-func WebPanic(resp http.ResponseWriter, req *http.Request) {
+func WebTriggerPanic(resp http.ResponseWriter, req *http.Request) {
 	panic("panic")
 }
 
-func WebTimeout(resp http.ResponseWriter, req *http.Request) {
-	time.Sleep(WebTimeoutDuration + time.Second)
+func WebTriggerTimeout(resp http.ResponseWriter, req *http.Request) {
+	time.Sleep(WebTimeout + (10*time.Millisecond))
 	status := &Status{Message: "late"}
 	WebRespond(resp, 200, status, nil)
 }
@@ -256,7 +256,7 @@ func WebBuild() {
 	WebMux = web.New()
 	WebMux.Use(WebJsoner)
 	WebMux.Use(WebLogger)
-	WebMux.Use(WebTimer(WebTimeoutDuration))
+	WebMux.Use(WebTimer(WebTimeout))
 	WebMux.Use(WebRecoverer)
 	WebMux.Get("/dbs", WebDbList)
 	WebMux.Post("/dbs", WebDbAdd)
@@ -269,9 +269,9 @@ func WebBuild() {
 	WebMux.Get("/pins/:id", WebPinGet)
 	WebMux.Delete("/pins/:id", WebPinDelete)
 	WebMux.Get("/status", WebStatus)
-	WebMux.Get("/error", WebError)
-	WebMux.Get("/panic", WebPanic)
-	WebMux.Get("/timeout", WebTimeout)
+	WebMux.Get("/error", WebTriggerError)
+	WebMux.Get("/panic", WebTriggerPanic)
+	WebMux.Get("/timeout", WebTriggerTimeout)
 	WebMux.NotFound(WebNotFound)
 }
 

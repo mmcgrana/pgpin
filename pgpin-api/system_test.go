@@ -401,6 +401,25 @@ func TestPanic(t *testing.T) {
 	assert.Equal(t, "internal server error", data["message"])
 }
 
+func TestTimeout(t *testing.T) {
+	WebMuxPrev := WebMux
+	defer func() {
+		WebMux = WebMuxPrev
+	}()
+	WebTimeoutPrev := WebTimeout
+	defer func() {
+		WebTimeout = WebTimeoutPrev
+	}()
+	WebTimeout = 50*time.Millisecond
+	WebBuild()
+	res := mustRequest("GET", "/timeout", nil)
+	assert.Equal(t, 503, res.Code)
+	data := make(map[string]string)
+	mustDecode(res, &data)
+	assert.Equal(t, "request-timeout", data["id"])
+	assert.Equal(t, "request timed out", data["message"])
+}
+
 func TestNotFound(t *testing.T) {
 	res := mustRequest("GET", "/wat", nil)
 	assert.Equal(t, 404, res.Code)

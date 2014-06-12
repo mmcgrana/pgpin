@@ -8,7 +8,6 @@
 
 ### API
 
-* Test for timeout endpoint
 * Test for worker panic handling
 * Try other user query result types, including bytes
 * Encrypt resource URL
