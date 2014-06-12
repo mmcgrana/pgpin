@@ -8,8 +8,6 @@
 
 ### API
 
-* Timeout user query duration (pending golang-nuts)
-* Timeout control plane queries / connections (pending golang-nuts)
 * Standard UUIds for ids, associated Postgres data type
 * Think about other serialization approaches, esp for slim
 * Test for timeout endpoint

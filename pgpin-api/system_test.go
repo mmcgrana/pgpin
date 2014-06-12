@@ -311,6 +311,25 @@ func TestPinBadQuery(t *testing.T) {
 	assert.Equal(t, "column \"wat\" does not exist", *pinOut.ResultsError)
 }
 
+func TestPinStatementTimeout(t *testing.T){
+	defer clear()
+	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
+	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select pg_sleep(0.1)")
+	DataPinStatementTimeoutPrev := DataPinStatementTimeout
+	defer func() {
+		DataPinStatementTimeout = DataPinStatementTimeoutPrev
+	}()
+	DataPinStatementTimeout = time.Millisecond * 50
+	mustWorkerTick()
+	res := mustRequest("GET", "/pins/"+pinIn.Id, nil)
+	assert.Equal(t, 200, res.Code)
+	pinOut := &Pin{}
+	mustDecode(res, pinOut)
+	assert.Equal(t, "null", string([]byte(pinOut.ResultsFields)))
+	assert.Equal(t, "null", string([]byte(pinOut.ResultsRows)))
+	assert.Equal(t, "canceling statement due to statement timeout", *pinOut.ResultsError)
+}
+
 func TestPinBadDbUrl(t *testing.T) {
 	defer clear()
 	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL")+"-moar")
@@ -391,7 +410,7 @@ func TestNotFound(t *testing.T) {
 	assert.Equal(t, "not found", data["message"])
 }
 
-// Worker behaviour.
+// Worker behavior.
 
 func TestWorkerNoop(t *testing.T) {
 	processed, err := WorkerTick()

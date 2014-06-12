@@ -20,6 +20,7 @@
 * Data input validation
 * Data query results stored in Postgres json type
 * Data application_name for API and pin queries
+* Data statement_timeout and connect_timeout for API and pin queries
 * Web API in the style of interagent/http-api-design
 * Web request routing via github.com/zenazn/goji/web
 * Web request logging

@@ -46,7 +46,9 @@ func WorkerCoerceType(in interface{}) interface{} {
 // are returned.
 func WorkerQuery(p *Pin, pinDbUrl string) error {
 	log.Printf("worker.query.start pin_id=%s", p.Id)
-	pinDbConn := fmt.Sprintf("%s?application_name=pgpin.pin.%s", pinDbUrl, p.Id)
+	applicationName := fmt.Sprintf("pgpin.pin.%s", p.Id)
+	pinDbConn := fmt.Sprintf("%s?application_name=%s&statement_timeout=%d&connect_timeout=%d",
+		pinDbUrl, applicationName, DataPinStatementTimeout/time.Millisecond, DataConnectTimeout/time.Millisecond)
 	pinDb, err := sql.Open("postgres", pinDbConn)
 	if err != nil {
 		p.ResultsError, err = WorkerExtractPgerror(err)

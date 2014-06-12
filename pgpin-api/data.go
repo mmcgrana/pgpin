@@ -12,8 +12,11 @@ import (
 
 // Constants.
 
-var DataPinRefreshInterval = 10 * time.Minute
 var DataPinResultsRowsMax = 10000
+var DataPinRefreshInterval = 10 * time.Minute
+var DataPinStatementTimeout = 30 * time.Second
+var DataApiStatementTimeout = 5 * time.Second
+var DataConnectTimeout = 5 * time.Second
 
 // DB connection.
 
@@ -21,7 +24,8 @@ var DataConn *sql.DB
 
 func DataStart() {
 	log.Print("data.start")
-	connUrl := fmt.Sprintf("%s?application_name=%s", env.String("DATABASE_URL"), "pgpin.api")
+	connUrl := fmt.Sprintf("%s?application_name=%s&statement_timeout=%d&connect_timeout=%d",
+		env.String("DATABASE_URL"), "pgpin.api", DataApiStatementTimeout / time.Millisecond, DataConnectTimeout / time.Millisecond)
 	conn, err := sql.Open("postgres", connUrl)
 	if err != nil {
 		panic(err)
