@@ -277,6 +277,7 @@ func WebBuild() {
 
 func WebStart() {
 	log.Print("web.start")
+	DataStart()
 	WebBuild()
 	listener := bind.Default()
 	bind.Ready()

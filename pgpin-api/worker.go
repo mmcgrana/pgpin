@@ -201,6 +201,7 @@ func WorkerLoop(done chan bool) {
 
 func WorkerStart() {
 	log.Printf("worker.start")
+	DataStart()
 	done := WorkerTrap()
 	for {
 		WorkerLoop(done)
