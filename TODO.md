@@ -10,8 +10,7 @@
 
 * Test for worker panic handling
 * Try other user query result types, including bytes
-* Encrypt resource URL
-* Encrypt other sensitive fields
+* Encrypt database URL
 * Multiple workers / concurrent workers
 * Handle dangling reservations
 * Operational metrics
