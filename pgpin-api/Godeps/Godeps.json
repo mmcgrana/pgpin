@@ -3,6 +3,11 @@
 	"GoVersion": "go1.2.2",
 	"Deps": [
 		{
+			"ImportPath": "code.google.com/p/go-uuid/uuid",
+			"Comment": "null-12",
+			"Rev": "7dda39b2e7d5e265014674c5af696ba4186679e9"
+		},
+		{
 			"ImportPath": "github.com/darkhelmet/env",
 			"Rev": "d1827543acd996dc90693a2ae0b1a18e33e0df17"
 		},
@@ -15,7 +20,15 @@
 			"Rev": "410219ae829b24af99a4d48a79858f23d0be42ee"
 		},
 		{
-			"ImportPath": "github.com/zenazn/goji",
+			"ImportPath": "github.com/zenazn/goji/bind",
+			"Rev": "bdefa16a3ec570f695bc6227fbc441998fd4be15"
+		},
+		{
+			"ImportPath": "github.com/zenazn/goji/graceful",
+			"Rev": "bdefa16a3ec570f695bc6227fbc441998fd4be15"
+		},
+		{
+			"ImportPath": "github.com/zenazn/goji/web",
 			"Rev": "bdefa16a3ec570f695bc6227fbc441998fd4be15"
 		}
 	]

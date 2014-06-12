@@ -41,7 +41,7 @@
 * Apply tool to check for missing error handles
 * Hook standard go tools into git
 
-### Clent
+### Client
 
 * Implement proof of concept using Schematic
 

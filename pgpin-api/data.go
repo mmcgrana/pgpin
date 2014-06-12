@@ -1,7 +1,7 @@
 package main
 
 import (
-	"crypto/rand"
+	"code.google.com/p/go-uuid/uuid"
 	"database/sql"
 	"fmt"
 	"github.com/darkhelmet/env"
@@ -35,16 +35,6 @@ func DataStart() {
 }
 
 // Data helpers.
-
-func DataRandId() string {
-	num := 6
-	bytes := make([]byte, num)
-	_, err := rand.Read(bytes)
-	if err != nil {
-		panic(err)
-	}
-	return fmt.Sprintf("%x", bytes)
-}
 
 func DataCount(query string, args ...interface{}) (int, error) {
 	row := DataConn.QueryRow(query, args...)
@@ -101,7 +91,7 @@ func DataDbList() ([]DbSlim, error) {
 
 func DataDbAdd(name string, url string) (*Db, error) {
 	db := &Db{}
-	db.Id = DataRandId()
+	db.Id = uuid.New()
 	db.Name = name
 	db.Url = url
 	db.AddedAt = time.Now()
@@ -212,7 +202,7 @@ func DataPinList() ([]PinSlim, error) {
 
 func DataPinCreate(dbId string, name string, query string) (*Pin, error) {
 	pin := &Pin{}
-	pin.Id = DataRandId()
+	pin.Id = uuid.New()
 	pin.DbId = dbId
 	pin.Name = name
 	pin.Query = query
