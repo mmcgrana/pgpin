@@ -21,15 +21,15 @@
 		},
 		{
 			"ImportPath": "github.com/zenazn/goji/bind",
-			"Rev": "bdefa16a3ec570f695bc6227fbc441998fd4be15"
+			"Rev": "f70d2a33c1813a235a0f5f84bb5c2ce80aef57c3"
 		},
 		{
 			"ImportPath": "github.com/zenazn/goji/graceful",
-			"Rev": "bdefa16a3ec570f695bc6227fbc441998fd4be15"
+			"Rev": "f70d2a33c1813a235a0f5f84bb5c2ce80aef57c3"
 		},
 		{
 			"ImportPath": "github.com/zenazn/goji/web",
-			"Rev": "bdefa16a3ec570f695bc6227fbc441998fd4be15"
+			"Rev": "f70d2a33c1813a235a0f5f84bb5c2ce80aef57c3"
 		}
 	]
 }
