@@ -33,7 +33,7 @@
 * API authorization
 * HTTP basic authentication
 * Remove goji/bind dependency?
-* Investigate validation libraries
+* Investigate validation libraries, https://github.com/pengux/check?
 * Validate URL for well-formedness
 * Validate URL for reachability at create-time
 * Validate names are unique
