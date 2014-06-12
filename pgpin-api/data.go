@@ -43,7 +43,8 @@ var dataConn *sql.DB
 
 func dataStart() {
 	log.Print("data.start")
-	conn, err := sql.Open("postgres", env.String("DATABASE_URL"))
+	connUrl := env.String("DATABASE_URL")+"?application_name=pgpin"
+	conn, err := sql.Open("postgres", connUrl)
 	if err != nil {
 		panic(err)
 	}
