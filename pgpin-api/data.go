@@ -46,6 +46,14 @@ func DataCount(query string, args ...interface{}) (int, error) {
 	return count, nil
 }
 
+func DataFernetEncrypt(s string) []byte {
+	return []byte(s)
+}
+
+func DataFernetDecrypt(b []byte) string {
+	return string(b)
+}
+
 // Db operations.
 
 func DataDbValidate(db *Db) error {
@@ -98,27 +106,29 @@ func DataDbAdd(name string, url string) (*Db, error) {
 	db.UpdatedAt = time.Now()
 	err := DataDbValidate(db)
 	if err == nil {
-		_, err = DataConn.Exec("INSERT INTO dbs (id, name, url, added_at, updated_at) VALUES ($1, $2, $3, $4, $5)",
-			db.Id, db.Name, db.Url, db.AddedAt, db.UpdatedAt)
+		_, err = DataConn.Exec("INSERT INTO dbs (id, name, url_encrypted, added_at, updated_at) VALUES ($1, $2, $3, $4, $5)",
+			db.Id, db.Name, DataFernetEncrypt(db.Url), db.AddedAt, db.UpdatedAt)
 	}
 	return db, err
 }
 
 func DataDbGet(id string) (*Db, error) {
-	row := DataConn.QueryRow(`SELECT id, name, url, added_at, updated_at FROM dbs WHERE id=$1 AND removed_at IS NULL LIMIT 1`, id)
+	row := DataConn.QueryRow(`SELECT id, name, url_encrypted, added_at, updated_at FROM dbs WHERE id=$1 AND removed_at IS NULL LIMIT 1`, id)
 	db := Db{}
-	err := row.Scan(&db.Id, &db.Name, &db.Url, &db.AddedAt, &db.UpdatedAt)
+	urlEncrypted := make([]byte, 0)
+	err := row.Scan(&db.Id, &db.Name, &urlEncrypted, &db.AddedAt, &db.UpdatedAt)
 	switch {
+	case err == nil:
+		db.Url = DataFernetDecrypt(urlEncrypted)
+		return &db, nil
 	case err == sql.ErrNoRows:
 		return nil, &PgpinError{
 			Id:         "not-found",
 			Message:    "db not found",
 			HttpStatus: 404,
 		}
-	case err != nil:
-		return nil, err
 	default:
-		return &db, nil
+		return nil, err
 	}
 }
 
@@ -126,8 +136,8 @@ func DataDbUpdate(db *Db) error {
 	err := DataDbValidate(db)
 	if err == nil {
 		db.UpdatedAt = time.Now()
-		_, err = DataConn.Exec("UPDATE dbs SET name=$1, url=$2, added_at=$3, updated_at=$4, removed_at=$5 WHERE id=$6",
-			db.Name, db.Url, db.AddedAt, db.UpdatedAt, db.RemovedAt, db.Id)
+		_, err = DataConn.Exec("UPDATE dbs SET name=$1, url_encrypted=$2, added_at=$3, updated_at=$4, removed_at=$5 WHERE id=$6",
+			db.Name, DataFernetEncrypt(db.Url), db.AddedAt, db.UpdatedAt, db.RemovedAt, db.Id)
 	}
 	return err
 }
