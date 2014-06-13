@@ -9,7 +9,6 @@
 ### API
 
 * Test for worker panic handling
-* Try other user query result types, including bytes
 * Multiple workers / concurrent workers
 * Handle dangling reservations
 * Operational metrics
