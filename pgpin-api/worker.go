@@ -130,6 +130,7 @@ func WorkerProcess(p *Pin) error {
 // WorkerTick processes 1 pending pin, if such a pin is
 // available. It returns true iff a pin is processed.
 func WorkerTick() (bool, error) {
+	log.Printf("worker.tick.start")
 	p, err := DataPinReserve()
 	if err != nil {
 		return false, err
@@ -189,7 +190,6 @@ func WorkerCheckExit(done chan bool) {
 }
 
 func WorkerLoop(done chan bool) {
-	log.Printf("worker.loop")
 	defer WorkerCheckPanic()
 	processed, err := WorkerTick()
 	if err != nil {
