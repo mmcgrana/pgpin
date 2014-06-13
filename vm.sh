@@ -49,6 +49,7 @@ sudo -u vagrant -i go get github.com/tools/godep
 # Config
 cat >> /home/vagrant/.profile <<EOF
 export API_AUTH="client:"$(openssl rand -hex 12)
+export FERNET_KEY=$(openssl rand -base64 32)
 export PGPIN_API_URL=http://\$API_AUTH@127.0.0.1:5000
 EOF
 

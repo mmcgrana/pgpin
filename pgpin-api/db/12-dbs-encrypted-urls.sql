@@ -1,0 +1,9 @@
+BEGIN;
+
+ALTER TABLE dbs
+ADD COLUMN url_encrypted bytea NOT NULL;
+
+ALTER TABLE dbs
+DROP COLUMN url;
+
+COMMIT;

@@ -18,7 +18,7 @@ var DataPinRefreshInterval = 10 * time.Minute
 var DataPinStatementTimeout = 30 * time.Second
 var DataApiStatementTimeout = 5 * time.Second
 var DataConnectTimeout = 5 * time.Second
-var DataFernetKeys = fernet.MustDecodeKeys("S7Tnxc2Lkw4RYc6GqFiHkh9HDUACsZD8wvjmcJ3921s=")
+var DataFernetKeys = fernet.MustDecodeKeys(env.String("FERNET_KEY"))
 var DataFernetTtl = time.Hour * 24 * 365 * 10
 
 // DB connection.

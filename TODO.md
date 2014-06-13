@@ -10,7 +10,6 @@
 
 * Test for worker panic handling
 * Try other user query result types, including bytes
-* Encrypt database URL
 * Multiple workers / concurrent workers
 * Handle dangling reservations
 * Operational metrics
@@ -36,6 +35,8 @@
 * Review and catalog error ids
 * Apply tool to check for missing error handles
 * Hook standard go tools into git
+* Heroku deployment instructions and smoke test
+* Extract config file
 
 ### Client
 
