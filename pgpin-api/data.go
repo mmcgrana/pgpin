@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"github.com/darkhelmet/env"
+	fernet "github.com/fernet/fernet-go"
 	_ "github.com/lib/pq"
 	"log"
 	"time"
@@ -17,6 +18,8 @@ var DataPinRefreshInterval = 10 * time.Minute
 var DataPinStatementTimeout = 30 * time.Second
 var DataApiStatementTimeout = 5 * time.Second
 var DataConnectTimeout = 5 * time.Second
+var DataFernetKeys = fernet.MustDecodeKeys("S7Tnxc2Lkw4RYc6GqFiHkh9HDUACsZD8wvjmcJ3921s=")
+var DataFernetTtl = time.Hour * 24 * 365 * 10
 
 // DB connection.
 
@@ -47,11 +50,14 @@ func DataCount(query string, args ...interface{}) (int, error) {
 }
 
 func DataFernetEncrypt(s string) []byte {
-	return []byte(s)
+	tok, err := fernet.EncryptAndSign([]byte(s), DataFernetKeys[0])
+	Must(err)
+	return tok
 }
 
 func DataFernetDecrypt(b []byte) string {
-	return string(b)
+	msg := fernet.VerifyAndDecrypt(b, DataFernetTtl, DataFernetKeys)
+	return string(msg)
 }
 
 // Db operations.

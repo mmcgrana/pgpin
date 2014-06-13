@@ -12,6 +12,10 @@
 			"Rev": "d1827543acd996dc90693a2ae0b1a18e33e0df17"
 		},
 		{
+			"ImportPath": "github.com/fernet/fernet-go",
+			"Rev": "54c3c8fb9a0701721fceaa28780ce25ef447fd4f"
+		},
+		{
 			"ImportPath": "github.com/lib/pq",
 			"Rev": "50a04ed4e5268fb34ca6d885202b569ef89c0a7a"
 		},
