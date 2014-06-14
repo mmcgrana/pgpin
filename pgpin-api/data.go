@@ -259,8 +259,14 @@ func DataPinGetInternal(queryFrag string, queryVals ...interface{}) (*Pin, error
 	}
 }
 
-func DataPinGet(id string) (*Pin, error) {
-	pin, err := DataPinGetInternal("id=$1", id)
+func DataPinGet(idOrName string) (*Pin, error) {
+	var pin *Pin
+	var err error
+	if DataUuidRegexp.MatchString(idOrName) {
+		pin, err = DataPinGetInternal("(id=$1 OR name=$2)", idOrName, idOrName)
+	} else {
+		pin, err = DataPinGetInternal("name=$1", idOrName)
+	}
 	if err != nil {
 		return nil, err
 	}

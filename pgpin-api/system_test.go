@@ -231,6 +231,18 @@ func TestPinCreateAndGet(t *testing.T) {
 	assert.Nil(t, pinOut.ResultsError)
 }
 
+func TestPinGetByName(t *testing.T) {
+	defer clear()
+	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
+	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
+	res := mustRequest("GET", "/pins/pins-1", nil)
+	assert.Equal(t, 200, res.Code)
+	pinOut := &Pin{}
+	mustDecode(res, pinOut)
+	assert.Equal(t, pinIn.Id, pinOut.Id)
+	assert.Equal(t, "pins-1", pinOut.Name)
+}
+
 func TestPinCreateDuplicateName(t *testing.T) {
 	defer clear()
 	dbIn := mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
