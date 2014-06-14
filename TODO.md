@@ -20,8 +20,7 @@
 * Remove goji graceful stuff from worker output
 * API versioning
 * API authorization
-* ForceTLS unless flagged out
-* HTTP basic authentication
+* Require TLS unless flagged out
 * Remove goji/bind dependency?
 * Investigate validation libraries, https://github.com/pengux/check?
 * Validate URL for well-formedness
@@ -39,6 +38,7 @@
 * Nest foreign ids in serialization
 * Support name dereferencing of resources
 * Rate limiting
+* Investigate kr/secureheader
 
 ### Client
 
