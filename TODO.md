@@ -14,9 +14,8 @@
 * Operational metrics
 * Handling extra input fields on JSON
 * Exception reporting
-* Request Ids passed through
+* Request Ids passed through to operation logs
 * Review Go docker image at https://github.com/GoogleCloudPlatform/golang-docker/blob/master/base/Dockerfile
-* Cross-check against pliny
 * Cross-check against HTTP API design guide
 * JSON schema
 * Remove goji graceful stuff from worker output
@@ -35,6 +34,8 @@
 * Hook standard go tools into git
 * Heroku deployment instructions and smoke test
 * Extract config file
+* Consider mediators organization
+* Return CORS header
 
 ### Client
 
