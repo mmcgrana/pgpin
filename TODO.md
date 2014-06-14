@@ -30,11 +30,12 @@
 * Hook standard go tools into git
 * Heroku deployment instructions and smoke test
 * Extract config file
-* Consider mediators organization
 * Return CORS header
 * Nest foreign ids in serialization
 * Rate limiting
 * Investigate kr/secureheader
+* Consider models/mediators organization
+* Break up test files
 
 ### Client
 
