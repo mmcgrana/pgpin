@@ -25,7 +25,6 @@
 * Investigate validation libraries, https://github.com/pengux/check?
 * Validate URL for well-formedness
 * Validate URL for reachability at create-time
-* Validate names are unique
 * Capturing HTTP response status in logger
 * Generic not found vs. e.g. db not found
 * Review and catalog error ids

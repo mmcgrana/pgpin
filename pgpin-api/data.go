@@ -8,6 +8,7 @@ import (
 	fernet "github.com/fernet/fernet-go"
 	_ "github.com/lib/pq"
 	"log"
+	"regexp"
 	"time"
 )
 
@@ -20,6 +21,7 @@ var DataApiStatementTimeout = 5 * time.Second
 var DataConnectTimeout = 5 * time.Second
 var DataFernetKeys = fernet.MustDecodeKeys(env.String("FERNET_KEY"))
 var DataFernetTtl = time.Hour * 24 * 365 * 10
+var DataUuidRegexp = regexp.MustCompilePOSIX("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")
 
 // DB connection.
 
@@ -118,8 +120,15 @@ func DataDbAdd(name string, url string) (*Db, error) {
 	return db, err
 }
 
-func DataDbGet(id string) (*Db, error) {
-	row := DataConn.QueryRow(`SELECT id, name, url_encrypted, added_at, updated_at FROM dbs WHERE id=$1 AND removed_at IS NULL LIMIT 1`, id)
+func DataDbGet(idOrName string) (*Db, error) {
+	var row *sql.Row
+	if DataUuidRegexp.MatchString(idOrName) {
+		query := `SELECT id, name, url_encrypted, added_at, updated_at FROM dbs WHERE removed_at is NULL AND (id=$1 OR name=$2) LIMIT 1`
+		row = DataConn.QueryRow(query, idOrName, idOrName)
+	} else {
+		query := `SELECT id, name, url_encrypted, added_at, updated_at FROM dbs WHERE removed_at is NULL AND name=$1 LIMIT 1`
+		row = DataConn.QueryRow(query, idOrName)
+	}
 	db := Db{}
 	urlEncrypted := make([]byte, 0)
 	err := row.Scan(&db.Id, &db.Name, &urlEncrypted, &db.AddedAt, &db.UpdatedAt)

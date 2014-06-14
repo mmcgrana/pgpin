@@ -121,6 +121,18 @@ func TestDbGet(t *testing.T) {
 	assert.WithinDuration(t, time.Now(), dbOut.UpdatedAt, 3*time.Second)
 }
 
+func TestDbGetByName(t *testing.T) {
+	defer clear()
+	dbIn := mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
+	res := mustRequest("GET", "/dbs/dbs-1", nil)
+	assert.Equal(t, 200, res.Code)
+	dbOut := &Db{}
+	mustDecode(res, dbOut)
+	assert.Equal(t, dbIn.Id, dbOut.Id)
+	assert.Equal(t, "dbs-1", dbOut.Name)
+}
+
+
 func TestDbUpdateName(t *testing.T) {
 	defer clear()
 	dbIn := mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
