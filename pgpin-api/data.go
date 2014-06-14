@@ -240,13 +240,14 @@ func DataPinCreate(dbId string, name string, query string) (*Pin, error) {
 		ResultsError: nil,
 		ReservedAt: nil,
 		DeletedAt: nil,
+		Version: 1,
 	}
 	err := DataPinValidate(pin)
 	if err != nil {
 		return nil, err
 	}
-	_, err = DataConn.Exec("INSERT INTO pins (id, name, db_id, query, created_at, updated_at, query_started_at, query_finished_at, results_fields, results_rows, results_error, reserved_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
-		pin.Id, pin.Name, pin.DbId, pin.Query, pin.CreatedAt, pin.UpdatedAt, pin.QueryStartedAt, pin.QueryFinishedAt, pin.ResultsFields, pin.ResultsRows, pin.ResultsError, pin.ReservedAt, pin.DeletedAt)
+	_, err = DataConn.Exec("INSERT INTO pins (id, name, db_id, query, created_at, updated_at, query_started_at, query_finished_at, results_fields, results_rows, results_error, reserved_at, deleted_at, version) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)",
+		pin.Id, pin.Name, pin.DbId, pin.Query, pin.CreatedAt, pin.UpdatedAt, pin.QueryStartedAt, pin.QueryFinishedAt, pin.ResultsFields, pin.ResultsRows, pin.ResultsError, pin.ReservedAt, pin.DeletedAt, pin.Version)
 	if err != nil {
 		return nil, err
 	}
