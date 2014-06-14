@@ -23,6 +23,7 @@ type Pin struct {
 	ResultsError    *string    `json:"results_error"`
 	ReservedAt      *time.Time `json:"-"`
 	DeletedAt       *time.Time `json:"-"`
+	Version         int        `json:"-"`
 }
 
 type DbSlim struct {
