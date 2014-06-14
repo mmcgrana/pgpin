@@ -38,4 +38,5 @@ type Db struct {
 	AddedAt   time.Time  `json:"added_at"`
 	UpdatedAt time.Time  `json:"updated_at"`
 	RemovedAt *time.Time `json:"-"`
+	Version   int        `json:"-"`
 }

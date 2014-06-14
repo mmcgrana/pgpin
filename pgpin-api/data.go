@@ -106,16 +106,19 @@ func DataDbList() ([]DbSlim, error) {
 }
 
 func DataDbAdd(name string, url string) (*Db, error) {
-	db := &Db{}
-	db.Id = uuid.New()
-	db.Name = name
-	db.Url = url
-	db.AddedAt = time.Now()
-	db.UpdatedAt = time.Now()
+	db := &Db{
+		Id:        uuid.New(),
+		Name:      name,
+		Url:       url,
+		AddedAt:   time.Now(),
+		UpdatedAt: time.Now(),
+		RemovedAt: nil,
+		Version:   1,
+	}
 	err := DataDbValidate(db)
 	if err == nil {
-		_, err = DataConn.Exec("INSERT INTO dbs (id, name, url_encrypted, added_at, updated_at) VALUES ($1, $2, $3, $4, $5)",
-			db.Id, db.Name, DataFernetEncrypt(db.Url), db.AddedAt, db.UpdatedAt)
+		_, err = DataConn.Exec("INSERT INTO dbs (id, name, url_encrypted, added_at, updated_at, removed_at, version) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+			db.Id, db.Name, DataFernetEncrypt(db.Url), db.AddedAt, db.UpdatedAt, db.RemovedAt, db.Version)
 	}
 	return db, err
 }
@@ -123,15 +126,15 @@ func DataDbAdd(name string, url string) (*Db, error) {
 func DataDbGet(idOrName string) (*Db, error) {
 	var row *sql.Row
 	if DataUuidRegexp.MatchString(idOrName) {
-		query := `SELECT id, name, url_encrypted, added_at, updated_at FROM dbs WHERE removed_at is NULL AND (id=$1 OR name=$2) LIMIT 1`
+		query := `SELECT id, name, url_encrypted, added_at, updated_at, version FROM dbs WHERE removed_at is NULL AND (id=$1 OR name=$2) LIMIT 1`
 		row = DataConn.QueryRow(query, idOrName, idOrName)
 	} else {
-		query := `SELECT id, name, url_encrypted, added_at, updated_at FROM dbs WHERE removed_at is NULL AND name=$1 LIMIT 1`
+		query := `SELECT id, name, url_encrypted, added_at, updated_at, version FROM dbs WHERE removed_at is NULL AND name=$1 LIMIT 1`
 		row = DataConn.QueryRow(query, idOrName)
 	}
 	db := Db{}
 	urlEncrypted := make([]byte, 0)
-	err := row.Scan(&db.Id, &db.Name, &urlEncrypted, &db.AddedAt, &db.UpdatedAt)
+	err := row.Scan(&db.Id, &db.Name, &urlEncrypted, &db.AddedAt, &db.UpdatedAt, &db.Version)
 	switch {
 	case err == nil:
 		db.Url = DataFernetDecrypt(urlEncrypted)
@@ -149,12 +152,28 @@ func DataDbGet(idOrName string) (*Db, error) {
 
 func DataDbUpdate(db *Db) error {
 	err := DataDbValidate(db)
-	if err == nil {
-		db.UpdatedAt = time.Now()
-		_, err = DataConn.Exec("UPDATE dbs SET name=$1, url_encrypted=$2, added_at=$3, updated_at=$4, removed_at=$5 WHERE id=$6",
-			db.Name, DataFernetEncrypt(db.Url), db.AddedAt, db.UpdatedAt, db.RemovedAt, db.Id)
+	if err != nil {
+		return err
 	}
-	return err
+	db.UpdatedAt = time.Now()
+	db.Version = db.Version + 1
+	result, err := DataConn.Exec("UPDATE dbs SET name=$1, url_encrypted=$2, added_at=$3, updated_at=$4, removed_at=$5, version=$6 WHERE id=$7 AND version=$8",
+		db.Name, DataFernetEncrypt(db.Url), db.AddedAt, db.UpdatedAt, db.RemovedAt, db.Version, db.Id, db.Version-1)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected != 1 {
+		return &PgpinError{
+			Id:         "pin-concurrent-update",
+			Message:    "pin updated concurrently by another user",
+			HttpStatus: 400,
+		}
+	}
+	return nil
 }
 
 func DataDbRemove(id string) (*Db, error) {
