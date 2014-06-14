@@ -28,6 +28,7 @@
 * Web request logging
 * Web request Ids conveyed in logs and responses
 * Web request timeouts
+* Web resource dereferencing by id or name
 * Web not found handling
 * Web error and panic handling
 * Web request logging

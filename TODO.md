@@ -35,7 +35,6 @@
 * Consider mediators organization
 * Return CORS header
 * Nest foreign ids in serialization
-* Support name dereferencing of resources
 * Rate limiting
 * Investigate kr/secureheader
 
