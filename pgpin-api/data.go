@@ -92,7 +92,7 @@ func DataDbList() ([]DbSlim, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer res.Close()
+	defer func() { Must(res.Close()) }()
 	dbs := []DbSlim{}
 	for res.Next() {
 		db := DbSlim{}
@@ -231,7 +231,7 @@ func DataPinList() ([]PinSlim, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer res.Close()
+	defer func() { Must(res.Close()) }()
 	pins := []PinSlim{}
 	for res.Next() {
 		pin := PinSlim{}

@@ -59,7 +59,7 @@ func WorkerQuery(p *Pin, pinDbUrl string) error {
 		p.ResultsError, err = WorkerExtractPgerror(err)
 		return err
 	}
-	defer resultsRows.Close()
+	defer func() { Must(resultsRows.Close()) }()
 	resultsFieldsData, err := resultsRows.Columns()
 	if err != nil {
 		p.ResultsError, err = WorkerExtractPgerror(err)

@@ -11,7 +11,8 @@ func init() {
 }
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "Usage: datapins-api [web|worker]")
+	_, err := fmt.Fprintln(os.Stderr, "Usage: datapins-api [web|worker]")
+	Must(err)
 	os.Exit(1)
 }
 
