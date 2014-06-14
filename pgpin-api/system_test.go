@@ -374,6 +374,16 @@ func TestPinUnreachableRbUrl(t *testing.T) {
 	assert.Equal(t, "could not connect to database", *pinOut.ResultsError)
 }
 
+func TestPinOptomisticLocking(t *testing.T) {
+       defer clear()
+       dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
+       pinWinsRace := mustDataPinCreate(dbIn.Id, "pins-1", "select 1")
+       log.Printf("%+v", pinWinsRace)
+       pinWinsRace.Query = "select 'wins'"
+       err := DataPinUpdate(pinWinsRace)
+       log.Printf("%+v", err)
+}
+
 func TestPinDelete(t *testing.T) {
 	defer clear()
 	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
