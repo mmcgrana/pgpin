@@ -48,7 +48,7 @@ An environment variable is provided to make testing with
 curl easy:
 
 ```console
-$ curl $PGPIN_API_URL/status
+$ curl -i $PGPIN_API_URL/status
 ```
 
 To apply code changes:
