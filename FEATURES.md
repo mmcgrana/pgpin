@@ -17,6 +17,7 @@
 * Data migration scaffolding
 * Data soft deletions
 * Data create/update timestamping
+* Data optimistic locking
 * Data input validation
 * Data query results stored in Postgres json type
 * Data ids stored in Postgres uuid type
