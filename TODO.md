@@ -16,7 +16,6 @@
 * Handling extra input fields on JSON
 * Exception reporting
 * Request Ids passed through to operation logs
-* Review Go docker image at https://github.com/GoogleCloudPlatform/golang-docker/blob/master/base/Dockerfile
 * JSON schema
 * Remove goji graceful stuff from worker output
 * API versioning
