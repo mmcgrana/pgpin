@@ -226,19 +226,27 @@ func DataPinList() ([]PinSlim, error) {
 }
 
 func DataPinCreate(dbId string, name string, query string) (*Pin, error) {
-	pin := &Pin{}
-	pin.Id = uuid.New()
-	pin.DbId = dbId
-	pin.Name = name
-	pin.Query = query
-	pin.CreatedAt = time.Now()
-	pin.UpdatedAt = time.Now()
+	pin := &Pin{
+		Id: uuid.New(),
+		Name: name,
+		DbId: dbId,
+		Query: query,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		QueryStartedAt: nil,
+		QueryFinishedAt: nil,
+		ResultsFields: MustNewPgJson(nil),
+		ResultsRows: MustNewPgJson(nil),
+		ResultsError: nil,
+		ReservedAt: nil,
+		DeletedAt: nil,
+	}
 	err := DataPinValidate(pin)
 	if err != nil {
 		return nil, err
 	}
-	_, err = DataConn.Exec("INSERT INTO pins (id, db_id, name, query, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)",
-		pin.Id, pin.DbId, pin.Name, pin.Query, pin.CreatedAt, pin.UpdatedAt)
+	_, err = DataConn.Exec("INSERT INTO pins (id, name, db_id, query, created_at, updated_at, query_started_at, query_finished_at, results_fields, results_rows, results_error, reserved_at, deleted_at) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
+		pin.Id, pin.Name, pin.DbId, pin.Query, pin.CreatedAt, pin.UpdatedAt, pin.QueryStartedAt, pin.QueryFinishedAt, pin.ResultsFields, pin.ResultsRows, pin.ResultsError, pin.ReservedAt, pin.DeletedAt)
 	if err != nil {
 		return nil, err
 	}
