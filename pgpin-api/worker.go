@@ -41,7 +41,7 @@ func WorkerCoerceType(in interface{}) interface{} {
 	}
 }
 
-// WorkerQuery queries the pn db at pinDbUrl and updates the
+// WorkerQuery queries the pin db at pinDbUrl and updates the
 // passed pin according to the results/errors. System errors
 // are returned.
 func WorkerQuery(p *Pin, pinDbUrl string) error {
