@@ -375,13 +375,18 @@ func TestPinUnreachableRbUrl(t *testing.T) {
 }
 
 func TestPinOptomisticLocking(t *testing.T) {
-       defer clear()
-       dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
-       pinWinsRace := mustDataPinCreate(dbIn.Id, "pins-1", "select 1")
-       log.Printf("%+v", pinWinsRace)
-       pinWinsRace.Query = "select 'wins'"
-       err := DataPinUpdate(pinWinsRace)
-       log.Printf("%+v", err)
+	defer clear()
+	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
+	pinWinsRace := mustDataPinCreate(dbIn.Id, "pins-1", "select 1")
+	pinLosesRace := mustDataPinGet(pinWinsRace.Id)
+       	pinWinsRace.Query = "select 'wins'"
+       	err := DataPinUpdate(pinWinsRace)
+	assert.Nil(t, err)
+	pinLosesRace.Query = "select 'loses'"
+	err = DataPinUpdate(pinLosesRace)
+	assert.Equal(t, "pin-concurrent-update", err.(*PgpinError).Id)
+	pinAfterRace := mustDataPinGet(pinWinsRace.Id)
+	assert.Equal(t, "select 'wins'", pinAfterRace.Query)
 }
 
 func TestPinDelete(t *testing.T) {

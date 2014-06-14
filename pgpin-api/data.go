@@ -296,10 +296,21 @@ func DataPinUpdate(pin *Pin) error {
 	}
 	pin.UpdatedAt = time.Now()
 	pin.Version = pin.Version + 1
-	_, err = DataConn.Exec("UPDATE pins SET db_id=$1, name=$2, query=$3, created_at=$4, updated_at=$5, query_started_at=$6, query_finished_at=$7, results_fields=$8, results_rows=$9, results_error=$10, deleted_at=$11, version=$12 WHERE id=$13 AND version=$14",
+	result, err := DataConn.Exec("UPDATE pins SET db_id=$1, name=$2, query=$3, created_at=$4, updated_at=$5, query_started_at=$6, query_finished_at=$7, results_fields=$8, results_rows=$9, results_error=$10, deleted_at=$11, version=$12 WHERE id=$13 AND version=$14",
 		pin.DbId, pin.Name, pin.Query, pin.CreatedAt, pin.UpdatedAt, pin.QueryStartedAt, pin.QueryFinishedAt, pin.ResultsFields, pin.ResultsRows, pin.ResultsError, pin.DeletedAt, pin.Version, pin.Id, pin.Version-1)
 	if err != nil {
 		return err
+	}
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected != 1 {
+		return &PgpinError{
+			Id: "pin-concurrent-update",
+			Message: "pin updated concurrently by another user",
+			HttpStatus: 400,
+		}
 	}
 	return nil
 }
