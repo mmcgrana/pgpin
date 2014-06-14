@@ -35,9 +35,9 @@ func ValidateSlug(f string, s string) error {
 func ValidatePgUrl(f string, s string) error {
 	u, err := url.Parse(s)
 	if err != nil || (u.Scheme != "postgres") {
-		return &PgpinError {
-			Id: "invalid",
-			Message: fmt.Sprintf("field %s must be a valid postgres:// URL", f),
+		return &PgpinError{
+			Id:         "invalid",
+			Message:    fmt.Sprintf("field %s must be a valid postgres:// URL", f),
 			HttpStatus: 400,
 		}
 	}

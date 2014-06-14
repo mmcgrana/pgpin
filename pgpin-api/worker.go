@@ -164,7 +164,7 @@ func WorkerTrap() chan bool {
 	return done
 }
 
-var WorkerCooloff = time.Millisecond*500
+var WorkerCooloff = time.Millisecond * 500
 
 func WorkerCheckPanic() {
 	err := recover()
@@ -182,10 +182,10 @@ func WorkerHandleError(err error) {
 
 func WorkerCheckExit(done chan bool) {
 	select {
-		case <-done:
-			log.Printf("worker.exit")
-			os.Exit(0)
-		default:
+	case <-done:
+		log.Printf("worker.exit")
+		os.Exit(0)
+	default:
 	}
 }
 

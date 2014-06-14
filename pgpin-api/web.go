@@ -50,7 +50,7 @@ func WebRespond(resp http.ResponseWriter, status int, data interface{}, err erro
 			log.Printf("web.error %+s", err.Error())
 			status = 500
 			data = &map[string]string{
-				"id": "internal-error",
+				"id":      "internal-error",
 				"message": "internal server error",
 			}
 		}
@@ -246,7 +246,7 @@ func WebTriggerPanic(resp http.ResponseWriter, req *http.Request) {
 }
 
 func WebTriggerTimeout(resp http.ResponseWriter, req *http.Request) {
-	time.Sleep(WebTimeout + (10*time.Millisecond))
+	time.Sleep(WebTimeout + (10 * time.Millisecond))
 	status := &Status{Message: "late"}
 	WebRespond(resp, 200, status, nil)
 }

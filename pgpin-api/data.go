@@ -30,7 +30,7 @@ var DataConn *sql.DB
 func DataStart() {
 	log.Print("data.start")
 	connUrl := fmt.Sprintf("%s?application_name=%s&statement_timeout=%d&connect_timeout=%d",
-		env.String("DATABASE_URL"), "pgpin.api", DataApiStatementTimeout / time.Millisecond, DataConnectTimeout / time.Millisecond)
+		env.String("DATABASE_URL"), "pgpin.api", DataApiStatementTimeout/time.Millisecond, DataConnectTimeout/time.Millisecond)
 	conn, err := sql.Open("postgres", connUrl)
 	if err != nil {
 		panic(err)
@@ -227,20 +227,20 @@ func DataPinList() ([]PinSlim, error) {
 
 func DataPinCreate(dbId string, name string, query string) (*Pin, error) {
 	pin := &Pin{
-		Id: uuid.New(),
-		Name: name,
-		DbId: dbId,
-		Query: query,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-		QueryStartedAt: nil,
+		Id:              uuid.New(),
+		Name:            name,
+		DbId:            dbId,
+		Query:           query,
+		CreatedAt:       time.Now(),
+		UpdatedAt:       time.Now(),
+		QueryStartedAt:  nil,
 		QueryFinishedAt: nil,
-		ResultsFields: MustNewPgJson(nil),
-		ResultsRows: MustNewPgJson(nil),
-		ResultsError: nil,
-		ReservedAt: nil,
-		DeletedAt: nil,
-		Version: 1,
+		ResultsFields:   MustNewPgJson(nil),
+		ResultsRows:     MustNewPgJson(nil),
+		ResultsError:    nil,
+		ReservedAt:      nil,
+		DeletedAt:       nil,
+		Version:         1,
 	}
 	err := DataPinValidate(pin)
 	if err != nil {
@@ -307,8 +307,8 @@ func DataPinUpdate(pin *Pin) error {
 	}
 	if rowsAffected != 1 {
 		return &PgpinError{
-			Id: "pin-concurrent-update",
-			Message: "pin updated concurrently by another user",
+			Id:         "pin-concurrent-update",
+			Message:    "pin updated concurrently by another user",
 			HttpStatus: 400,
 		}
 	}

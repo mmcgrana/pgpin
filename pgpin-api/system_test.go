@@ -132,7 +132,6 @@ func TestDbGetByName(t *testing.T) {
 	assert.Equal(t, "dbs-1", dbOut.Name)
 }
 
-
 func TestDbUpdateName(t *testing.T) {
 	defer clear()
 	dbIn := mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
@@ -335,7 +334,7 @@ func TestPinBadQuery(t *testing.T) {
 	assert.Equal(t, "column \"wat\" does not exist", *pinOut.ResultsError)
 }
 
-func TestPinStatementTimeout(t *testing.T){
+func TestPinStatementTimeout(t *testing.T) {
 	defer clear()
 	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
 	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select pg_sleep(0.1)")
@@ -379,8 +378,8 @@ func TestPinOptomisticLocking(t *testing.T) {
 	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
 	pinWinsRace := mustDataPinCreate(dbIn.Id, "pins-1", "select 1")
 	pinLosesRace := mustDataPinGet(pinWinsRace.Id)
-       	pinWinsRace.Query = "select 'wins'"
-       	err := DataPinUpdate(pinWinsRace)
+	pinWinsRace.Query = "select 'wins'"
+	err := DataPinUpdate(pinWinsRace)
 	assert.Nil(t, err)
 	pinLosesRace.Query = "select 'loses'"
 	err = DataPinUpdate(pinLosesRace)
@@ -455,7 +454,7 @@ func TestTimeout(t *testing.T) {
 	defer func() {
 		WebTimeout = WebTimeoutPrev
 	}()
-	WebTimeout = 50*time.Millisecond
+	WebTimeout = 50 * time.Millisecond
 	WebBuild()
 	res := mustRequest("GET", "/timeout", nil)
 	assert.Equal(t, 503, res.Code)
