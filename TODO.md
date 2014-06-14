@@ -23,8 +23,6 @@
 * Require TLS unless flagged out
 * Remove goji/bind dependency?
 * Investigate validation libraries, https://github.com/pengux/check?
-* Validate URL for well-formedness
-* Validate URL for reachability at create-time
 * Capturing HTTP response status in logger
 * Review and catalog error ids
 * Apply tool to check for missing error handles

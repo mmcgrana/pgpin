@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 	"regexp"
 )
 
@@ -32,5 +33,13 @@ func ValidateSlug(f string, s string) error {
 }
 
 func ValidatePgUrl(f string, s string) error {
-	return ValidateNonempty(f, s)
+	u, err := url.Parse(s)
+	if err != nil || (u.Scheme != "postgres") {
+		return &PgpinError {
+			Id: "invalid",
+			Message: fmt.Sprintf("field %s must be a valid postgres:// URL", f),
+			HttpStatus: 400,
+		}
+	}
+	return nil
 }

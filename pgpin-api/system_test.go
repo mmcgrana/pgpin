@@ -354,7 +354,13 @@ func TestPinStatementTimeout(t *testing.T){
 	assert.Equal(t, "canceling statement due to statement timeout", *pinOut.ResultsError)
 }
 
-func TestPinBadDbUrl(t *testing.T) {
+func TestPinMalformedDbUrl(t *testing.T) {
+	defer clear()
+	_, err := DataDbAdd("dbs-1", "not-a-url")
+	assert.Equal(t, "pgpin: invalid: field url must be a valid postgres:// URL", err.Error())
+}
+
+func TestPinUnreachableRbUrl(t *testing.T) {
 	defer clear()
 	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL")+"-moar")
 	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
