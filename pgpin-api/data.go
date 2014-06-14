@@ -138,7 +138,7 @@ func DataDbGet(idOrName string) (*Db, error) {
 		return &db, nil
 	case err == sql.ErrNoRows:
 		return nil, &PgpinError{
-			Id:         "not-found",
+			Id:         "db-not-found",
 			Message:    "db not found",
 			HttpStatus: 404,
 		}
@@ -272,7 +272,7 @@ func DataPinGet(idOrName string) (*Pin, error) {
 	}
 	if pin == nil {
 		return nil, &PgpinError{
-			Id:         "not-found",
+			Id:         "pin-not-found",
 			Message:    "pin not found",
 			HttpStatus: 404,
 		}

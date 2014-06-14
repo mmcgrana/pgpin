@@ -26,7 +26,6 @@
 * Validate URL for well-formedness
 * Validate URL for reachability at create-time
 * Capturing HTTP response status in logger
-* Generic not found vs. e.g. db not found
 * Review and catalog error ids
 * Apply tool to check for missing error handles
 * Hook standard go tools into git
