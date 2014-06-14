@@ -1,0 +1,2 @@
+ALTER TABLE dbs
+ADD COLUMN version int NOT NULL DEFAULT 1;
