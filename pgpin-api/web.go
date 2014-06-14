@@ -1,6 +1,7 @@
 package main
 
 import (
+	"code.google.com/p/go-uuid/uuid"
 	"encoding/json"
 	"errors"
 	"github.com/zenazn/goji/bind"
@@ -79,6 +80,42 @@ func WebJsoner(inner http.Handler) http.Handler {
 	return http.HandlerFunc(outer)
 }
 
+func WebRequestIder(c *web.C, h http.Handler) http.Handler {
+	fn := func(resp http.ResponseWriter, req *http.Request) {
+		requestId := uuid.New()
+		resp.Header().Set("Request-Id", requestId)
+		h.ServeHTTP(resp, req)
+	}
+
+	return http.HandlerFunc(fn)
+}
+
+func WebLogger(c *web.C, inner http.Handler) http.Handler {
+	outer := func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		method := r.Method
+		path := r.URL.Path
+		requestId := w.Header().Get("Request-Id")
+		log.Printf("web.request.start request_id=%s method=%s path=%s", requestId, method, path)
+		inner.ServeHTTP(w, r)
+		elapsed := float64(time.Since(start)) / 1000000.0
+		log.Printf("web.request.finish request_id=%s method=%s path=%s elapsed=%f", requestId, method, path, elapsed)
+	}
+	return http.HandlerFunc(outer)
+}
+
+func WebTimer(timeout time.Duration) func(http.Handler) http.Handler {
+	return func(inner http.Handler) http.Handler {
+		data := &map[string]string{
+			"id":      "request-timeout",
+			"message": "request timed out",
+		}
+		body, err := json.MarshalIndent(data, "", "  ")
+		Must(err)
+		return http.TimeoutHandler(inner, timeout, string(body)+"\n")
+	}
+}
+
 func WebRecoverer(h http.Handler) http.Handler {
 	fn := func(resp http.ResponseWriter, req *http.Request) {
 		defer func() {
@@ -95,31 +132,6 @@ func WebRecoverer(h http.Handler) http.Handler {
 		h.ServeHTTP(resp, req)
 	}
 	return http.HandlerFunc(fn)
-}
-
-func WebLogger(inner http.Handler) http.Handler {
-	outer := func(w http.ResponseWriter, r *http.Request) {
-		start := time.Now()
-		method := r.Method
-		path := r.URL.Path
-		log.Printf("web.request.start method=%s path=%s", method, path)
-		inner.ServeHTTP(w, r)
-		elapsed := float64(time.Since(start)) / 1000000.0
-		log.Printf("web.request.finish method=%s path=%s elapsed=%f", method, path, elapsed)
-	}
-	return http.HandlerFunc(outer)
-}
-
-func WebTimer(timeout time.Duration) func(http.Handler) http.Handler {
-	return func(inner http.Handler) http.Handler {
-		data := &map[string]string{
-			"id":      "request-timeout",
-			"message": "request timed out",
-		}
-		body, err := json.MarshalIndent(data, "", "  ")
-		Must(err)
-		return http.TimeoutHandler(inner, timeout, string(body)+"\n")
-	}
 }
 
 // Db endpoints.
@@ -255,6 +267,7 @@ var WebMux *web.Mux
 func WebBuild() {
 	WebMux = web.New()
 	WebMux.Use(WebJsoner)
+	WebMux.Use(WebRequestIder)
 	WebMux.Use(WebLogger)
 	WebMux.Use(WebTimer(WebTimeout))
 	WebMux.Use(WebRecoverer)

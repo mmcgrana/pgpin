@@ -26,6 +26,7 @@
 * Web API in the style of interagent/http-api-design
 * Web request routing via github.com/zenazn/goji/web
 * Web request logging
+* Web request Ids conveyed in logs and responses
 * Web request timeouts
 * Web not found handling
 * Web error and panic handling

@@ -14,7 +14,6 @@
 * Operational metrics
 * Handling extra input fields on JSON
 * Exception reporting
-* Request Ids on requests
 * Request Ids passed through
 * Review Go docker image at https://github.com/GoogleCloudPlatform/golang-docker/blob/master/base/Dockerfile
 * Cross-check against pliny
