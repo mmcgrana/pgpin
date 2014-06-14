@@ -168,8 +168,8 @@ func DataDbUpdate(db *Db) error {
 	}
 	if rowsAffected != 1 {
 		return &PgpinError{
-			Id:         "pin-concurrent-update",
-			Message:    "pin updated concurrently by another user",
+			Id:         "db-concurrent-update",
+			Message:    "concurrent db update attempted",
 			HttpStatus: 400,
 		}
 	}
@@ -327,7 +327,7 @@ func DataPinUpdate(pin *Pin) error {
 	if rowsAffected != 1 {
 		return &PgpinError{
 			Id:         "pin-concurrent-update",
-			Message:    "pin updated concurrently by another user",
+			Message:    "concurrent pin updated attempted",
 			HttpStatus: 400,
 		}
 	}
