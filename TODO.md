@@ -16,11 +16,11 @@
 * Exception reporting
 * Request Ids passed through to operation logs
 * Review Go docker image at https://github.com/GoogleCloudPlatform/golang-docker/blob/master/base/Dockerfile
-* Cross-check against HTTP API design guide
 * JSON schema
 * Remove goji graceful stuff from worker output
 * API versioning
 * API authorization
+* ForceTLS unless flagged out
 * HTTP basic authentication
 * Remove goji/bind dependency?
 * Investigate validation libraries, https://github.com/pengux/check?
@@ -36,6 +36,9 @@
 * Extract config file
 * Consider mediators organization
 * Return CORS header
+* Nest foreign ids in serialization
+* Support name dereferencing of resources
+* Rate limiting
 
 ### Client
 
