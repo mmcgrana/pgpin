@@ -128,7 +128,7 @@ func WorkerProcess(p *Pin) error {
 }
 
 // WorkerTick processes 1 pending pin, if such a pin is
-// available. It returns true iff a pin is processed.
+// available. It returns true iff a pin is successfully processed.
 func WorkerTick() (bool, error) {
 	log.Printf("worker.tick.start")
 	p, err := DataPinReserve()
