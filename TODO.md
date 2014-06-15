@@ -8,7 +8,6 @@
 
 ### API
 
-* Test for worker panic handling
 * Test web implications of optimistic locking
 * Multiple workers / concurrent workers
 * Handle dangling reservations
