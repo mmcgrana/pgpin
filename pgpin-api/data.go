@@ -346,7 +346,15 @@ func DataPinReserve() (*Pin, error) {
 	reservedAt := time.Now()
 	pin.ReservedAt = &reservedAt
 	err = DataPinUpdate(pin)
-	return pin, err
+	if err != nil {
+		log.Printf("data.pin.reserve.retry pin_id=%s", pin.Id)
+		pgerr, ok := err.(*PgpinError)
+		if ok && pgerr.Id == "pin-concurrent-update" {
+			return DataPinReserve()
+		}
+		return nil, err
+	}
+	return pin, nil
 }
 
 func DataPinRelease(pin *Pin) error {
