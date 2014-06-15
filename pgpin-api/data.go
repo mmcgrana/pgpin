@@ -156,9 +156,8 @@ func DataDbUpdate(db *Db) error {
 		return err
 	}
 	db.UpdatedAt = time.Now()
-	db.Version = db.Version + 1
 	result, err := DataConn.Exec("UPDATE dbs SET name=$1, url_encrypted=$2, added_at=$3, updated_at=$4, removed_at=$5, version=$6 WHERE id=$7 AND version=$8",
-		db.Name, DataFernetEncrypt(db.Url), db.AddedAt, db.UpdatedAt, db.RemovedAt, db.Version, db.Id, db.Version-1)
+		db.Name, DataFernetEncrypt(db.Url), db.AddedAt, db.UpdatedAt, db.RemovedAt, db.Version+1, db.Id, db.Version)
 	if err != nil {
 		return err
 	}
@@ -173,6 +172,7 @@ func DataDbUpdate(db *Db) error {
 			HttpStatus: 400,
 		}
 	}
+	db.Version = db.Version + 1
 	return nil
 }
 
@@ -314,9 +314,8 @@ func DataPinUpdate(pin *Pin) error {
 		return err
 	}
 	pin.UpdatedAt = time.Now()
-	pin.Version = pin.Version + 1
-	result, err := DataConn.Exec("UPDATE pins SET db_id=$1, name=$2, query=$3, created_at=$4, updated_at=$5, query_started_at=$6, query_finished_at=$7, results_fields=$8, results_rows=$9, results_error=$10, deleted_at=$11, version=$12 WHERE id=$13 AND version=$14",
-		pin.DbId, pin.Name, pin.Query, pin.CreatedAt, pin.UpdatedAt, pin.QueryStartedAt, pin.QueryFinishedAt, pin.ResultsFields, pin.ResultsRows, pin.ResultsError, pin.DeletedAt, pin.Version, pin.Id, pin.Version-1)
+	result, err := DataConn.Exec("UPDATE pins SET db_id=$1, name=$2, query=$3, created_at=$4, updated_at=$5, query_started_at=$6, query_finished_at=$7, results_fields=$8, results_rows=$9, results_error=$10, reserved_at=$11, deleted_at=$12, version=$13 WHERE id=$14 AND version=$15",
+		pin.DbId, pin.Name, pin.Query, pin.CreatedAt, pin.UpdatedAt, pin.QueryStartedAt, pin.QueryFinishedAt, pin.ResultsFields, pin.ResultsRows, pin.ResultsError, pin.ReservedAt, pin.DeletedAt, pin.Version+1, pin.Id, pin.Version)
 	if err != nil {
 		return err
 	}
@@ -331,6 +330,7 @@ func DataPinUpdate(pin *Pin) error {
 			HttpStatus: 400,
 		}
 	}
+	pin.Version = pin.Version + 1
 	return nil
 }
 
