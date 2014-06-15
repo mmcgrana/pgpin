@@ -6,10 +6,6 @@ a database-backed service in Go.
 The example is a clone of [Heroku Dataclips](https://dataclips.heroku.com),
 basically a "pastebin for SQL queries".
 
-Work on `pgpin` is in progress. The current version of the app has
-some but not all of the user-facing features and robustness
-properties we eventually want.
-
 In working through this example app we hope to learn:
 
 * How to build database-backed services in idiomatic Go, with an
@@ -18,11 +14,10 @@ In working through this example app we hope to learn:
 * How developing such services in Go compares to other
   stacks, such as Ruby/Sinatra/Sequel.
 
-The scope of finished and outstanding work is described in,
-respectively:
-
-* [FEATURES.md](FEATURES.md)
-* [TODO.md](TODO.md)
+Work on `pgpin` is ongoing. The current version of the app has some
+but not all of the user-facing features and robustness properties we
+eventually want. See [FEATURES.md](FEATURES.md) and
+[TODO.md](TODO.md).
 
 ### Developing
 
