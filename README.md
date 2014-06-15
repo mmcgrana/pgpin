@@ -58,7 +58,7 @@ $ goreman start
 To run tests:
 
 ```console
-$ cat db/* | psql $DATABASE_URL
+$ cat db/* | psql $TEST_DATABASE_URL
 $ godep go test
 ```
 
