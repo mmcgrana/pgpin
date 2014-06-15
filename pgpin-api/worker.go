@@ -150,7 +150,7 @@ func WorkerTick() (bool, error) {
 	return false, nil
 }
 
-// WorkerTrap returns a chanel that will be populated when
+// WorkerTrap returns a channel that will be populated when
 // an INT or TERM signals is received.
 func WorkerTrap() chan bool {
 	sig := make(chan os.Signal, 1)
