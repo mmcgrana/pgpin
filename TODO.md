@@ -9,7 +9,7 @@
 ### API
 
 * Test web implications of optimistic locking
-* Concurrent workers within a single process
+* Concurrent workers within a single process using https://github.com/jrallison/go-workers or https://github.com/benmanns/goworker
 * Handle dangling reservations
 * Operational metrics
 * Handling extra input fields on JSON
