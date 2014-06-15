@@ -26,7 +26,6 @@
 * Capturing HTTP response status in logger
 * Review and catalog error ids
 * Apply tool to check for missing error handles
-* Hook standard go tools into git
 * Heroku deployment instructions and smoke test
 * Extract config file
 * Return CORS header

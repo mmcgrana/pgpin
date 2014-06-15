@@ -53,6 +53,23 @@ $ godep go install
 $ goreman start
 ```
 
+We suggest a git pre-commit hook to verify adherence to Go coding
+standards:
+
+```console
+$ cat > .git/hooks/pre-commit <<EOF
+#!/bin/bash
+
+gofmt -d **/*.go 2>&1 | tee /tmp/pgpin-pre-commit
+if [ $(wc -l < /tmp/pgpin-pre-commit) -gt "0" ]; then
+  exit 1
+fi
+go vet github.com/mmcgrana/pgpin/pgpin-api || exit 1
+errcheck -ignore 'fmt:a^' github.com/mmcgrana/pgpin/pgpin-api || exit 1
+EOF
+$ chmod +x .git/hooks/pre-commit
+```
+
 ### Testing
 
 To run tests:
