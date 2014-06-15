@@ -9,7 +9,7 @@
 ### API
 
 * Test web implications of optimistic locking
-* Multiple workers / concurrent workers
+* Concurrent workers within a single process
 * Handle dangling reservations
 * Operational metrics
 * Handling extra input fields on JSON
