@@ -20,6 +20,6 @@ var (
 	ConfigRedisUrl                 = env.String("REDIS_URL")
 	ConfigSchedulerTickInterval    = 10 * time.Second
 	ConfigTestLogs                 = env.StringDefault("TEST_LOGS", "false") != "true"
-	ConfigWebPort                  = env.Int("PORT")
+	ConfigWebPort                  = env.IntDefault("PORT", 5000)
 	ConfigWebTimeout               = time.Second * 10
 )
