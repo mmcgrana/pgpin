@@ -8,12 +8,25 @@
 			"Rev": "7dda39b2e7d5e265014674c5af696ba4186679e9"
 		},
 		{
+			"ImportPath": "github.com/bitly/go-simplejson",
+			"Comment": "v0.4.3-23-g2abbab7",
+			"Rev": "2abbab791406d7c6c4c0a3e11db0b0f9f41ef90d"
+		},
+		{
 			"ImportPath": "github.com/darkhelmet/env",
 			"Rev": "d1827543acd996dc90693a2ae0b1a18e33e0df17"
 		},
 		{
 			"ImportPath": "github.com/fernet/fernet-go",
 			"Rev": "54c3c8fb9a0701721fceaa28780ce25ef447fd4f"
+		},
+		{
+			"ImportPath": "github.com/garyburd/redigo/redis",
+			"Rev": "1c7841955920910958c71b1cc1a03f628267d468"
+		},
+		{
+			"ImportPath": "github.com/jrallison/go-workers",
+			"Rev": "bcfda68ba7ae248c616638d1d90c5c7b5a66c1c5"
 		},
 		{
 			"ImportPath": "github.com/lib/pq",

@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/darkhelmet/env"
+	"github.com/jrallison/go-workers"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 	"time"
 )
@@ -18,19 +18,25 @@ import (
 // Setup and teardown.
 
 func init() {
-	if env.StringDefault("TEST_LOGS", "false") != "true" {
+	if ConfigTestLogs {
 		log.SetOutput(ioutil.Discard)
 	}
-	os.Setenv("DATABASE_URL", env.String("TEST_DATABASE_URL"))
-	DataStart()
-	clear()
+	ConfigDatabaseUrl = env.String("TEST_DATABASE_URL")
+	ConfigRedisUrl = env.String("TEST_REDIS_URL")
 	WebBuild()
+	DataStart()
+	QueueStart()
+	clear()
 }
 
 func clear() {
 	_, err := DataConn.Exec("DELETE from pins")
 	Must(err)
 	_, err = DataConn.Exec("DELETE from dbs")
+	Must(err)
+	conn := workers.Config.Pool.Get()
+	_, err = conn.Do("flushdb")
+	defer conn.Close()
 	Must(err)
 }
 
@@ -67,8 +73,18 @@ func mustDataPinGet(id string) *Pin {
 }
 
 func mustWorkerTick() {
-	_, err := WorkerTick()
-	Must(err)
+	var message *workers.Msg
+	fetcher := workers.NewFetch("queue:pins", make(chan *workers.Msg))
+	go fetcher.Fetch()
+	defer fetcher.Close()
+	select {
+	case message = <-fetcher.Messages():
+	case <-time.After(10 * time.Millisecond):
+	}
+	if message != nil {
+		WorkerProcessWrapper(message)
+		fetcher.Acknowledge(message)
+	}
 }
 
 func mustCanonicalizeJson(in []byte) string {
@@ -208,7 +224,7 @@ func TestDbList(t *testing.T) {
 
 func TestPinCreateAndGet(t *testing.T) {
 	defer clear()
-	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
+	dbIn := mustDataDbAdd("dbs-1", ConfigDatabaseUrl)
 	b := bytes.NewReader([]byte(`{"name": "pin-1", "db_id": "` + dbIn.Id + `", "query": "select count(*) from pins"}`))
 	res := mustRequest("POST", "/pins", b)
 	assert.Equal(t, 201, res.Code)
@@ -232,7 +248,7 @@ func TestPinCreateAndGet(t *testing.T) {
 
 func TestPinGetByName(t *testing.T) {
 	defer clear()
-	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
+	dbIn := mustDataDbAdd("dbs-1", ConfigDatabaseUrl)
 	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
 	res := mustRequest("GET", "/pins/pins-1", nil)
 	assert.Equal(t, 200, res.Code)
@@ -294,7 +310,7 @@ func TestPinUpdateQuery(t *testing.T) {
 
 func TestPinMultipleColumns(t *testing.T) {
 	defer clear()
-	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
+	dbIn := mustDataDbAdd("dbs-1", ConfigDatabaseUrl)
 	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select name, query from pins")
 	mustWorkerTick()
 	res := mustRequest("GET", "/pins/"+pinIn.Id, nil)
@@ -308,7 +324,7 @@ func TestPinMultipleColumns(t *testing.T) {
 
 func TestPinTooManyRows(t *testing.T) {
 	defer clear()
-	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
+	dbIn := mustDataDbAdd("dbs-1", ConfigDatabaseUrl)
 	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select generate_series(0, 10000)")
 	mustWorkerTick()
 	res := mustRequest("GET", "/pins/"+pinIn.Id, nil)
@@ -322,7 +338,7 @@ func TestPinTooManyRows(t *testing.T) {
 
 func TestPinBadQuery(t *testing.T) {
 	defer clear()
-	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
+	dbIn := mustDataDbAdd("dbs-1", ConfigDatabaseUrl)
 	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select wat")
 	mustWorkerTick()
 	res := mustRequest("GET", "/pins/"+pinIn.Id, nil)
@@ -336,13 +352,13 @@ func TestPinBadQuery(t *testing.T) {
 
 func TestPinStatementTimeout(t *testing.T) {
 	defer clear()
-	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
+	dbIn := mustDataDbAdd("dbs-1", ConfigDatabaseUrl)
 	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select pg_sleep(0.1)")
-	DataPinStatementTimeoutPrev := DataPinStatementTimeout
+	ConfigPinStatementTimeoutPrev := ConfigPinStatementTimeout
 	defer func() {
-		DataPinStatementTimeout = DataPinStatementTimeoutPrev
+		ConfigPinStatementTimeout = ConfigPinStatementTimeoutPrev
 	}()
-	DataPinStatementTimeout = time.Millisecond * 50
+	ConfigPinStatementTimeout = time.Millisecond * 50
 	mustWorkerTick()
 	res := mustRequest("GET", "/pins/"+pinIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
@@ -361,7 +377,7 @@ func TestPinMalformedDbUrl(t *testing.T) {
 
 func TestPinUnreachableRbUrl(t *testing.T) {
 	defer clear()
-	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL")+"-moar")
+	dbIn := mustDataDbAdd("dbs-1", ConfigDatabaseUrl+"-moar")
 	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
 	mustWorkerTick()
 	res := mustRequest("GET", "/pins/"+pinIn.Id, nil)
@@ -375,7 +391,7 @@ func TestPinUnreachableRbUrl(t *testing.T) {
 
 func TestPinOptomisticLocking(t *testing.T) {
 	defer clear()
-	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
+	dbIn := mustDataDbAdd("dbs-1", ConfigDatabaseUrl)
 	pinWinsRace := mustDataPinCreate(dbIn.Id, "pins-1", "select 1")
 	pinLosesRace := mustDataPinGet(pinWinsRace.Id)
 	pinWinsRace.Query = "select 'wins'"
@@ -390,7 +406,7 @@ func TestPinOptomisticLocking(t *testing.T) {
 
 func TestPinDelete(t *testing.T) {
 	defer clear()
-	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
+	dbIn := mustDataDbAdd("dbs-1", ConfigDatabaseUrl)
 	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
 	res := mustRequest("DELETE", "/pins/"+pinIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
@@ -403,7 +419,7 @@ func TestPinDelete(t *testing.T) {
 
 func TestPinList(t *testing.T) {
 	defer clear()
-	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
+	dbIn := mustDataDbAdd("dbs-1", ConfigDatabaseUrl)
 	pinIn1 := mustDataPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
 	pinIn2 := mustDataPinCreate(dbIn.Id, "pins-2", "select * from pins")
 	_, err := DataPinDelete(pinIn1.Id)
@@ -450,11 +466,11 @@ func TestTimeout(t *testing.T) {
 	defer func() {
 		WebMux = WebMuxPrev
 	}()
-	WebTimeoutPrev := WebTimeout
+	ConfigWebTimeoutPrev := ConfigWebTimeout
 	defer func() {
-		WebTimeout = WebTimeoutPrev
+		ConfigWebTimeout = ConfigWebTimeoutPrev
 	}()
-	WebTimeout = 50 * time.Millisecond
+	ConfigWebTimeout = 50 * time.Millisecond
 	WebBuild()
 	res := mustRequest("GET", "/timeout", nil)
 	assert.Equal(t, 503, res.Code)
@@ -475,35 +491,13 @@ func TestNotFound(t *testing.T) {
 
 // Worker behavior.
 
-func TestWorkerNoop(t *testing.T) {
-	processed, err := WorkerTick()
-	assert.False(t, processed)
-	assert.Nil(t, err)
-}
-
 func TestWorkerPinRefreshNotReady(t *testing.T) {
 	defer clear()
-	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
+	dbIn := mustDataDbAdd("dbs-1", ConfigDatabaseUrl)
 	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select now()")
 	mustWorkerTick()
 	pinOut1 := mustDataPinGet(pinIn.Id)
 	mustWorkerTick()
 	pinOut2 := mustDataPinGet(pinIn.Id)
 	assert.Equal(t, string([]byte(pinOut1.ResultsRows)), string([]byte(pinOut2.ResultsRows)))
-}
-
-func TestWorkerPinRefreshReady(t *testing.T) {
-	defer clear()
-	DataPinRefreshIntervalPrev := DataPinRefreshInterval
-	defer func() {
-		DataPinRefreshInterval = DataPinRefreshIntervalPrev
-	}()
-	DataPinRefreshInterval = 0 * time.Second
-	dbIn := mustDataDbAdd("dbs-1", env.String("DATABASE_URL"))
-	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select now()")
-	mustWorkerTick()
-	pinOut1 := mustDataPinGet(pinIn.Id)
-	mustWorkerTick()
-	pinOut2 := mustDataPinGet(pinIn.Id)
-	assert.NotEqual(t, string([]byte(pinOut1.ResultsRows)), string([]byte(pinOut2.ResultsRows)))
 }

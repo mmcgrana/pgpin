@@ -3,12 +3,9 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"github.com/jrallison/go-workers"
 	"github.com/lib/pq"
 	"log"
-	"os"
-	"os/signal"
-	"runtime/debug"
-	"syscall"
 	"time"
 )
 
@@ -48,7 +45,7 @@ func WorkerQuery(p *Pin, pinDbUrl string) error {
 	log.Printf("worker.query.start pin_id=%s", p.Id)
 	applicationName := fmt.Sprintf("pgpin.pin.%s", p.Id)
 	pinDbConn := fmt.Sprintf("%s?application_name=%s&statement_timeout=%d&connect_timeout=%d",
-		pinDbUrl, applicationName, DataPinStatementTimeout/time.Millisecond, DataConnectTimeout/time.Millisecond)
+		pinDbUrl, applicationName, ConfigPinStatementTimeout/time.Millisecond, ConfigDatabaseConnectTimeout/time.Millisecond)
 	pinDb, err := sql.Open("postgres", pinDbConn)
 	if err != nil {
 		p.ResultsError, err = WorkerExtractPgerror(err)
@@ -69,7 +66,7 @@ func WorkerQuery(p *Pin, pinDbUrl string) error {
 	resultsRowsSeen := 0
 	for resultsRows.Next() {
 		resultsRowsSeen += 1
-		if resultsRowsSeen > DataPinResultsRowsMax {
+		if resultsRowsSeen > ConfigPinResultsRowsMax {
 			message := "too many rows in query results"
 			p.ResultsError = &message
 			return nil
@@ -100,112 +97,46 @@ func WorkerQuery(p *Pin, pinDbUrl string) error {
 	return nil
 }
 
-// WorkerProcess performs a processes an update on the given
-// pin, running its query against its db and updating the
-// system database accordingly. User-caused errors are
-// reflected in the updated pin record and will not cause a
-// returned error. System-caused errors are returned.
-func WorkerProcess(p *Pin) error {
-	log.Printf("worker.process.start pin_id=%s", p.Id)
-	pinDbUrl, err := DataPinDbUrl(p)
+func WorkerProcess(jobId string, pinId string) error {
+	log.Printf("worker.job.start job_id=%s pin_id=%s", jobId, pinId)
+	pin, err := DataPinGet(pinId)
+	if err != nil {
+		return err
+	}
+	pinDbUrl, err := DataPinDbUrl(pin)
 	if err != nil {
 		return err
 	}
 	startedAt := time.Now()
-	p.QueryStartedAt = &startedAt
-	err = WorkerQuery(p, pinDbUrl)
+	pin.QueryStartedAt = &startedAt
+	err = WorkerQuery(pin, pinDbUrl)
 	if err != nil {
 		return err
 	}
 	finishedAt := time.Now()
-	p.QueryFinishedAt = &finishedAt
-	err = DataPinUpdate(p)
+	pin.QueryFinishedAt = &finishedAt
+	err = DataPinUpdate(pin)
 	if err != nil {
 		return err
 	}
-	log.Printf("worker.process.finish pin_id=%s", p.Id)
+	log.Printf("worker.job.finish job_id=%s pin_id=%s", jobId, pinId)
 	return nil
 }
 
-// WorkerTick processes 1 pending pin, if such a pin is
-// available. It returns true iff a pin is successfully processed.
-func WorkerTick() (bool, error) {
-	log.Printf("worker.tick.start")
-	p, err := DataPinReserve()
+func WorkerProcessWrapper(msg *workers.Msg) {
+	jobId := msg.Jid()
+	pinId, err := msg.Args().String()
+	Must(err)
+	err = WorkerProcess(jobId, pinId)
 	if err != nil {
-		return false, err
-	}
-	if p != nil {
-		log.Printf("worker.tick.found pin_id=%s", p.Id)
-		err = WorkerProcess(p)
-		if err != nil {
-			return false, err
-		}
-		err = DataPinRelease(p)
-		if err != nil {
-			return false, err
-		}
-		return true, nil
-	}
-	return false, nil
-}
-
-// WorkerTrap returns a channel that will be populated when
-// an INT or TERM signals is received.
-func WorkerTrap() chan bool {
-	sig := make(chan os.Signal, 1)
-	done := make(chan bool, 1)
-	signal.Notify(sig, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		<-sig
-		log.Printf("worker.trap")
-		done <- true
-	}()
-	return done
-}
-
-var WorkerCooloff = time.Millisecond * 500
-
-func WorkerCheckPanic() {
-	err := recover()
-	if err != nil {
-		log.Printf("worker.panic: %s", err)
-		log.Print(string(debug.Stack()))
-		time.Sleep(WorkerCooloff)
-	}
-}
-
-func WorkerHandleError(err error) {
-	log.Printf("worker.error %s", err.Error())
-	time.Sleep(WorkerCooloff)
-}
-
-func WorkerCheckExit(done chan bool) {
-	select {
-	case <-done:
-		log.Printf("worker.exit")
-		os.Exit(0)
-	default:
-	}
-}
-
-func WorkerLoop(done chan bool) {
-	defer WorkerCheckPanic()
-	processed, err := WorkerTick()
-	if err != nil {
-		WorkerHandleError(err)
-	}
-	WorkerCheckExit(done)
-	if err == nil && !processed {
-		time.Sleep(WorkerCooloff)
+		log.Printf("worker.job.error job_id=%s pin_id=%s %s", jobId, pinId, err)
 	}
 }
 
 func WorkerStart() {
 	log.Printf("worker.start")
 	DataStart()
-	done := WorkerTrap()
-	for {
-		WorkerLoop(done)
-	}
+	QueueStart()
+	workers.Process("pins", WorkerProcessWrapper, 5)
+	workers.Run()
 }

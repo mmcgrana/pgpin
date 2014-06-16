@@ -11,7 +11,7 @@ func init() {
 }
 
 func usage() {
-	_, err := fmt.Fprintln(os.Stderr, "Usage: datapins-api [web|worker]")
+	_, err := fmt.Fprintln(os.Stderr, "Usage: datapins-api [web|worker|scheduler]")
 	Must(err)
 	os.Exit(1)
 }
@@ -25,6 +25,8 @@ func main() {
 		WebStart()
 	case "worker":
 		WorkerStart()
+	case "scheduler":
+		SchedulerStart()
 	default:
 		usage()
 	}

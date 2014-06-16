@@ -49,8 +49,8 @@ func (p PgJson) Value() (driver.Value, error) {
 }
 
 // MustNewPgJson returns a PgJson struct corresponding to
-// the given data, which shuold be a data structure (not an
-// allready-encoded JSON string).
+// the given data, which should be a data structure (not an
+// already-encoded JSON string).
 func MustNewPgJson(data interface{}) PgJson {
 	encoded, err := json.Marshal(data)
 	Must(err)

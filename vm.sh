@@ -22,6 +22,10 @@ export GOPATH=\$HOME
 export PATH=\$HOME/bin:/opt/go/bin:\$PATH
 EOF
 
+# Godep and Goreman
+sudo -u vagrant -i go get github.com/tools/godep
+sudo -u vagrant -i go get github.com/mattn/goreman
+
 # Postgres
 cat > /etc/apt/sources.list.d/pgdg.list <<EOF
 deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main
@@ -42,14 +46,23 @@ export TEST_DATABASE_URL=postgres://postgres:secret@127.0.0.1:5432/pgpin-test
 export DATABASE_URL=\$DEVELOPMENT_DATABASE_URL
 EOF
 
-# Goreman and Godep
-sudo -u vagrant -i go get github.com/mattn/goreman
-sudo -u vagrant -i go get github.com/tools/godep
+# Redis
+apt-get install -y --no-install-recommends redis-server
 
-# Config
+cat >> /home/vagrant/.profile <<EOF
+export DEVELOPMENT_REDIS_URL=redis://user:@127.0.0.1:6379/1
+export TEST_REDIS_URL=redis://user:@127.0.0.1:6379/2
+export REDIS_URL=\$DEVELOPMENT_REDIS_URL
+EOF
+
+# Other app config
 cat >> /home/vagrant/.profile <<EOF
 export API_AUTH="client:"$(openssl rand -hex 12)
-export FERNET_KEY=$(openssl rand -base64 32)
+export FERNET_KEYS=$(openssl rand -base64 32)
 export PGPIN_API_URL=http://\$API_AUTH@127.0.0.1:5000
+EOF
+
+# App directory
+cat >> /home/vagrant.profile <<EOF
 cd ~/src/github.com/mmcgrana/pgpin
 EOF

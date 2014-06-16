@@ -4,11 +4,6 @@ import (
 	"time"
 )
 
-type PinSlim struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
-}
-
 type Pin struct {
 	Id              string     `json:"id"`
 	Name            string     `json:"name"`
@@ -21,14 +16,9 @@ type Pin struct {
 	ResultsFields   PgJson     `json:"results_fields"`
 	ResultsRows     PgJson     `json:"results_rows"`
 	ResultsError    *string    `json:"results_error"`
-	ReservedAt      *time.Time `json:"-"`
+	ScheduledAt     time.Time  `json:"-"`
 	DeletedAt       *time.Time `json:"-"`
 	Version         int        `json:"-"`
-}
-
-type DbSlim struct {
-	Id   string `json:"id"`
-	Name string `json:"name"`
 }
 
 type Db struct {

@@ -8,8 +8,11 @@
 
 ### API
 
+* Test fix suite
 * Test web implications of optimistic locking
-* Concurrent workers within a single process using https://github.com/jrallison/go-workers or https://github.com/benmanns/goworker
+* Test on travis
+* Test scheduler
+* Test break up files
 * Handle dangling reservations
 * Operational metrics
 * Handling extra input fields on JSON
@@ -26,13 +29,11 @@
 * Review and catalog error ids
 * Apply tool to check for missing error handles
 * Heroku deployment instructions and smoke test
-* Extract config file
 * Return CORS header
 * Nest foreign ids in serialization
 * Rate limiting
 * Investigate kr/secureheader
 * Consider models/mediators organization
-* Break up test files
 
 ### Client
 

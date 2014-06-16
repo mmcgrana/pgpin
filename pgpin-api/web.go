@@ -13,10 +13,6 @@ import (
 	"time"
 )
 
-// Constants.
-
-var WebTimeout = time.Second * 5
-
 // Helpers.
 
 // WebRead reads the JSON request body into the given dataRef. It
@@ -136,9 +132,18 @@ func WebRecoverer(h http.Handler) http.Handler {
 
 // Db endpoints.
 
+type DbSlim struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+}
+
 func WebDbList(resp http.ResponseWriter, req *http.Request) {
-	dbs, err := DataDbList()
-	WebRespond(resp, 200, dbs, err)
+	dbs, err := DataDbList("")
+	dbSlims := []*DbSlim{}
+	for _, db := range dbs {
+		dbSlims = append(dbSlims, &DbSlim{Id: db.Id, Name: db.Name})
+	}
+	WebRespond(resp, 200, dbSlims, err)
 }
 
 func WebDbAdd(resp http.ResponseWriter, req *http.Request) {
@@ -181,9 +186,18 @@ func WebDbRemove(c web.C, resp http.ResponseWriter, req *http.Request) {
 
 // Pin endpoints.
 
+type PinSlim struct {
+	Id   string `json:"id"`
+	Name string `json:"name"`
+}
+
 func WebPinList(resp http.ResponseWriter, req *http.Request) {
-	pins, err := DataPinList()
-	WebRespond(resp, 200, pins, err)
+	pins, err := DataPinList("")
+	pinSlims := []*PinSlim{}
+	for _, pin := range pins {
+		pinSlims = append(pinSlims, &PinSlim{Id: pin.Id, Name: pin.Name})
+	}
+	WebRespond(resp, 200, pinSlims, err)
 }
 
 func WebPinCreate(resp http.ResponseWriter, req *http.Request) {
@@ -246,7 +260,7 @@ func WebTriggerPanic(resp http.ResponseWriter, req *http.Request) {
 }
 
 func WebTriggerTimeout(resp http.ResponseWriter, req *http.Request) {
-	time.Sleep(WebTimeout + (10 * time.Millisecond))
+	time.Sleep(ConfigWebTimeout + (10 * time.Millisecond))
 	status := &Status{Message: "late"}
 	WebRespond(resp, 200, status, nil)
 }
@@ -269,7 +283,7 @@ func WebBuild() {
 	WebMux.Use(WebJsoner)
 	WebMux.Use(WebRequestIder)
 	WebMux.Use(WebLogger)
-	WebMux.Use(WebTimer(WebTimeout))
+	WebMux.Use(WebTimer(ConfigWebTimeout))
 	WebMux.Use(WebRecoverer)
 	WebMux.Get("/dbs", WebDbList)
 	WebMux.Post("/dbs", WebDbAdd)
@@ -291,6 +305,7 @@ func WebBuild() {
 func WebStart() {
 	log.Print("web.start")
 	DataStart()
+	QueueStart()
 	WebBuild()
 	listener := bind.Default()
 	bind.Ready()
