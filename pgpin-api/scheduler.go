@@ -21,24 +21,21 @@ func SchedulerEnqueue(pin *Pin) error {
 	return nil
 }
 
-func SchedulerTick() {
+func SchedulerTick() error {
 	log.Printf("scheduler.tick")
-	queryFrag := fmt.Sprintf("scheduled_at < now()-'%f seconds'::interval", ConfigPinRefreshInterval.Seconds())
+	queryFrag := fmt.Sprintf("scheduled_at <= now()-'%f seconds'::interval", ConfigPinRefreshInterval.Seconds())
 	ready, err := DataPinList(queryFrag)
 	if err != nil {
-		SchedulerError(err)
+		return err
 	} else {
 		for _, pin := range ready {
 			err = SchedulerEnqueue(pin)
 			if err != nil {
-				SchedulerError(err)
+				return err
 			}
 		}
 	}
-}
-
-func SchedulerError(err error) {
-	log.Printf("scheduler.error %+s", err.Error())
+	return nil
 }
 
 func SchedulerStart() {
@@ -46,7 +43,10 @@ func SchedulerStart() {
 	DataStart()
 	QueueStart()
 	for {
-		SchedulerTick()
+		err := SchedulerTick()
+		if err != nil {
+			log.Printf("scheduler.error %+s", err.Error())
+		}
 		time.Sleep(ConfigSchedulerTickInterval)
 	}
 }

@@ -8,7 +8,6 @@
 
 ### API
 
-* Test scheduler
 * Test break up files
 * Handle dangling reservations
 * Operational metrics
