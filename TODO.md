@@ -8,7 +8,6 @@
 
 ### API
 
-* Test web implications of optimistic locking
 * Test scheduler
 * Test break up files
 * Handle dangling reservations
