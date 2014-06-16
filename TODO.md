@@ -19,7 +19,7 @@
 * API authorization
 * Require TLS unless flagged out
 * Test on travis
-* Revisit PgJson situation
+* Revisit PgJson situation, including pointer vs value
 * Investigate validation libraries, https://github.com/pengux/check?
 * Capturing HTTP response status in logger
 * Review and catalog error ids
