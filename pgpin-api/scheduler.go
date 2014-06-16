@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/jrallison/go-workers"
 	"log"
 	"time"
@@ -23,8 +22,7 @@ func SchedulerEnqueue(pin *Pin) error {
 
 func SchedulerTick() error {
 	log.Printf("scheduler.tick")
-	queryFrag := fmt.Sprintf("scheduled_at <= now()-'%f seconds'::interval", ConfigPinRefreshInterval.Seconds())
-	ready, err := DataPinList(queryFrag)
+	ready, err := DataPinList("scheduled_at <= $1", time.Now().Add(-ConfigPinRefreshInterval))
 	if err != nil {
 		return err
 	} else {

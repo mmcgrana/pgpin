@@ -253,11 +253,12 @@ func DataPinValidate(pin *Pin) error {
 	return nil
 }
 
-func DataPinList(queryFrag string) ([]*Pin, error) {
+func DataPinList(queryFrag string, queryVals ...interface{}) ([]*Pin, error) {
 	if queryFrag == "" {
 		queryFrag = "true"
 	}
-	res, err := DataConn.Query("SELECT id, name, db_id, query, created_at, updated_at, query_started_at, query_finished_at, results_fields, results_rows, results_error, scheduled_at, deleted_at, version FROM pins WHERE deleted_at IS NULL AND " + queryFrag)
+	query := "SELECT id, name, db_id, query, created_at, updated_at, query_started_at, query_finished_at, results_fields, results_rows, results_error, scheduled_at, deleted_at, version FROM pins WHERE deleted_at IS NULL AND " + queryFrag
+	res, err := DataConn.Query(query, queryVals...)
 	if err != nil {
 		return nil, err
 	}
