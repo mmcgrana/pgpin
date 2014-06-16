@@ -308,7 +308,6 @@ func WebStart() {
 	QueueStart()
 	WebBuild()
 	listener := bind.Default()
-	bind.Ready()
 	Must(graceful.Serve(listener, WebMux))
 	graceful.Wait()
 }
