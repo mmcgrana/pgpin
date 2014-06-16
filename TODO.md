@@ -8,7 +8,6 @@
 
 ### API
 
-* Test break up files
 * Handle dangling reservations
 * Operational metrics
 * Handling extra input fields on JSON

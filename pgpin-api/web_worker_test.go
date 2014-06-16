@@ -1,110 +1,16 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
-	"github.com/darkhelmet/env"
-	"github.com/jrallison/go-workers"
 	"github.com/stretchr/testify/assert"
-	"io"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"net/http/httptest"
 	"testing"
 	"time"
 )
-
-// Setup and teardown.
-
-func init() {
-	if ConfigTestLogs {
-		log.SetOutput(ioutil.Discard)
-	}
-	ConfigDatabaseUrl = env.String("TEST_DATABASE_URL")
-	ConfigRedisUrl = env.String("TEST_REDIS_URL")
-	WebBuild()
-	DataStart()
-	QueueStart()
-	clear()
-}
-
-func clear() {
-	_, err := DataConn.Exec("DELETE from pins")
-	Must(err)
-	_, err = DataConn.Exec("DELETE from dbs")
-	Must(err)
-	conn := workers.Config.Pool.Get()
-	_, err = conn.Do("flushdb")
-	defer conn.Close()
-	Must(err)
-}
-
-// Helpers.
-
-func mustRequest(method, url string, body io.Reader) *httptest.ResponseRecorder {
-	req, err := http.NewRequest(method, url, body)
-	Must(err)
-	res := httptest.NewRecorder()
-	WebMux.ServeHTTP(res, req)
-	return res
-}
-
-func mustDecode(res *httptest.ResponseRecorder, data interface{}) {
-	Must(json.NewDecoder(res.Body).Decode(data))
-}
-
-func mustDataDbAdd(name string, url string) *Db {
-	db, err := DataDbAdd(name, url)
-	Must(err)
-	return db
-}
-
-func mustDataPinCreate(dbId string, name string, query string) *Pin {
-	pin, err := DataPinCreate(dbId, name, query)
-	Must(err)
-	return pin
-}
-
-func mustDataPinGet(id string) *Pin {
-	pin, err := DataPinGet(id)
-	Must(err)
-	return pin
-}
-
-func mustWorkerTick() {
-	var message *workers.Msg
-	fetcher := workers.NewFetch("queue:pins", make(chan *workers.Msg))
-	go fetcher.Fetch()
-	defer fetcher.Close()
-	select {
-	case message = <-fetcher.Messages():
-	case <-time.After(10 * time.Millisecond):
-	}
-	if message != nil {
-		WorkerProcessWrapper(message)
-		fetcher.Acknowledge(message)
-	}
-}
-
-func mustSchedulerTick() {
-	Must(SchedulerTick())
-}
-
-func mustCanonicalizeJson(in []byte) string {
-	data := make([]interface{}, 0)
-	Must(json.Unmarshal(in, &data))
-	out, err := json.Marshal(data)
-	Must(err)
-	return string(out)
-
-}
 
 // DB endpoints.
 
 func TestDbAdd(t *testing.T) {
 	defer clear()
-	b := bytes.NewReader([]byte(`{"name": "dbs-1", "url": "postgres://u:p@h:1234/d-1"}`))
+	b := asReader(`{"name": "dbs-1", "url": "postgres://u:p@h:1234/d-1"}`)
 	res := mustRequest("POST", "/dbs", b)
 	assert.Equal(t, 201, res.Code)
 	dbOut := &Db{}
@@ -118,7 +24,7 @@ func TestDbAdd(t *testing.T) {
 func TestDbAddDuplicateName(t *testing.T) {
 	defer clear()
 	mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
-	b := bytes.NewReader([]byte(`{"name": "dbs-1", "url": "postgres://u:p@h:1234/d-other"}`))
+	b := asReader(`{"name": "dbs-1", "url": "postgres://u:p@h:1234/d-other"}`)
 	res := mustRequest("POST", "/dbs", b)
 	assert.Equal(t, 400, res.Code)
 	data := make(map[string]string)
@@ -155,7 +61,7 @@ func TestDbGetByName(t *testing.T) {
 func TestDbUpdateName(t *testing.T) {
 	defer clear()
 	dbIn := mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
-	b := bytes.NewReader([]byte(`{"name": "dbs-1a"}`))
+	b := asReader(`{"name": "dbs-1a"}`)
 	res := mustRequest("PUT", "/dbs/"+dbIn.Id, b)
 	assert.Equal(t, 200, res.Code)
 	dbPutOut := &Db{}
@@ -172,7 +78,7 @@ func TestDbUpdateName(t *testing.T) {
 func TestDbUpdateUrl(t *testing.T) {
 	defer clear()
 	dbIn := mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
-	b := bytes.NewReader([]byte(`{"url": "postgres://u:p@h:1234/d-1a"}`))
+	b := asReader(`{"url": "postgres://u:p@h:1234/d-1a"}`)
 	res := mustRequest("PUT", "/dbs/"+dbIn.Id, b)
 	assert.Equal(t, 200, res.Code)
 	dbPutOut := &Db{}
@@ -229,7 +135,7 @@ func TestDbList(t *testing.T) {
 func TestPinCreateAndGet(t *testing.T) {
 	defer clear()
 	dbIn := mustDataDbAdd("dbs-1", ConfigDatabaseUrl)
-	b := bytes.NewReader([]byte(`{"name": "pin-1", "db_id": "` + dbIn.Id + `", "query": "select count(*) from pins"}`))
+	b := asReader(`{"name": "pin-1", "db_id": "` + dbIn.Id + `", "query": "select count(*) from pins"}`)
 	res := mustRequest("POST", "/pins", b)
 	assert.Equal(t, 201, res.Code)
 	pinOut := &Pin{}
@@ -266,7 +172,7 @@ func TestPinCreateDuplicateName(t *testing.T) {
 	defer clear()
 	dbIn := mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
 	mustDataPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
-	b := bytes.NewReader([]byte(`{"name": "pins-1", "db_id": "` + dbIn.Id + `", "query": "select count(*) from pins"}`))
+	b := asReader(`{"name": "pins-1", "db_id": "` + dbIn.Id + `", "query": "select count(*) from pins"}`)
 	res := mustRequest("POST", "/pins", b)
 	assert.Equal(t, 400, res.Code)
 	data := make(map[string]string)
@@ -279,7 +185,7 @@ func TestPinUpdateName(t *testing.T) {
 	defer clear()
 	dbIn := mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
 	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
-	b := bytes.NewReader([]byte(`{"name": "pins-1a"}`))
+	b := asReader(`{"name": "pins-1a"}`)
 	res := mustRequest("PUT", "/pins/"+pinIn.Id, b)
 	assert.Equal(t, 200, res.Code)
 	pinPutOut := &Pin{}
@@ -297,7 +203,7 @@ func TestPinUpdateQuery(t *testing.T) {
 	defer clear()
 	dbIn := mustDataDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
 	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
-	b := bytes.NewReader([]byte(`{"query": "select now()"}`))
+	b := asReader(`{"query": "select now()"}`)
 	res := mustRequest("PUT", "/pins/"+pinIn.Id, b)
 	assert.Equal(t, 200, res.Code)
 	pinPutOut := &Pin{}
