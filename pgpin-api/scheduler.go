@@ -9,7 +9,7 @@ import (
 func SchedulerEnqueue(pin *Pin) error {
 	log.Printf("scheduler.enqueue pin_id=%s", pin.Id)
 	pin.ScheduledAt = time.Now()
-	err := DataPinUpdate(pin)
+	err := PinUpdate(pin)
 	if err != nil {
 		return err
 	}
@@ -22,7 +22,7 @@ func SchedulerEnqueue(pin *Pin) error {
 
 func SchedulerTick() error {
 	log.Printf("scheduler.tick")
-	ready, err := DataPinList("scheduled_at <= $1", time.Now().Add(-ConfigPinRefreshInterval))
+	ready, err := PinList("scheduled_at <= $1", time.Now().Add(-ConfigPinRefreshInterval))
 	if err != nil {
 		return err
 	}

@@ -56,20 +56,20 @@ func mustDecode(res *httptest.ResponseRecorder, data interface{}) {
 	Must(json.NewDecoder(res.Body).Decode(data))
 }
 
-func mustDataDbAdd(name string, url string) *Db {
-	db, err := DataDbAdd(name, url)
+func mustDbAdd(name string, url string) *Db {
+	db, err := DbAdd(name, url)
 	Must(err)
 	return db
 }
 
-func mustDataPinCreate(dbId string, name string, query string) *Pin {
-	pin, err := DataPinCreate(dbId, name, query)
+func mustPinCreate(dbId string, name string, query string) *Pin {
+	pin, err := PinCreate(dbId, name, query)
 	Must(err)
 	return pin
 }
 
-func mustDataPinGet(id string) *Pin {
-	pin, err := DataPinGet(id)
+func mustPinGet(id string) *Pin {
+	pin, err := PinGet(id)
 	Must(err)
 	return pin
 }

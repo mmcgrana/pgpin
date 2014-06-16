@@ -99,11 +99,11 @@ func WorkerQuery(p *Pin, pinDbUrl string) error {
 
 func WorkerProcess(jobId string, pinId string) error {
 	log.Printf("worker.job.start job_id=%s pin_id=%s", jobId, pinId)
-	pin, err := DataPinGet(pinId)
+	pin, err := PinGet(pinId)
 	if err != nil {
 		return err
 	}
-	pinDbUrl, err := DataPinDbUrl(pin)
+	pinDbUrl, err := PinDbUrl(pin)
 	if err != nil {
 		return err
 	}
@@ -115,7 +115,7 @@ func WorkerProcess(jobId string, pinId string) error {
 	}
 	finishedAt := time.Now()
 	pin.QueryFinishedAt = &finishedAt
-	err = DataPinUpdate(pin)
+	err = PinUpdate(pin)
 	if err != nil {
 		return err
 	}

@@ -42,9 +42,9 @@ type Db struct {
 	Version   int        `json:"-"`
 }
 
-// Db operations.
+// Db CRUD.
 
-func DataDbValidate(db *Db) error {
+func DbValidate(db *Db) error {
 	err := ValidateSlug("name", db.Name)
 	if err != nil {
 		return err
@@ -67,7 +67,7 @@ func DataDbValidate(db *Db) error {
 	return nil
 }
 
-func DataDbList(queryFrag string) ([]*Db, error) {
+func DbList(queryFrag string) ([]*Db, error) {
 	if queryFrag == "" {
 		queryFrag = "true"
 	}
@@ -90,7 +90,7 @@ func DataDbList(queryFrag string) ([]*Db, error) {
 	return dbs, nil
 }
 
-func DataDbAdd(name string, url string) (*Db, error) {
+func DbAdd(name string, url string) (*Db, error) {
 	db := &Db{
 		Id:        uuid.New(),
 		Name:      name,
@@ -100,7 +100,7 @@ func DataDbAdd(name string, url string) (*Db, error) {
 		RemovedAt: nil,
 		Version:   1,
 	}
-	err := DataDbValidate(db)
+	err := DbValidate(db)
 	if err == nil {
 		_, err = PgConn.Exec("INSERT INTO dbs (id, name, url_encrypted, added_at, updated_at, removed_at, version) VALUES ($1, $2, $3, $4, $5, $6, $7)",
 			db.Id, db.Name, FernetEncrypt(db.Url), db.AddedAt, db.UpdatedAt, db.RemovedAt, db.Version)
@@ -108,7 +108,7 @@ func DataDbAdd(name string, url string) (*Db, error) {
 	return db, err
 }
 
-func DataDbGet(idOrName string) (*Db, error) {
+func DbGet(idOrName string) (*Db, error) {
 	var row *sql.Row
 	if DataUuidRegexp.MatchString(idOrName) {
 		query := "SELECT id, name, url_encrypted, added_at, updated_at, version FROM dbs WHERE removed_at is NULL AND (id=$1 OR name=$2) LIMIT 1"
@@ -135,8 +135,8 @@ func DataDbGet(idOrName string) (*Db, error) {
 	}
 }
 
-func DataDbUpdate(db *Db) error {
-	err := DataDbValidate(db)
+func DbUpdate(db *Db) error {
+	err := DbValidate(db)
 	if err != nil {
 		return err
 	}
@@ -161,8 +161,8 @@ func DataDbUpdate(db *Db) error {
 	return nil
 }
 
-func DataDbRemove(id string) (*Db, error) {
-	db, err := DataDbGet(id)
+func DbRemove(id string) (*Db, error) {
+	db, err := DbGet(id)
 	if err != nil {
 		return nil, err
 	}
@@ -179,13 +179,13 @@ func DataDbRemove(id string) (*Db, error) {
 	}
 	removedAt := time.Now()
 	db.RemovedAt = &removedAt
-	err = DataDbUpdate(db)
+	err = DbUpdate(db)
 	return db, err
 }
 
 // Pin operations.
 
-func DataPinValidate(pin *Pin) error {
+func PinValidate(pin *Pin) error {
 	err := ValidateSlug("name", pin.Name)
 	if err != nil {
 		return err
@@ -194,7 +194,7 @@ func DataPinValidate(pin *Pin) error {
 	if err != nil {
 		return err
 	}
-	_, err = DataDbGet(pin.DbId)
+	_, err = DbGet(pin.DbId)
 	if err != nil {
 		return err
 	}
@@ -211,7 +211,7 @@ func DataPinValidate(pin *Pin) error {
 	return nil
 }
 
-func DataPinList(queryFrag string, queryVals ...interface{}) ([]*Pin, error) {
+func PinList(queryFrag string, queryVals ...interface{}) ([]*Pin, error) {
 	if queryFrag == "" {
 		queryFrag = "true"
 	}
@@ -233,7 +233,7 @@ func DataPinList(queryFrag string, queryVals ...interface{}) ([]*Pin, error) {
 	return pins, nil
 }
 
-func DataPinCreate(dbId string, name string, query string) (*Pin, error) {
+func PinCreate(dbId string, name string, query string) (*Pin, error) {
 	now := time.Now()
 	pin := &Pin{
 		Id:              uuid.New(),
@@ -251,7 +251,7 @@ func DataPinCreate(dbId string, name string, query string) (*Pin, error) {
 		DeletedAt:       nil,
 		Version:         1,
 	}
-	err := DataPinValidate(pin)
+	err := PinValidate(pin)
 	if err != nil {
 		return nil, err
 	}
@@ -267,7 +267,7 @@ func DataPinCreate(dbId string, name string, query string) (*Pin, error) {
 	return pin, nil
 }
 
-func DataPinGetInternal(queryFrag string, queryVals ...interface{}) (*Pin, error) {
+func PinGetInternal(queryFrag string, queryVals ...interface{}) (*Pin, error) {
 	row := PgConn.QueryRow("SELECT id, name, db_id, query, created_at, updated_at, query_started_at, query_finished_at, results_fields, results_rows, results_error, scheduled_at, deleted_at, version FROM pins WHERE deleted_at IS NULL AND "+queryFrag+" LIMIT 1", queryVals...)
 	pin := Pin{}
 	err := row.Scan(&pin.Id, &pin.Name, &pin.DbId, &pin.Query, &pin.CreatedAt, &pin.UpdatedAt, &pin.QueryStartedAt, &pin.QueryFinishedAt, &pin.ResultsFields, &pin.ResultsRows, &pin.ResultsError, &pin.ScheduledAt, &pin.DeletedAt, &pin.Version)
@@ -281,13 +281,13 @@ func DataPinGetInternal(queryFrag string, queryVals ...interface{}) (*Pin, error
 	}
 }
 
-func DataPinGet(idOrName string) (*Pin, error) {
+func PinGet(idOrName string) (*Pin, error) {
 	var pin *Pin
 	var err error
 	if DataUuidRegexp.MatchString(idOrName) {
-		pin, err = DataPinGetInternal("(id=$1 OR name=$2)", idOrName, idOrName)
+		pin, err = PinGetInternal("(id=$1 OR name=$2)", idOrName, idOrName)
 	} else {
-		pin, err = DataPinGetInternal("name=$1", idOrName)
+		pin, err = PinGetInternal("name=$1", idOrName)
 	}
 	if err != nil {
 		return nil, err
@@ -302,8 +302,8 @@ func DataPinGet(idOrName string) (*Pin, error) {
 	return pin, nil
 }
 
-func DataPinUpdate(pin *Pin) error {
-	err := DataPinValidate(pin)
+func PinUpdate(pin *Pin) error {
+	err := PinValidate(pin)
 	if err != nil {
 		return err
 	}
@@ -328,22 +328,22 @@ func DataPinUpdate(pin *Pin) error {
 	return nil
 }
 
-func DataPinDelete(id string) (*Pin, error) {
-	pin, err := DataPinGet(id)
+func PinDelete(id string) (*Pin, error) {
+	pin, err := PinGet(id)
 	if err != nil {
 		return nil, err
 	}
 	deletedAt := time.Now()
 	pin.DeletedAt = &deletedAt
-	err = DataPinUpdate(pin)
+	err = PinUpdate(pin)
 	if err != nil {
 		return nil, err
 	}
 	return pin, nil
 }
 
-func DataPinDbUrl(pin *Pin) (string, error) {
-	db, err := DataDbGet(pin.DbId)
+func PinDbUrl(pin *Pin) (string, error) {
+	db, err := DbGet(pin.DbId)
 	if err != nil {
 		return "", err
 	}

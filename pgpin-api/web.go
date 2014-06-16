@@ -139,7 +139,7 @@ type DbSlim struct {
 }
 
 func WebDbList(resp http.ResponseWriter, req *http.Request) {
-	dbs, err := DataDbList("")
+	dbs, err := DbList("")
 	dbSlims := []*DbSlim{}
 	for _, db := range dbs {
 		dbSlims = append(dbSlims, &DbSlim{Id: db.Id, Name: db.Name})
@@ -151,7 +151,7 @@ func WebDbAdd(resp http.ResponseWriter, req *http.Request) {
 	db := &Db{}
 	err := WebRead(req, db)
 	if err == nil {
-		db, err = DataDbAdd(db.Name, db.Url)
+		db, err = DbAdd(db.Name, db.Url)
 	}
 	WebRespond(resp, 201, db, err)
 }
@@ -161,7 +161,7 @@ func WebDbUpdate(c web.C, resp http.ResponseWriter, req *http.Request) {
 	db := &Db{}
 	err := WebRead(req, dbUpdate)
 	if err == nil {
-		db, err = DataDbGet(c.URLParams["id"])
+		db, err = DbGet(c.URLParams["id"])
 		if err == nil {
 			if dbUpdate.Name != "" {
 				db.Name = dbUpdate.Name
@@ -169,19 +169,19 @@ func WebDbUpdate(c web.C, resp http.ResponseWriter, req *http.Request) {
 			if dbUpdate.Url != "" {
 				db.Url = dbUpdate.Url
 			}
-			err = DataDbUpdate(db)
+			err = DbUpdate(db)
 		}
 	}
 	WebRespond(resp, 200, db, err)
 }
 
 func WebDbGet(c web.C, resp http.ResponseWriter, req *http.Request) {
-	db, err := DataDbGet(c.URLParams["id"])
+	db, err := DbGet(c.URLParams["id"])
 	WebRespond(resp, 200, db, err)
 }
 
 func WebDbRemove(c web.C, resp http.ResponseWriter, req *http.Request) {
-	db, err := DataDbRemove(c.URLParams["id"])
+	db, err := DbRemove(c.URLParams["id"])
 	WebRespond(resp, 200, db, err)
 }
 
@@ -193,7 +193,7 @@ type PinSlim struct {
 }
 
 func WebPinList(resp http.ResponseWriter, req *http.Request) {
-	pins, err := DataPinList("")
+	pins, err := PinList("")
 	pinSlims := []*PinSlim{}
 	for _, pin := range pins {
 		pinSlims = append(pinSlims, &PinSlim{Id: pin.Id, Name: pin.Name})
@@ -205,7 +205,7 @@ func WebPinCreate(resp http.ResponseWriter, req *http.Request) {
 	pin := &Pin{}
 	err := WebRead(req, pin)
 	if err == nil {
-		pin, err = DataPinCreate(pin.DbId, pin.Name, pin.Query)
+		pin, err = PinCreate(pin.DbId, pin.Name, pin.Query)
 	}
 	WebRespond(resp, 201, pin, err)
 }
@@ -215,7 +215,7 @@ func WebPinUpdate(c web.C, resp http.ResponseWriter, req *http.Request) {
 	pin := &Pin{}
 	err := WebRead(req, pinUpdate)
 	if err == nil {
-		pin, err = DataPinGet(c.URLParams["id"])
+		pin, err = PinGet(c.URLParams["id"])
 		if err == nil {
 			if pinUpdate.Name != "" {
 				pin.Name = pinUpdate.Name
@@ -223,19 +223,19 @@ func WebPinUpdate(c web.C, resp http.ResponseWriter, req *http.Request) {
 			if pinUpdate.Query != "" {
 				pin.Query = pinUpdate.Query
 			}
-			err = DataPinUpdate(pin)
+			err = PinUpdate(pin)
 		}
 	}
 	WebRespond(resp, 200, pin, err)
 }
 
 func WebPinGet(c web.C, resp http.ResponseWriter, req *http.Request) {
-	pin, err := DataPinGet(c.URLParams["id"])
+	pin, err := PinGet(c.URLParams["id"])
 	WebRespond(resp, 200, pin, err)
 }
 
 func WebPinDelete(c web.C, resp http.ResponseWriter, req *http.Request) {
-	pin, err := DataPinDelete(c.URLParams["id"])
+	pin, err := PinDelete(c.URLParams["id"])
 	WebRespond(resp, 200, pin, err)
 }
 
