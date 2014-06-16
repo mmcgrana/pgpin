@@ -9,8 +9,8 @@ import (
 	"strings"
 )
 
-func QueueStart() {
-	log.Printf("queue.start")
+func RedisStart() {
+	log.Printf("redis.start")
 	u, err := url.Parse(ConfigRedisUrl)
 	Must(err)
 	server := u.Host

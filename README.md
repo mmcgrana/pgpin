@@ -34,7 +34,7 @@ $ cd pgpin-api
 To start a development version of app:
 
 ```console
-$ cat db/* | psql $DATABASE_URL
+$ cat migrations/* | psql $DATABASE_URL
 $ godep go install
 $ goreman start
 ```
@@ -75,7 +75,7 @@ $ chmod +x .git/hooks/pre-commit
 To run tests:
 
 ```console
-$ cat db/* | psql $TEST_DATABASE_URL
+$ cat migrations/* | psql $TEST_DATABASE_URL
 $ godep go test
 ```
 
@@ -101,8 +101,8 @@ import (
 )
 
 func main() {
-    pgpin.DataStart()
-    count, _ := pgpin.DataCount("SELECT count(*) from pins")
+    pgpin.PgStart()
+    count, _ := pgpin.PgCount("SELECT count(*) from pins")
     log.Printf("pins.count total=%d", count)
 }
 EOF

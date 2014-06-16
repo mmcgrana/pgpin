@@ -135,8 +135,8 @@ func WorkerProcessWrapper(msg *workers.Msg) {
 
 func WorkerStart() {
 	log.Printf("worker.start")
-	DataStart()
-	QueueStart()
+	PgStart()
+	RedisStart()
 	workers.Process("pins", WorkerProcessWrapper, 5)
 	workers.Run()
 }

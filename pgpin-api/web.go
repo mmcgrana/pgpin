@@ -246,7 +246,7 @@ type Status struct {
 }
 
 func WebStatus(resp http.ResponseWriter, req *http.Request) {
-	err := DataConn.Ping()
+	err := PgConn.Ping()
 	status := &Status{Message: "ok"}
 	WebRespond(resp, 200, status, err)
 }
@@ -305,8 +305,8 @@ func WebBuild() {
 
 func WebStart() {
 	log.Print("web.start")
-	DataStart()
-	QueueStart()
+	PgStart()
+	RedisStart()
 	WebBuild()
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", ConfigWebPort))
 	Must(err)

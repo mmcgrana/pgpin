@@ -22,15 +22,15 @@ func init() {
 	ConfigDatabaseUrl = env.String("TEST_DATABASE_URL")
 	ConfigRedisUrl = env.String("TEST_REDIS_URL")
 	WebBuild()
-	DataStart()
-	QueueStart()
+	PgStart()
+	RedisStart()
 	clear()
 }
 
 func clear() {
-	_, err := DataConn.Exec("DELETE from pins")
+	_, err := PgConn.Exec("DELETE from pins")
 	Must(err)
-	_, err = DataConn.Exec("DELETE from dbs")
+	_, err = PgConn.Exec("DELETE from dbs")
 	Must(err)
 	conn := workers.Config.Pool.Get()
 	_, err = conn.Do("flushdb")

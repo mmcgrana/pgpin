@@ -6,6 +6,8 @@ import (
 	"errors"
 )
 
+// PgJson represents JSON values stored in Postgres using the json
+// data type.
 type PgJson []byte
 
 var nullValue = []byte(`null`)

@@ -3,10 +3,8 @@ package main
 import (
 	"code.google.com/p/go-uuid/uuid"
 	"database/sql"
-	"fmt"
 	"github.com/jrallison/go-workers"
 	_ "github.com/lib/pq"
-	"log"
 	"regexp"
 	"time"
 )
@@ -44,34 +42,6 @@ type Db struct {
 	Version   int        `json:"-"`
 }
 
-// DB connection.
-
-var DataConn *sql.DB
-
-func DataStart() {
-	log.Print("data.start")
-	connUrl := fmt.Sprintf("%s?application_name=%s&statement_timeout=%d&connect_timeout=%d",
-		ConfigDatabaseUrl, "pgpin.api", ConfigDatabaseStatementTimeout/time.Millisecond, ConfigDatabaseConnectTimeout/time.Millisecond)
-	conn, err := sql.Open("postgres", connUrl)
-	if err != nil {
-		panic(err)
-	}
-	conn.SetMaxOpenConns(ConfigDatabasePoolSize)
-	DataConn = conn
-}
-
-// Data helpers.
-
-func DataCount(query string, args ...interface{}) (int, error) {
-	row := DataConn.QueryRow(query, args...)
-	var count int
-	err := row.Scan(&count)
-	if err != nil {
-		return 0, err
-	}
-	return count, nil
-}
-
 // Db operations.
 
 func DataDbValidate(db *Db) error {
@@ -83,7 +53,7 @@ func DataDbValidate(db *Db) error {
 	if err != nil {
 		return err
 	}
-	sameNamed, err := DataCount("SELECT count(*) FROM dbs WHERE name=$1 and id!=$2 and removed_at IS NULL", db.Name, db.Id)
+	sameNamed, err := PgCount("SELECT count(*) FROM dbs WHERE name=$1 and id!=$2 and removed_at IS NULL", db.Name, db.Id)
 	if err != nil {
 		return err
 	}
@@ -101,7 +71,7 @@ func DataDbList(queryFrag string) ([]*Db, error) {
 	if queryFrag == "" {
 		queryFrag = "true"
 	}
-	res, err := DataConn.Query("SELECT id, name, url_encrypted, added_at, updated_at, version, removed_at FROM dbs WHERE removed_at IS NULL AND " + queryFrag)
+	res, err := PgConn.Query("SELECT id, name, url_encrypted, added_at, updated_at, version, removed_at FROM dbs WHERE removed_at IS NULL AND " + queryFrag)
 	if err != nil {
 		return nil, err
 	}
@@ -132,7 +102,7 @@ func DataDbAdd(name string, url string) (*Db, error) {
 	}
 	err := DataDbValidate(db)
 	if err == nil {
-		_, err = DataConn.Exec("INSERT INTO dbs (id, name, url_encrypted, added_at, updated_at, removed_at, version) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+		_, err = PgConn.Exec("INSERT INTO dbs (id, name, url_encrypted, added_at, updated_at, removed_at, version) VALUES ($1, $2, $3, $4, $5, $6, $7)",
 			db.Id, db.Name, FernetEncrypt(db.Url), db.AddedAt, db.UpdatedAt, db.RemovedAt, db.Version)
 	}
 	return db, err
@@ -142,10 +112,10 @@ func DataDbGet(idOrName string) (*Db, error) {
 	var row *sql.Row
 	if DataUuidRegexp.MatchString(idOrName) {
 		query := "SELECT id, name, url_encrypted, added_at, updated_at, version FROM dbs WHERE removed_at is NULL AND (id=$1 OR name=$2) LIMIT 1"
-		row = DataConn.QueryRow(query, idOrName, idOrName)
+		row = PgConn.QueryRow(query, idOrName, idOrName)
 	} else {
 		query := "SELECT id, name, url_encrypted, added_at, updated_at, version FROM dbs WHERE removed_at is NULL AND name=$1 LIMIT 1"
-		row = DataConn.QueryRow(query, idOrName)
+		row = PgConn.QueryRow(query, idOrName)
 	}
 	db := Db{}
 	urlEncrypted := make([]byte, 0)
@@ -171,7 +141,7 @@ func DataDbUpdate(db *Db) error {
 		return err
 	}
 	db.UpdatedAt = time.Now()
-	result, err := DataConn.Exec("UPDATE dbs SET name=$1, url_encrypted=$2, added_at=$3, updated_at=$4, removed_at=$5, version=$6 WHERE id=$7 AND version=$8",
+	result, err := PgConn.Exec("UPDATE dbs SET name=$1, url_encrypted=$2, added_at=$3, updated_at=$4, removed_at=$5, version=$6 WHERE id=$7 AND version=$8",
 		db.Name, FernetEncrypt(db.Url), db.AddedAt, db.UpdatedAt, db.RemovedAt, db.Version+1, db.Id, db.Version)
 	if err != nil {
 		return err
@@ -196,7 +166,7 @@ func DataDbRemove(id string) (*Db, error) {
 	if err != nil {
 		return nil, err
 	}
-	numPins, err := DataCount("SELECT count(*) FROM pins WHERE db_id=$1 AND deleted_at IS NULL", db.Id)
+	numPins, err := PgCount("SELECT count(*) FROM pins WHERE db_id=$1 AND deleted_at IS NULL", db.Id)
 	if err != nil {
 		return nil, err
 	}
@@ -228,7 +198,7 @@ func DataPinValidate(pin *Pin) error {
 	if err != nil {
 		return err
 	}
-	sameNamed, err := DataCount("SELECT count(*) FROM pins WHERE name=$1 AND id!=$2 AND deleted_at IS NULL", pin.Name, pin.Id)
+	sameNamed, err := PgCount("SELECT count(*) FROM pins WHERE name=$1 AND id!=$2 AND deleted_at IS NULL", pin.Name, pin.Id)
 	if err != nil {
 		return err
 	} else if sameNamed > 0 {
@@ -246,7 +216,7 @@ func DataPinList(queryFrag string, queryVals ...interface{}) ([]*Pin, error) {
 		queryFrag = "true"
 	}
 	query := "SELECT id, name, db_id, query, created_at, updated_at, query_started_at, query_finished_at, results_fields, results_rows, results_error, scheduled_at, deleted_at, version FROM pins WHERE deleted_at IS NULL AND " + queryFrag
-	res, err := DataConn.Query(query, queryVals...)
+	res, err := PgConn.Query(query, queryVals...)
 	if err != nil {
 		return nil, err
 	}
@@ -285,7 +255,7 @@ func DataPinCreate(dbId string, name string, query string) (*Pin, error) {
 	if err != nil {
 		return nil, err
 	}
-	_, err = DataConn.Exec("INSERT INTO pins (id, name, db_id, query, created_at, updated_at, query_started_at, query_finished_at, results_fields, results_rows, results_error, scheduled_at, deleted_at, version) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)",
+	_, err = PgConn.Exec("INSERT INTO pins (id, name, db_id, query, created_at, updated_at, query_started_at, query_finished_at, results_fields, results_rows, results_error, scheduled_at, deleted_at, version) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)",
 		pin.Id, pin.Name, pin.DbId, pin.Query, pin.CreatedAt, pin.UpdatedAt, pin.QueryStartedAt, pin.QueryFinishedAt, pin.ResultsFields, pin.ResultsRows, pin.ResultsError, pin.ScheduledAt, pin.DeletedAt, pin.Version)
 	if err != nil {
 		return nil, err
@@ -298,7 +268,7 @@ func DataPinCreate(dbId string, name string, query string) (*Pin, error) {
 }
 
 func DataPinGetInternal(queryFrag string, queryVals ...interface{}) (*Pin, error) {
-	row := DataConn.QueryRow("SELECT id, name, db_id, query, created_at, updated_at, query_started_at, query_finished_at, results_fields, results_rows, results_error, scheduled_at, deleted_at, version FROM pins WHERE deleted_at IS NULL AND "+queryFrag+" LIMIT 1", queryVals...)
+	row := PgConn.QueryRow("SELECT id, name, db_id, query, created_at, updated_at, query_started_at, query_finished_at, results_fields, results_rows, results_error, scheduled_at, deleted_at, version FROM pins WHERE deleted_at IS NULL AND "+queryFrag+" LIMIT 1", queryVals...)
 	pin := Pin{}
 	err := row.Scan(&pin.Id, &pin.Name, &pin.DbId, &pin.Query, &pin.CreatedAt, &pin.UpdatedAt, &pin.QueryStartedAt, &pin.QueryFinishedAt, &pin.ResultsFields, &pin.ResultsRows, &pin.ResultsError, &pin.ScheduledAt, &pin.DeletedAt, &pin.Version)
 	switch {
@@ -338,7 +308,7 @@ func DataPinUpdate(pin *Pin) error {
 		return err
 	}
 	pin.UpdatedAt = time.Now()
-	result, err := DataConn.Exec("UPDATE pins SET db_id=$1, name=$2, query=$3, created_at=$4, updated_at=$5, query_started_at=$6, query_finished_at=$7, results_fields=$8, results_rows=$9, results_error=$10, scheduled_at=$11, deleted_at=$12, version=$13 WHERE id=$14 AND version=$15",
+	result, err := PgConn.Exec("UPDATE pins SET db_id=$1, name=$2, query=$3, created_at=$4, updated_at=$5, query_started_at=$6, query_finished_at=$7, results_fields=$8, results_rows=$9, results_error=$10, scheduled_at=$11, deleted_at=$12, version=$13 WHERE id=$14 AND version=$15",
 		pin.DbId, pin.Name, pin.Query, pin.CreatedAt, pin.UpdatedAt, pin.QueryStartedAt, pin.QueryFinishedAt, pin.ResultsFields, pin.ResultsRows, pin.ResultsError, pin.ScheduledAt, pin.DeletedAt, pin.Version+1, pin.Id, pin.Version)
 	if err != nil {
 		return err

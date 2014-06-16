@@ -37,8 +37,8 @@ func SchedulerTick() error {
 
 func SchedulerStart() {
 	log.Printf("scheduler.start")
-	DataStart()
-	QueueStart()
+	PgStart()
+	RedisStart()
 	for {
 		err := SchedulerTick()
 		if err != nil {
