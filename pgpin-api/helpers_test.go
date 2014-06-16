@@ -56,8 +56,8 @@ func mustDecode(res *httptest.ResponseRecorder, data interface{}) {
 	Must(json.NewDecoder(res.Body).Decode(data))
 }
 
-func mustDbAdd(name string, url string) *Db {
-	db, err := DbAdd(name, url)
+func mustDbCreate(name string, url string) *Db {
+	db, err := DbCreate(name, url)
 	Must(err)
 	return db
 }

@@ -36,7 +36,7 @@ type Db struct {
 	Id        string     `json:"id"`
 	Name      string     `json:"name"`
 	Url       string     `json:"url"`
-	AddedAt   time.Time  `json:"added_at"`
+	AddedAt   time.Time  `json:"created_at"`
 	UpdatedAt time.Time  `json:"updated_at"`
 	RemovedAt *time.Time `json:"-"`
 	Version   int        `json:"-"`
@@ -53,7 +53,7 @@ func DbValidate(db *Db) error {
 	if err != nil {
 		return err
 	}
-	sameNamed, err := PgCount("SELECT count(*) FROM dbs WHERE name=$1 and id!=$2 and removed_at IS NULL", db.Name, db.Id)
+	sameNamed, err := PgCount("SELECT count(*) FROM dbs WHERE name=$1 and id!=$2 and deleted_at IS NULL", db.Name, db.Id)
 	if err != nil {
 		return err
 	}
@@ -71,7 +71,7 @@ func DbList(queryFrag string) ([]*Db, error) {
 	if queryFrag == "" {
 		queryFrag = "true"
 	}
-	res, err := PgConn.Query("SELECT id, name, url_encrypted, added_at, updated_at, version, removed_at FROM dbs WHERE removed_at IS NULL AND " + queryFrag)
+	res, err := PgConn.Query("SELECT id, name, url_encrypted, created_at, updated_at, version, deleted_at FROM dbs WHERE deleted_at IS NULL AND " + queryFrag)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func DbList(queryFrag string) ([]*Db, error) {
 	return dbs, nil
 }
 
-func DbAdd(name string, url string) (*Db, error) {
+func DbCreate(name string, url string) (*Db, error) {
 	db := &Db{
 		Id:        uuid.New(),
 		Name:      name,
@@ -102,7 +102,7 @@ func DbAdd(name string, url string) (*Db, error) {
 	}
 	err := DbValidate(db)
 	if err == nil {
-		_, err = PgConn.Exec("INSERT INTO dbs (id, name, url_encrypted, added_at, updated_at, removed_at, version) VALUES ($1, $2, $3, $4, $5, $6, $7)",
+		_, err = PgConn.Exec("INSERT INTO dbs (id, name, url_encrypted, created_at, updated_at, deleted_at, version) VALUES ($1, $2, $3, $4, $5, $6, $7)",
 			db.Id, db.Name, FernetEncrypt(db.Url), db.AddedAt, db.UpdatedAt, db.RemovedAt, db.Version)
 	}
 	return db, err
@@ -111,10 +111,10 @@ func DbAdd(name string, url string) (*Db, error) {
 func DbGet(idOrName string) (*Db, error) {
 	var row *sql.Row
 	if DataUuidRegexp.MatchString(idOrName) {
-		query := "SELECT id, name, url_encrypted, added_at, updated_at, version FROM dbs WHERE removed_at is NULL AND (id=$1 OR name=$2) LIMIT 1"
+		query := "SELECT id, name, url_encrypted, created_at, updated_at, version FROM dbs WHERE deleted_at is NULL AND (id=$1 OR name=$2) LIMIT 1"
 		row = PgConn.QueryRow(query, idOrName, idOrName)
 	} else {
-		query := "SELECT id, name, url_encrypted, added_at, updated_at, version FROM dbs WHERE removed_at is NULL AND name=$1 LIMIT 1"
+		query := "SELECT id, name, url_encrypted, created_at, updated_at, version FROM dbs WHERE deleted_at is NULL AND name=$1 LIMIT 1"
 		row = PgConn.QueryRow(query, idOrName)
 	}
 	db := Db{}
@@ -141,7 +141,7 @@ func DbUpdate(db *Db) error {
 		return err
 	}
 	db.UpdatedAt = time.Now()
-	result, err := PgConn.Exec("UPDATE dbs SET name=$1, url_encrypted=$2, added_at=$3, updated_at=$4, removed_at=$5, version=$6 WHERE id=$7 AND version=$8",
+	result, err := PgConn.Exec("UPDATE dbs SET name=$1, url_encrypted=$2, created_at=$3, updated_at=$4, deleted_at=$5, version=$6 WHERE id=$7 AND version=$8",
 		db.Name, FernetEncrypt(db.Url), db.AddedAt, db.UpdatedAt, db.RemovedAt, db.Version+1, db.Id, db.Version)
 	if err != nil {
 		return err
@@ -161,7 +161,7 @@ func DbUpdate(db *Db) error {
 	return nil
 }
 
-func DbRemove(id string) (*Db, error) {
+func DbDelete(id string) (*Db, error) {
 	db, err := DbGet(id)
 	if err != nil {
 		return nil, err

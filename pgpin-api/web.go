@@ -147,11 +147,11 @@ func WebDbList(resp http.ResponseWriter, req *http.Request) {
 	WebRespond(resp, 200, dbSlims, err)
 }
 
-func WebDbAdd(resp http.ResponseWriter, req *http.Request) {
+func WebDbCreate(resp http.ResponseWriter, req *http.Request) {
 	db := &Db{}
 	err := WebRead(req, db)
 	if err == nil {
-		db, err = DbAdd(db.Name, db.Url)
+		db, err = DbCreate(db.Name, db.Url)
 	}
 	WebRespond(resp, 201, db, err)
 }
@@ -180,8 +180,8 @@ func WebDbGet(c web.C, resp http.ResponseWriter, req *http.Request) {
 	WebRespond(resp, 200, db, err)
 }
 
-func WebDbRemove(c web.C, resp http.ResponseWriter, req *http.Request) {
-	db, err := DbRemove(c.URLParams["id"])
+func WebDbDelete(c web.C, resp http.ResponseWriter, req *http.Request) {
+	db, err := DbDelete(c.URLParams["id"])
 	WebRespond(resp, 200, db, err)
 }
 
@@ -287,10 +287,10 @@ func WebBuild() {
 	WebMux.Use(WebTimer(ConfigWebTimeout))
 	WebMux.Use(WebRecoverer)
 	WebMux.Get("/dbs", WebDbList)
-	WebMux.Post("/dbs", WebDbAdd)
+	WebMux.Post("/dbs", WebDbCreate)
 	WebMux.Put("/dbs/:id", WebDbUpdate)
 	WebMux.Get("/dbs/:id", WebDbGet)
-	WebMux.Delete("/dbs/:id", WebDbRemove)
+	WebMux.Delete("/dbs/:id", WebDbDelete)
 	WebMux.Get("/pins", WebPinList)
 	WebMux.Post("/pins", WebPinCreate)
 	WebMux.Put("/pins/:id", WebPinUpdate)

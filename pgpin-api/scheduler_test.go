@@ -7,7 +7,7 @@ import (
 
 func TestSchedulerNoEnqueues(t *testing.T) {
 	defer clear()
-	dbIn := mustDbAdd("dbs-1", ConfigDatabaseUrl)
+	dbIn := mustDbCreate("dbs-1", ConfigDatabaseUrl)
 	pinIn := mustPinCreate(dbIn.Id, "pins-1", "select now()")
 	mustWorkerTick()
 	pinOut1 := mustPinGet(pinIn.Id)
@@ -19,7 +19,7 @@ func TestSchedulerNoEnqueues(t *testing.T) {
 
 func TestSchedulerEnqueue(t *testing.T) {
 	defer clear()
-	dbIn := mustDbAdd("dbs-1", ConfigDatabaseUrl)
+	dbIn := mustDbCreate("dbs-1", ConfigDatabaseUrl)
 	pinIn := mustPinCreate(dbIn.Id, "pins-1", "select now()")
 	mustWorkerTick()
 	pinOut1 := mustPinGet(pinIn.Id)

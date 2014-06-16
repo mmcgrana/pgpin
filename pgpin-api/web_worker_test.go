@@ -8,7 +8,7 @@ import (
 
 // DB endpoints.
 
-func TestDbAdd(t *testing.T) {
+func TestDbCreate(t *testing.T) {
 	defer clear()
 	b := asReader(`{"name": "dbs-1", "url": "postgres://u:p@h:1234/d-1"}`)
 	res := mustRequest("POST", "/dbs", b)
@@ -21,9 +21,9 @@ func TestDbAdd(t *testing.T) {
 	assert.WithinDuration(t, time.Now(), dbOut.AddedAt, 3*time.Second)
 }
 
-func TestDbAddDuplicateName(t *testing.T) {
+func TestDbCreateDuplicateName(t *testing.T) {
 	defer clear()
-	mustDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
+	mustDbCreate("dbs-1", "postgres://u:p@h:1234/d-1")
 	b := asReader(`{"name": "dbs-1", "url": "postgres://u:p@h:1234/d-other"}`)
 	res := mustRequest("POST", "/dbs", b)
 	assert.Equal(t, 400, res.Code)
@@ -35,7 +35,7 @@ func TestDbAddDuplicateName(t *testing.T) {
 
 func TestDbGet(t *testing.T) {
 	defer clear()
-	dbIn := mustDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
+	dbIn := mustDbCreate("dbs-1", "postgres://u:p@h:1234/d-1")
 	res := mustRequest("GET", "/dbs/"+dbIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
 	dbOut := &Db{}
@@ -49,7 +49,7 @@ func TestDbGet(t *testing.T) {
 
 func TestDbGetByName(t *testing.T) {
 	defer clear()
-	dbIn := mustDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
+	dbIn := mustDbCreate("dbs-1", "postgres://u:p@h:1234/d-1")
 	res := mustRequest("GET", "/dbs/dbs-1", nil)
 	assert.Equal(t, 200, res.Code)
 	dbOut := &Db{}
@@ -60,7 +60,7 @@ func TestDbGetByName(t *testing.T) {
 
 func TestDbUpdateName(t *testing.T) {
 	defer clear()
-	dbIn := mustDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
+	dbIn := mustDbCreate("dbs-1", "postgres://u:p@h:1234/d-1")
 	b := asReader(`{"name": "dbs-1a"}`)
 	res := mustRequest("PUT", "/dbs/"+dbIn.Id, b)
 	assert.Equal(t, 200, res.Code)
@@ -77,7 +77,7 @@ func TestDbUpdateName(t *testing.T) {
 
 func TestDbUpdateUrl(t *testing.T) {
 	defer clear()
-	dbIn := mustDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
+	dbIn := mustDbCreate("dbs-1", "postgres://u:p@h:1234/d-1")
 	b := asReader(`{"url": "postgres://u:p@h:1234/d-1a"}`)
 	res := mustRequest("PUT", "/dbs/"+dbIn.Id, b)
 	assert.Equal(t, 200, res.Code)
@@ -94,18 +94,18 @@ func TestDbUpdateUrl(t *testing.T) {
 	assert.True(t, dbGetOut.UpdatedAt.After(dbIn.UpdatedAt))
 }
 
-func TestDbRemove(t *testing.T) {
+func TestDbDelete(t *testing.T) {
 	defer clear()
-	dbIn := mustDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
+	dbIn := mustDbCreate("dbs-1", "postgres://u:p@h:1234/d-1")
 	res := mustRequest("DELETE", "/dbs/"+dbIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
 	res = mustRequest("GET", "/dbs/"+dbIn.Id, nil)
 	assert.Equal(t, 404, res.Code)
 }
 
-func TestDbRemoveWithPins(t *testing.T) {
+func TestDbDeleteWithPins(t *testing.T) {
 	defer clear()
-	db := mustDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
+	db := mustDbCreate("dbs-1", "postgres://u:p@h:1234/d-1")
 	mustPinCreate(db.Id, "pins-1", "select count (*) from pins")
 	res := mustRequest("DELETE", "/dbs/"+db.Id, nil)
 	assert.Equal(t, 400, res.Code)
@@ -117,9 +117,9 @@ func TestDbRemoveWithPins(t *testing.T) {
 
 func TestDbList(t *testing.T) {
 	defer clear()
-	dbIn1 := mustDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
-	dbIn2 := mustDbAdd("dbs-2", "postgres://u:p@h:1234/d-2")
-	_, err := DbRemove(dbIn2.Id)
+	dbIn1 := mustDbCreate("dbs-1", "postgres://u:p@h:1234/d-1")
+	dbIn2 := mustDbCreate("dbs-2", "postgres://u:p@h:1234/d-2")
+	_, err := DbDelete(dbIn2.Id)
 	Must(err)
 	res := mustRequest("GET", "/dbs", nil)
 	assert.Equal(t, 200, res.Code)
@@ -134,7 +134,7 @@ func TestDbList(t *testing.T) {
 
 func TestPinCreateAndGet(t *testing.T) {
 	defer clear()
-	dbIn := mustDbAdd("dbs-1", ConfigDatabaseUrl)
+	dbIn := mustDbCreate("dbs-1", ConfigDatabaseUrl)
 	b := asReader(`{"name": "pin-1", "db_id": "` + dbIn.Id + `", "query": "select count(*) from pins"}`)
 	res := mustRequest("POST", "/pins", b)
 	assert.Equal(t, 201, res.Code)
@@ -158,7 +158,7 @@ func TestPinCreateAndGet(t *testing.T) {
 
 func TestPinGetByName(t *testing.T) {
 	defer clear()
-	dbIn := mustDbAdd("dbs-1", ConfigDatabaseUrl)
+	dbIn := mustDbCreate("dbs-1", ConfigDatabaseUrl)
 	pinIn := mustPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
 	res := mustRequest("GET", "/pins/pins-1", nil)
 	assert.Equal(t, 200, res.Code)
@@ -170,7 +170,7 @@ func TestPinGetByName(t *testing.T) {
 
 func TestPinCreateDuplicateName(t *testing.T) {
 	defer clear()
-	dbIn := mustDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
+	dbIn := mustDbCreate("dbs-1", "postgres://u:p@h:1234/d-1")
 	mustPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
 	b := asReader(`{"name": "pins-1", "db_id": "` + dbIn.Id + `", "query": "select count(*) from pins"}`)
 	res := mustRequest("POST", "/pins", b)
@@ -183,7 +183,7 @@ func TestPinCreateDuplicateName(t *testing.T) {
 
 func TestPinUpdateName(t *testing.T) {
 	defer clear()
-	dbIn := mustDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
+	dbIn := mustDbCreate("dbs-1", "postgres://u:p@h:1234/d-1")
 	pinIn := mustPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
 	b := asReader(`{"name": "pins-1a"}`)
 	res := mustRequest("PUT", "/pins/"+pinIn.Id, b)
@@ -201,7 +201,7 @@ func TestPinUpdateName(t *testing.T) {
 
 func TestPinUpdateQuery(t *testing.T) {
 	defer clear()
-	dbIn := mustDbAdd("dbs-1", "postgres://u:p@h:1234/d-1")
+	dbIn := mustDbCreate("dbs-1", "postgres://u:p@h:1234/d-1")
 	pinIn := mustPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
 	b := asReader(`{"query": "select now()"}`)
 	res := mustRequest("PUT", "/pins/"+pinIn.Id, b)
@@ -220,7 +220,7 @@ func TestPinUpdateQuery(t *testing.T) {
 
 func TestPinMultipleColumns(t *testing.T) {
 	defer clear()
-	dbIn := mustDbAdd("dbs-1", ConfigDatabaseUrl)
+	dbIn := mustDbCreate("dbs-1", ConfigDatabaseUrl)
 	pinIn := mustPinCreate(dbIn.Id, "pins-1", "select name, query from pins")
 	mustWorkerTick()
 	res := mustRequest("GET", "/pins/"+pinIn.Id, nil)
@@ -234,7 +234,7 @@ func TestPinMultipleColumns(t *testing.T) {
 
 func TestPinTooManyRows(t *testing.T) {
 	defer clear()
-	dbIn := mustDbAdd("dbs-1", ConfigDatabaseUrl)
+	dbIn := mustDbCreate("dbs-1", ConfigDatabaseUrl)
 	pinIn := mustPinCreate(dbIn.Id, "pins-1", "select generate_series(0, 10000)")
 	mustWorkerTick()
 	res := mustRequest("GET", "/pins/"+pinIn.Id, nil)
@@ -248,7 +248,7 @@ func TestPinTooManyRows(t *testing.T) {
 
 func TestPinBadQuery(t *testing.T) {
 	defer clear()
-	dbIn := mustDbAdd("dbs-1", ConfigDatabaseUrl)
+	dbIn := mustDbCreate("dbs-1", ConfigDatabaseUrl)
 	pinIn := mustPinCreate(dbIn.Id, "pins-1", "select wat")
 	mustWorkerTick()
 	res := mustRequest("GET", "/pins/"+pinIn.Id, nil)
@@ -262,7 +262,7 @@ func TestPinBadQuery(t *testing.T) {
 
 func TestPinStatementTimeout(t *testing.T) {
 	defer clear()
-	dbIn := mustDbAdd("dbs-1", ConfigDatabaseUrl)
+	dbIn := mustDbCreate("dbs-1", ConfigDatabaseUrl)
 	pinIn := mustPinCreate(dbIn.Id, "pins-1", "select pg_sleep(0.1)")
 	ConfigPinStatementTimeoutPrev := ConfigPinStatementTimeout
 	defer func() {
@@ -281,13 +281,13 @@ func TestPinStatementTimeout(t *testing.T) {
 
 func TestPinMalformedDbUrl(t *testing.T) {
 	defer clear()
-	_, err := DbAdd("dbs-1", "not-a-url")
+	_, err := DbCreate("dbs-1", "not-a-url")
 	assert.Equal(t, "pgpin: invalid: field url must be a valid postgres:// URL", err.Error())
 }
 
 func TestPinUnreachableRbUrl(t *testing.T) {
 	defer clear()
-	dbIn := mustDbAdd("dbs-1", ConfigDatabaseUrl+"-moar")
+	dbIn := mustDbCreate("dbs-1", ConfigDatabaseUrl+"-moar")
 	pinIn := mustPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
 	mustWorkerTick()
 	res := mustRequest("GET", "/pins/"+pinIn.Id, nil)
@@ -301,7 +301,7 @@ func TestPinUnreachableRbUrl(t *testing.T) {
 
 func TestPinOptomisticLocking(t *testing.T) {
 	defer clear()
-	dbIn := mustDbAdd("dbs-1", ConfigDatabaseUrl)
+	dbIn := mustDbCreate("dbs-1", ConfigDatabaseUrl)
 	pinWinsRace := mustPinCreate(dbIn.Id, "pins-1", "select 1")
 	pinLosesRace := mustPinGet(pinWinsRace.Id)
 	pinWinsRace.Query = "select 'wins'"
@@ -316,7 +316,7 @@ func TestPinOptomisticLocking(t *testing.T) {
 
 func TestPinDelete(t *testing.T) {
 	defer clear()
-	dbIn := mustDbAdd("dbs-1", ConfigDatabaseUrl)
+	dbIn := mustDbCreate("dbs-1", ConfigDatabaseUrl)
 	pinIn := mustPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
 	res := mustRequest("DELETE", "/pins/"+pinIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
@@ -329,7 +329,7 @@ func TestPinDelete(t *testing.T) {
 
 func TestPinList(t *testing.T) {
 	defer clear()
-	dbIn := mustDbAdd("dbs-1", ConfigDatabaseUrl)
+	dbIn := mustDbCreate("dbs-1", ConfigDatabaseUrl)
 	pinIn1 := mustPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
 	pinIn2 := mustPinCreate(dbIn.Id, "pins-2", "select * from pins")
 	_, err := PinDelete(pinIn1.Id)
