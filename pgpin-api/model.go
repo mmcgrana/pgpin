@@ -42,7 +42,7 @@ type Db struct {
 	Version   int        `json:"-"`
 }
 
-// Db CRUD.
+// Db operations.
 
 func DbValidate(db *Db) error {
 	err := ValidateSlug("name", db.Name)
