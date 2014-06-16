@@ -492,16 +492,3 @@ func TestNotFound(t *testing.T) {
 	assert.Equal(t, "not-found", data["id"])
 	assert.Equal(t, "not found", data["message"])
 }
-
-// Worker behavior.
-
-func TestWorkerPinRefreshNotReady(t *testing.T) {
-	defer clear()
-	dbIn := mustDataDbAdd("dbs-1", ConfigDatabaseUrl)
-	pinIn := mustDataPinCreate(dbIn.Id, "pins-1", "select now()")
-	mustWorkerTick()
-	pinOut1 := mustDataPinGet(pinIn.Id)
-	mustWorkerTick()
-	pinOut2 := mustDataPinGet(pinIn.Id)
-	assert.Equal(t, string([]byte(pinOut1.ResultsRows)), string([]byte(pinOut2.ResultsRows)))
-}
