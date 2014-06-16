@@ -23,7 +23,6 @@
 * Investigate validation libraries, https://github.com/pengux/check?
 * Capturing HTTP response status in logger
 * Review and catalog error ids
-* Apply tool to check for missing error handles
 * Heroku deployment instructions and smoke test
 * Return CORS header
 * Nest foreign ids in serialization
