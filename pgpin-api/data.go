@@ -4,7 +4,6 @@ import (
 	"code.google.com/p/go-uuid/uuid"
 	"database/sql"
 	"fmt"
-	"github.com/fernet/fernet-go"
 	"github.com/jrallison/go-workers"
 	_ "github.com/lib/pq"
 	"log"
@@ -73,17 +72,6 @@ func DataCount(query string, args ...interface{}) (int, error) {
 	return count, nil
 }
 
-func DataFernetEncrypt(s string) []byte {
-	tok, err := fernet.EncryptAndSign([]byte(s), ConfigFernetKeys[0])
-	Must(err)
-	return tok
-}
-
-func DataFernetDecrypt(b []byte) string {
-	msg := fernet.VerifyAndDecrypt(b, ConfigFernetTtl, ConfigFernetKeys)
-	return string(msg)
-}
-
 // Db operations.
 
 func DataDbValidate(db *Db) error {
@@ -126,7 +114,7 @@ func DataDbList(queryFrag string) ([]*Db, error) {
 		if err != nil {
 			return nil, err
 		}
-		db.Url = DataFernetDecrypt(urlEncrypted)
+		db.Url = FernetDecrypt(urlEncrypted)
 		dbs = append(dbs, &db)
 	}
 	return dbs, nil
@@ -145,7 +133,7 @@ func DataDbAdd(name string, url string) (*Db, error) {
 	err := DataDbValidate(db)
 	if err == nil {
 		_, err = DataConn.Exec("INSERT INTO dbs (id, name, url_encrypted, added_at, updated_at, removed_at, version) VALUES ($1, $2, $3, $4, $5, $6, $7)",
-			db.Id, db.Name, DataFernetEncrypt(db.Url), db.AddedAt, db.UpdatedAt, db.RemovedAt, db.Version)
+			db.Id, db.Name, FernetEncrypt(db.Url), db.AddedAt, db.UpdatedAt, db.RemovedAt, db.Version)
 	}
 	return db, err
 }
@@ -164,7 +152,7 @@ func DataDbGet(idOrName string) (*Db, error) {
 	err := row.Scan(&db.Id, &db.Name, &urlEncrypted, &db.AddedAt, &db.UpdatedAt, &db.Version)
 	switch {
 	case err == nil:
-		db.Url = DataFernetDecrypt(urlEncrypted)
+		db.Url = FernetDecrypt(urlEncrypted)
 		return &db, nil
 	case err == sql.ErrNoRows:
 		return nil, &PgpinError{
@@ -184,7 +172,7 @@ func DataDbUpdate(db *Db) error {
 	}
 	db.UpdatedAt = time.Now()
 	result, err := DataConn.Exec("UPDATE dbs SET name=$1, url_encrypted=$2, added_at=$3, updated_at=$4, removed_at=$5, version=$6 WHERE id=$7 AND version=$8",
-		db.Name, DataFernetEncrypt(db.Url), db.AddedAt, db.UpdatedAt, db.RemovedAt, db.Version+1, db.Id, db.Version)
+		db.Name, FernetEncrypt(db.Url), db.AddedAt, db.UpdatedAt, db.RemovedAt, db.Version+1, db.Id, db.Version)
 	if err != nil {
 		return err
 	}
