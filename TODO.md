@@ -9,7 +9,6 @@
 ### API
 
 * Test web implications of optimistic locking
-* Test on travis
 * Test scheduler
 * Test break up files
 * Handle dangling reservations
@@ -19,9 +18,11 @@
 * Request Ids passed through to operation logs
 * JSON schema
 * Remove goji graceful stuff from worker output
+* Consider breaking up repos
 * API versioning
 * API authorization
 * Require TLS unless flagged out
+* Test on travis
 * Remove goji/bind dependency?
 * Investigate validation libraries, https://github.com/pengux/check?
 * Capturing HTTP response status in logger
