@@ -25,12 +25,11 @@ func SchedulerTick() error {
 	ready, err := DataPinList("scheduled_at <= $1", time.Now().Add(-ConfigPinRefreshInterval))
 	if err != nil {
 		return err
-	} else {
-		for _, pin := range ready {
-			err = SchedulerEnqueue(pin)
-			if err != nil {
-				return err
-			}
+	}
+	for _, pin := range ready {
+		err = SchedulerEnqueue(pin)
+		if err != nil {
+			return err
 		}
 	}
 	return nil
