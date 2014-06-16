@@ -8,7 +8,6 @@
 
 ### API
 
-* Scheduler handle dangling reservations
 * Operational metrics
 * Handling extra input fields on JSON
 * Exception reporting
