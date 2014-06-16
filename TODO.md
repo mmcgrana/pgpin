@@ -20,7 +20,6 @@
 * API authorization
 * Require TLS unless flagged out
 * Test on travis
-* Remove goji/bind dependency?
 * Investigate validation libraries, https://github.com/pengux/check?
 * Capturing HTTP response status in logger
 * Review and catalog error ids

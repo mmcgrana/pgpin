@@ -4,10 +4,11 @@ import (
 	"code.google.com/p/go-uuid/uuid"
 	"encoding/json"
 	"errors"
-	"github.com/zenazn/goji/bind"
+	"fmt"
 	"github.com/zenazn/goji/graceful"
 	"github.com/zenazn/goji/web"
 	"log"
+	"net"
 	"net/http"
 	"runtime/debug"
 	"time"
@@ -307,7 +308,9 @@ func WebStart() {
 	DataStart()
 	QueueStart()
 	WebBuild()
-	listener := bind.Default()
-	Must(graceful.Serve(listener, WebMux))
+	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", ConfigWebPort))
+	Must(err)
+	err = graceful.Serve(listener, WebMux)
+	Must(err)
 	graceful.Wait()
 }
