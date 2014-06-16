@@ -8,7 +8,6 @@
 
 ### API
 
-* Test fix suite
 * Test web implications of optimistic locking
 * Test on travis
 * Test scheduler
