@@ -9,7 +9,6 @@
 ### API
 
 * Operational metrics
-* Handling extra input fields on JSON
 * Exception reporting
 * Request Ids passed through to operation logs
 * JSON schema
