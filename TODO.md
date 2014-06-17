@@ -1,5 +1,6 @@
 ## Todo
 
+* Test scripting again, including on Heroku
 * Optionally pick out upstream Request-Id
 * Operational metrics
 * Exception reporting
@@ -13,7 +14,6 @@
 * Investigate validation libraries, https://github.com/pengux/check?
 * Capturing HTTP response status in logger
 * Review and catalog error ids
-* Heroku deployment instructions and smoke test
 * Return CORS header
 * Nest foreign ids in serialization
 * Rate limiting

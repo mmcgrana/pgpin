@@ -52,4 +52,5 @@
 * Development container in Vagrant
 * Development workflow instructions
 * Development code verification via gofmt, govet, and errcheckto
+* Deployment setup and teardown scripts for Heroku
 * Scripting workflow instructions

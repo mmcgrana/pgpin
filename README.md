@@ -108,6 +108,22 @@ EOF
 $ godep go run script/count_pins.go
 ```
 
+### Deployment
+
+To an instance of `pgpin` to Heroku:
+
+```console
+$ export DEPLOY=... (e.g. "production", or your username)
+$ bin/deploy-setup
+$ curl -i https://pgpin-$DEPLOY.herokuapp.com/status
+```
+
+To tear it down:
+
+```console
+$ bin/deploy-teardown
+```
+
 ### License
 
 See [LICENSE.md](LICENSE.md).
