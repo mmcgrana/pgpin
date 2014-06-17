@@ -2,6 +2,7 @@
 
 * Optionally pick out upstream Request-Id
 * Operational metrics
+* Investigate naquad/shmig and dwb/dogfish for shell+psql migrations
 * Exception reporting
 * Request Ids passed through to operation logs
 * JSON schema
