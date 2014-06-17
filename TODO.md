@@ -1,5 +1,6 @@
 ## Todo
 
+* Optionally pick out upstream Request-Id
 * Operational metrics
 * Exception reporting
 * Request Ids passed through to operation logs

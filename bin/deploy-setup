@@ -1,0 +1,19 @@
+#!/bin/bash
+
+[ -z "$DEPLOY" ] && echo "Need to set DEPLOY" && exit 1;
+
+set -ex
+
+heroku create pgpin-$DEPLOY -r $DEPLOY
+heroku config:add -a pgpin-$DEPLOY BUILDPACK_URL=https://github.com/kr/heroku-buildpack-go.git
+heroku addons:add -a pgpin-$DEPLOY heroku-postgresql:basic 
+heroku addons:add -a pgpin-$DEPLOY redistogo:nano 
+heroku config:set -a pgpin-$DEPLOY REDIS_URL=$(heroku config:get -a pgpin-$DEPLOY REDISTOGO_URL)
+heroku config:set -a pgpin-$DEPLOY FERNET_KEYS=$(openssl rand -base64 32)
+cat migrations/* | heroku pg:psql -a pgpin-$DEPLOY
+git push $DEPLOY $(git rev-parse --abbrev-ref HEAD):master
+heroku scale web=1 worker=1 scheduler=1 -a pgpin-$DEPLOY
+
+echo
+echo "PGPIN_URL=https://pgpin-$DEPLOY.herokuapp.com"
+echo
