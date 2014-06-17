@@ -1,6 +1,5 @@
 ## Todo
 
-* Test scripting again, including on Heroku
 * Optionally pick out upstream Request-Id
 * Operational metrics
 * Exception reporting

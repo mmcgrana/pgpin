@@ -95,7 +95,7 @@ package main
 
 import (
 	"log"
-	"../pgpin"
+	pgpin "../../pgpin"
 )
 
 func main() {
