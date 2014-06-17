@@ -13,7 +13,6 @@
 * Request Ids passed through to operation logs
 * JSON schema
 * Consider breaking up repos
-* API versioning
 * API authorization
 * Require TLS unless flagged out
 * Test on travis

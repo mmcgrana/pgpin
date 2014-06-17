@@ -11,7 +11,7 @@ import (
 func TestDbCreate(t *testing.T) {
 	defer clear()
 	b := asReader(`{"name": "dbs-1", "url": "postgres://u:p@h:1234/d-1"}`)
-	res := mustRequest("POST", "/dbs", b)
+	res := mustRequest("POST", "/v1/dbs", b)
 	assert.Equal(t, 201, res.Code)
 	dbOut := &Db{}
 	mustDecode(res, dbOut)
@@ -25,7 +25,7 @@ func TestDbCreateDuplicateName(t *testing.T) {
 	defer clear()
 	mustDbCreate("dbs-1", "postgres://u:p@h:1234/d-1")
 	b := asReader(`{"name": "dbs-1", "url": "postgres://u:p@h:1234/d-other"}`)
-	res := mustRequest("POST", "/dbs", b)
+	res := mustRequest("POST", "/v1/dbs", b)
 	assert.Equal(t, 400, res.Code)
 	data := make(map[string]string)
 	mustDecode(res, &data)
@@ -36,7 +36,7 @@ func TestDbCreateDuplicateName(t *testing.T) {
 func TestDbGet(t *testing.T) {
 	defer clear()
 	dbIn := mustDbCreate("dbs-1", "postgres://u:p@h:1234/d-1")
-	res := mustRequest("GET", "/dbs/"+dbIn.Id, nil)
+	res := mustRequest("GET", "/v1/dbs/"+dbIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
 	dbOut := &Db{}
 	mustDecode(res, dbOut)
@@ -50,7 +50,7 @@ func TestDbGet(t *testing.T) {
 func TestDbGetByName(t *testing.T) {
 	defer clear()
 	dbIn := mustDbCreate("dbs-1", "postgres://u:p@h:1234/d-1")
-	res := mustRequest("GET", "/dbs/dbs-1", nil)
+	res := mustRequest("GET", "/v1/dbs/dbs-1", nil)
 	assert.Equal(t, 200, res.Code)
 	dbOut := &Db{}
 	mustDecode(res, dbOut)
@@ -62,12 +62,12 @@ func TestDbUpdateName(t *testing.T) {
 	defer clear()
 	dbIn := mustDbCreate("dbs-1", "postgres://u:p@h:1234/d-1")
 	b := asReader(`{"name": "dbs-1a"}`)
-	res := mustRequest("PUT", "/dbs/"+dbIn.Id, b)
+	res := mustRequest("PUT", "/v1/dbs/"+dbIn.Id, b)
 	assert.Equal(t, 200, res.Code)
 	dbPutOut := &Db{}
 	mustDecode(res, dbPutOut)
 	assert.Equal(t, "dbs-1a", dbPutOut.Name)
-	res = mustRequest("GET", "/dbs/"+dbIn.Id, nil)
+	res = mustRequest("GET", "/v1/dbs/"+dbIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
 	dbGetOut := &Db{}
 	mustDecode(res, dbGetOut)
@@ -79,13 +79,13 @@ func TestDbUpdateUrl(t *testing.T) {
 	defer clear()
 	dbIn := mustDbCreate("dbs-1", "postgres://u:p@h:1234/d-1")
 	b := asReader(`{"url": "postgres://u:p@h:1234/d-1a"}`)
-	res := mustRequest("PUT", "/dbs/"+dbIn.Id, b)
+	res := mustRequest("PUT", "/v1/dbs/"+dbIn.Id, b)
 	assert.Equal(t, 200, res.Code)
 	dbPutOut := &Db{}
 	mustDecode(res, dbPutOut)
 	assert.Equal(t, "dbs-1", dbPutOut.Name)
 	assert.Equal(t, "postgres://u:p@h:1234/d-1a", dbPutOut.Url)
-	res = mustRequest("GET", "/dbs/"+dbIn.Id, nil)
+	res = mustRequest("GET", "/v1/dbs/"+dbIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
 	dbGetOut := &Db{}
 	mustDecode(res, dbGetOut)
@@ -97,9 +97,9 @@ func TestDbUpdateUrl(t *testing.T) {
 func TestDbDelete(t *testing.T) {
 	defer clear()
 	dbIn := mustDbCreate("dbs-1", "postgres://u:p@h:1234/d-1")
-	res := mustRequest("DELETE", "/dbs/"+dbIn.Id, nil)
+	res := mustRequest("DELETE", "/v1/dbs/"+dbIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
-	res = mustRequest("GET", "/dbs/"+dbIn.Id, nil)
+	res = mustRequest("GET", "/v1/dbs/"+dbIn.Id, nil)
 	assert.Equal(t, 404, res.Code)
 }
 
@@ -107,7 +107,7 @@ func TestDbDeleteWithPins(t *testing.T) {
 	defer clear()
 	db := mustDbCreate("dbs-1", "postgres://u:p@h:1234/d-1")
 	mustPinCreate(db.Id, "pins-1", "select count (*) from pins")
-	res := mustRequest("DELETE", "/dbs/"+db.Id, nil)
+	res := mustRequest("DELETE", "/v1/dbs/"+db.Id, nil)
 	assert.Equal(t, 400, res.Code)
 	data := make(map[string]string)
 	mustDecode(res, &data)
@@ -121,7 +121,7 @@ func TestDbList(t *testing.T) {
 	dbIn2 := mustDbCreate("dbs-2", "postgres://u:p@h:1234/d-2")
 	_, err := DbDelete(dbIn2.Id)
 	Must(err)
-	res := mustRequest("GET", "/dbs", nil)
+	res := mustRequest("GET", "/v1/dbs", nil)
 	assert.Equal(t, 200, res.Code)
 	dbsOut := []*Db{}
 	mustDecode(res, &dbsOut)
@@ -136,12 +136,12 @@ func TestPinCreateAndGet(t *testing.T) {
 	defer clear()
 	dbIn := mustDbCreate("dbs-1", ConfigDatabaseUrl)
 	b := asReader(`{"name": "pin-1", "db_id": "` + dbIn.Id + `", "query": "select count(*) from pins"}`)
-	res := mustRequest("POST", "/pins", b)
+	res := mustRequest("POST", "/v1/pins", b)
 	assert.Equal(t, 201, res.Code)
 	pinOut := &Pin{}
 	mustDecode(res, pinOut)
 	mustWorkerTick()
-	res = mustRequest("GET", "/pins/"+pinOut.Id, nil)
+	res = mustRequest("GET", "/v1/pins/"+pinOut.Id, nil)
 	assert.Equal(t, 200, res.Code)
 	mustDecode(res, pinOut)
 	assert.NotEmpty(t, pinOut.Id)
@@ -160,7 +160,7 @@ func TestPinGetByName(t *testing.T) {
 	defer clear()
 	dbIn := mustDbCreate("dbs-1", ConfigDatabaseUrl)
 	pinIn := mustPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
-	res := mustRequest("GET", "/pins/pins-1", nil)
+	res := mustRequest("GET", "/v1/pins/pins-1", nil)
 	assert.Equal(t, 200, res.Code)
 	pinOut := &Pin{}
 	mustDecode(res, pinOut)
@@ -173,7 +173,7 @@ func TestPinCreateDuplicateName(t *testing.T) {
 	dbIn := mustDbCreate("dbs-1", "postgres://u:p@h:1234/d-1")
 	mustPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
 	b := asReader(`{"name": "pins-1", "db_id": "` + dbIn.Id + `", "query": "select count(*) from pins"}`)
-	res := mustRequest("POST", "/pins", b)
+	res := mustRequest("POST", "/v1/pins", b)
 	assert.Equal(t, 400, res.Code)
 	data := make(map[string]string)
 	mustDecode(res, &data)
@@ -186,12 +186,12 @@ func TestPinUpdateName(t *testing.T) {
 	dbIn := mustDbCreate("dbs-1", "postgres://u:p@h:1234/d-1")
 	pinIn := mustPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
 	b := asReader(`{"name": "pins-1a"}`)
-	res := mustRequest("PUT", "/pins/"+pinIn.Id, b)
+	res := mustRequest("PUT", "/v1/pins/"+pinIn.Id, b)
 	assert.Equal(t, 200, res.Code)
 	pinPutOut := &Pin{}
 	mustDecode(res, pinPutOut)
 	assert.Equal(t, "pins-1a", pinPutOut.Name)
-	res = mustRequest("GET", "/pins/"+pinIn.Id, nil)
+	res = mustRequest("GET", "/v1/pins/"+pinIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
 	pinGetOut := &Pin{}
 	mustDecode(res, pinGetOut)
@@ -204,12 +204,12 @@ func TestPinUpdateQuery(t *testing.T) {
 	dbIn := mustDbCreate("dbs-1", "postgres://u:p@h:1234/d-1")
 	pinIn := mustPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
 	b := asReader(`{"query": "select now()"}`)
-	res := mustRequest("PUT", "/pins/"+pinIn.Id, b)
+	res := mustRequest("PUT", "/v1/pins/"+pinIn.Id, b)
 	assert.Equal(t, 200, res.Code)
 	pinPutOut := &Pin{}
 	mustDecode(res, pinPutOut)
 	assert.Equal(t, "select now()", pinPutOut.Query)
-	res = mustRequest("GET", "/pins/"+pinIn.Id, nil)
+	res = mustRequest("GET", "/v1/pins/"+pinIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
 	pinGetOut := &Pin{}
 	mustDecode(res, pinGetOut)
@@ -223,7 +223,7 @@ func TestPinMultipleColumns(t *testing.T) {
 	dbIn := mustDbCreate("dbs-1", ConfigDatabaseUrl)
 	pinIn := mustPinCreate(dbIn.Id, "pins-1", "select name, query from pins")
 	mustWorkerTick()
-	res := mustRequest("GET", "/pins/"+pinIn.Id, nil)
+	res := mustRequest("GET", "/v1/pins/"+pinIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
 	pinOut := &Pin{}
 	mustDecode(res, pinOut)
@@ -237,7 +237,7 @@ func TestPinTooManyRows(t *testing.T) {
 	dbIn := mustDbCreate("dbs-1", ConfigDatabaseUrl)
 	pinIn := mustPinCreate(dbIn.Id, "pins-1", "select generate_series(0, 10000)")
 	mustWorkerTick()
-	res := mustRequest("GET", "/pins/"+pinIn.Id, nil)
+	res := mustRequest("GET", "/v1/pins/"+pinIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
 	pinOut := &Pin{}
 	mustDecode(res, pinOut)
@@ -251,7 +251,7 @@ func TestPinBadQuery(t *testing.T) {
 	dbIn := mustDbCreate("dbs-1", ConfigDatabaseUrl)
 	pinIn := mustPinCreate(dbIn.Id, "pins-1", "select wat")
 	mustWorkerTick()
-	res := mustRequest("GET", "/pins/"+pinIn.Id, nil)
+	res := mustRequest("GET", "/v1/pins/"+pinIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
 	pinOut := &Pin{}
 	mustDecode(res, pinOut)
@@ -270,7 +270,7 @@ func TestPinStatementTimeout(t *testing.T) {
 	}()
 	ConfigPinStatementTimeout = time.Millisecond * 50
 	mustWorkerTick()
-	res := mustRequest("GET", "/pins/"+pinIn.Id, nil)
+	res := mustRequest("GET", "/v1/pins/"+pinIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
 	pinOut := &Pin{}
 	mustDecode(res, pinOut)
@@ -290,7 +290,7 @@ func TestPinUnreachableRbUrl(t *testing.T) {
 	dbIn := mustDbCreate("dbs-1", ConfigDatabaseUrl+"-moar")
 	pinIn := mustPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
 	mustWorkerTick()
-	res := mustRequest("GET", "/pins/"+pinIn.Id, nil)
+	res := mustRequest("GET", "/v1/pins/"+pinIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
 	pinOut := &Pin{}
 	mustDecode(res, pinOut)
@@ -318,12 +318,12 @@ func TestPinDelete(t *testing.T) {
 	defer clear()
 	dbIn := mustDbCreate("dbs-1", ConfigDatabaseUrl)
 	pinIn := mustPinCreate(dbIn.Id, "pins-1", "select count(*) from pins")
-	res := mustRequest("DELETE", "/pins/"+pinIn.Id, nil)
+	res := mustRequest("DELETE", "/v1/pins/"+pinIn.Id, nil)
 	assert.Equal(t, 200, res.Code)
 	pinOut := &Pin{}
 	mustDecode(res, pinOut)
 	assert.Equal(t, "pins-1", pinOut.Name)
-	res = mustRequest("GET", "/pins/"+pinIn.Id, nil)
+	res = mustRequest("GET", "/v1/pins/"+pinIn.Id, nil)
 	assert.Equal(t, 404, res.Code)
 }
 
@@ -334,7 +334,7 @@ func TestPinList(t *testing.T) {
 	pinIn2 := mustPinCreate(dbIn.Id, "pins-2", "select * from pins")
 	_, err := PinDelete(pinIn1.Id)
 	Must(err)
-	res := mustRequest("GET", "/pins", nil)
+	res := mustRequest("GET", "/v1/pins", nil)
 	assert.Equal(t, 200, res.Code)
 	pinsOut := []*Pin{}
 	mustDecode(res, &pinsOut)
