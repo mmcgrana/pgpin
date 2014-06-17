@@ -79,11 +79,21 @@ func WebJsoner(inner http.Handler) http.Handler {
 
 func WebRequestIder(c *web.C, h http.Handler) http.Handler {
 	fn := func(resp http.ResponseWriter, req *http.Request) {
-		requestId := uuid.New()
+		var requestId string
+		given := req.Header.Get("X-Request-Id")
+		if given != "" {
+			requestId = given
+		}
+		given = req.Header.Get("Request-Id")
+		if given != "" {
+			requestId = given
+		}
+		if requestId == "" {
+			requestId = uuid.New()
+		}
 		resp.Header().Set("Request-Id", requestId)
 		h.ServeHTTP(resp, req)
 	}
-
 	return http.HandlerFunc(fn)
 }
 

@@ -2,9 +2,27 @@ package main
 
 import (
 	"github.com/stretchr/testify/assert"
+	"net/http"
+	"net/http/httptest"
 	"testing"
 	"time"
 )
+
+// Middleware.
+
+func TestRequestIdGenerated(t *testing.T) {
+	res := mustRequest("GET", "/status", nil)
+	assert.True(t, DataUuidRegexp.MatchString(res.Header().Get("Request-Id")))
+}
+
+func TestRequestIdGiven(t *testing.T) {
+	req, err := http.NewRequest("GET", "/status", nil)
+	Must(err)
+	req.Header.Set("Request-Id", "given")
+	res := httptest.NewRecorder()
+	WebMux.ServeHTTP(res, req)
+	assert.Equal(t, "given", res.Header().Get("Request-Id"))
+}
 
 // DB endpoints.
 
