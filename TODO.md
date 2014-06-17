@@ -19,7 +19,6 @@
 * Investigate kr/secureheader
 * Investigate goreman coloring issue
 * Consider models/mediators organization
-* Publish: Twitter
 * Publish: blog
 * Publish: golang-nuts
 * Investigate CLI
