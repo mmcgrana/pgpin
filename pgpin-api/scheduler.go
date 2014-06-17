@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/jrallison/go-workers"
+	"github.com/zenazn/goji/graceful"
 	"log"
 	"time"
 )
@@ -37,6 +38,7 @@ func SchedulerTick() error {
 
 func SchedulerStart() {
 	log.Printf("scheduler.start")
+	graceful.ResetSignals()
 	PgStart()
 	RedisStart()
 	for {

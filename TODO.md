@@ -12,7 +12,6 @@
 * Exception reporting
 * Request Ids passed through to operation logs
 * JSON schema
-* Remove goji graceful stuff from worker output
 * Consider breaking up repos
 * API versioning
 * API authorization
