@@ -1,13 +1,5 @@
 ## Todo
 
-### Docs
-
-* Publish: Twitter
-* Publish: blog
-* Publish: golang-nuts
-
-### API
-
 * Operational metrics
 * Exception reporting
 * Request Ids passed through to operation logs
@@ -26,15 +18,6 @@
 * Rate limiting
 * Investigate kr/secureheader
 * Consider models/mediators organization
-
-### Client
-
-* Implement proof of concept using Schematic
-
-### CLI
-
-* Implement proof of concept using hk/zk skeleton
-
-### Web
-
-* Implement proof of concept with Ember or React
+* Publish: Twitter
+* Publish: blog
+* Publish: golang-nuts

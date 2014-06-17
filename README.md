@@ -28,7 +28,6 @@ and Virtualbox and run:
 ```console
 $ vagrant up
 $ vagrant ssh
-$ cd pgpin-api
 ```
 
 To start a development version of app:
@@ -43,7 +42,7 @@ An environment variable is provided to make testing with
 curl easy:
 
 ```console
-$ curl -i $PGPIN_API_URL/status
+$ curl -i $PGPIN_URL/status
 ```
 
 To apply code changes:
@@ -64,8 +63,8 @@ gofmt -d **/*.go 2>&1 | tee /tmp/pgpin-pre-commit
 if [ $(wc -l < /tmp/pgpin-pre-commit) -gt "0" ]; then
   exit 1
 fi
-go vet github.com/mmcgrana/pgpin/pgpin-api || exit 1
-errcheck -ignore 'fmt:a^' github.com/mmcgrana/pgpin/pgpin-api || exit 1
+go vet github.com/mmcgrana/pgpin || exit 1
+errcheck -ignore 'fmt:a^' github.com/mmcgrana/pgpin || exit 1
 EOF
 $ chmod +x .git/hooks/pre-commit
 ```
@@ -88,16 +87,15 @@ $ TEST_LOGS=true godep go test
 
 ### Scripting
 
-To write and run one-off scripts that use the `pgpin-api` app code:
+To write and run one-off scripts that use the `pgpin` app code:
 
 ```console
-$ cd pgpin-api
 $ cat > script/count_pins.go <<EOF
 package main
 
 import (
 	"log"
-	pgpin "../../pgpin-api"
+	"../pgpin"
 )
 
 func main() {

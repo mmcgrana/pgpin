@@ -57,12 +57,11 @@ EOF
 
 # Other app config
 cat >> /home/vagrant/.profile <<EOF
-export API_AUTH="client:"$(openssl rand -hex 12)
 export FERNET_KEYS=$(openssl rand -base64 32)
-export PGPIN_API_URL=http://\$API_AUTH@127.0.0.1:5000
+export PGPIN_URL=http://127.0.0.1:5000
 EOF
 
 # App directory
-cat >> /home/vagrant.profile <<EOF
+cat >> /home/vagrant/.profile <<EOF
 cd ~/src/github.com/mmcgrana/pgpin
 EOF

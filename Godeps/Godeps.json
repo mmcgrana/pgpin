@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/mmcgrana/pgpin/pgpin-api",
+	"ImportPath": "github.com/mmcgrana/pgpin",
 	"GoVersion": "go1.2.2",
 	"Deps": [
 		{
