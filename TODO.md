@@ -23,3 +23,6 @@
 * Publish: Twitter
 * Publish: blog
 * Publish: golang-nuts
+* Investigate CLI
+* Investigate go client
+* Investigate web interface
