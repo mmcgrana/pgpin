@@ -139,6 +139,6 @@ func WorkerStart() {
 	graceful.ResetSignals()
 	PgStart()
 	RedisStart()
-	workers.Process("pins", WorkerProcessWrapper, 5)
+	workers.Process("pins", WorkerProcessWrapper, ConfigWorkerPoolSize)
 	workers.Run()
 }
