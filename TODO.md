@@ -18,6 +18,7 @@
 * Nest foreign ids in serialization
 * Rate limiting
 * Investigate kr/secureheader
+* Investigate goreman coloring issue
 * Consider models/mediators organization
 * Publish: Twitter
 * Publish: blog
