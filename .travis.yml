@@ -1,0 +1,29 @@
+language: go
+go:
+  - 1.2.2
+services:
+  - redis-server
+addons:
+  postgresql: "9.3"
+install:
+  - export PATH=$PATH:$HOME/gopath/bin
+  - go get -u github.com/tools/godep
+  - godep go install
+before_script:
+  - psql -c 'create database "pgpin-test";' -U postgres
+  - export TEST_DATABASE_URL=postgres://postgres:@127.0.0.1:5432/pgpin-test
+  - export DATABASE_URL=-
+  - cat migrations/* | psql $TEST_DATABASE_URL
+  - export TEST_REDIS_URL=redis://user:@127.0.0.1:6379
+  - export REDIS_URL=-
+  - export FERNET_KEYS=$(openssl rand -base64 32)
+  - export PORT=5000
+script:
+  - godep go test
+  - test -z "$(gofmt -d *.go)"
+notifications:
+  email:
+    recipients:
+      - mmcgrana@gmail.com
+    on_success: never
+    on_failure: change

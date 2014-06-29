@@ -47,6 +47,7 @@
 * Test exercising full application stack
 * Test assertions via github.com/stretchr/testify/assert
 * Test workflow documentation
+* Test CI via Travis
 * Godep pegs application dependencies
 * Procfile communicates process types
 * Development container in Vagrant
