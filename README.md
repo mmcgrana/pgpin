@@ -59,14 +59,15 @@ standards:
 $ cat > .git/hooks/pre-commit <<EOF
 #!/bin/bash
 
-gofmt -d **/*.go 2>&1 | tee /tmp/pgpin-pre-commit
-if [ $(wc -l < /tmp/pgpin-pre-commit) -gt "0" ]; then
+gofmt -d *.go 2>&1 | tee /tmp/pgpin-pre-commit
+if [ \$(wc -l < /tmp/pgpin-pre-commit) -gt "0" ]; then
   exit 1
 fi
 go vet github.com/mmcgrana/pgpin || exit 1
 errcheck -ignore 'fmt:a^' github.com/mmcgrana/pgpin || exit 1
 EOF
 $ chmod +x .git/hooks/pre-commit
+$ go get github.com/kisielk/errcheck
 ```
 
 ### Testing
