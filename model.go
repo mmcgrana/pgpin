@@ -87,6 +87,10 @@ func DbList(queryFrag string) ([]*Db, error) {
 		db.Url = FernetDecrypt(urlEncrypted)
 		dbs = append(dbs, &db)
 	}
+	err = res.Err()
+	if err != nil {
+		return nil, err
+	}
 	return dbs, nil
 }
 
@@ -229,6 +233,10 @@ func PinList(queryFrag string, queryVals ...interface{}) ([]*Pin, error) {
 			return nil, err
 		}
 		pins = append(pins, &pin)
+	}
+	err = res.Err()
+	if err != nil {
+		return nil, err
 	}
 	return pins, nil
 }
