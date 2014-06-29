@@ -474,11 +474,21 @@ func (cn *conn) simpleQuery(q string) (res driver.Rows, err error) {
 		case 'E':
 			res = nil
 			err = parseError(r)
+		case 'D':
+			if res == nil {
+				errorf("unexpected DataRow in simple query execution")
+			}
+			// the query didn't fail; kick off to Next
+			cn.saveMessage(t, r)
+			return
 		case 'T':
+			if res != nil {
+				errorf("unexpected RowDescription in simple query execution")
+			}
 			res = &rows{st: st}
 			st.cols, st.rowTyps = parseMeta(r)
-			// After we get the meta, we want to kick out to Next()
-			return
+			// To work around a bug in QueryRow in Go 1.2 and earlier, wait
+			// until the first DataRow has been received.
 		default:
 			errorf("unknown response for simple query: %q", t)
 		}
@@ -626,6 +636,19 @@ func (cn *conn) sendSimpleMessage(typ byte) (err error) {
 	return err
 }
 
+// saveMessage memorizes a message and its buffer in the conn struct.
+// recvMessage will then return these values on the next call to it.  This
+// method is useful in cases where you have to see what the next message is
+// going to be (e.g. to see whether it's an error or not) but you can't handle
+// the message yourself.
+func (cn *conn) saveMessage(typ byte, buf *readBuf) {
+	if cn.saveMessageType != 0 {
+		errorf("unexpected saveMessageType %d", cn.saveMessageType)
+	}
+	cn.saveMessageType = typ
+	cn.saveMessageBuffer = buf
+}
+
 // recvMessage receives any message from the backend, or returns an error if
 // a problem occurred while reading the message.
 func (cn *conn) recvMessage() (byte, *readBuf, error) {
@@ -642,10 +665,10 @@ func (cn *conn) recvMessage() (byte, *readBuf, error) {
 	if err != nil {
 		return 0, nil, err
 	}
-	t := x[0]
 
-	b := readBuf(x[1:])
-	n := b.int32() - 4
+	// read the type and length of the message that follows
+	t := x[0]
+	n := int(binary.BigEndian.Uint32(x[1:])) - 4
 	var y []byte
 	if n <= len(cn.scratch) {
 		y = cn.scratch[:n]
@@ -961,8 +984,7 @@ workaround:
 			err = parseError(r)
 		case 'C', 'D':
 			// the query didn't fail, but we can't process this message
-			st.cn.saveMessageType = t
-			st.cn.saveMessageBuffer = r
+			st.cn.saveMessage(t, r)
 			return
 		case 'Z':
 			if err == nil {

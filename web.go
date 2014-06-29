@@ -320,6 +320,7 @@ func WebStart() {
 	WebBuild()
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", ConfigWebPort))
 	Must(err)
+	graceful.HandleSignals()
 	err = graceful.Serve(listener, WebMux)
 	Must(err)
 	graceful.Wait()

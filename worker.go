@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/jrallison/go-workers"
 	"github.com/lib/pq"
-	"github.com/zenazn/goji/graceful"
 	"log"
 	"time"
 )
@@ -136,7 +135,6 @@ func WorkerProcessWrapper(msg *workers.Msg) {
 
 func WorkerStart() {
 	log.Printf("worker.start")
-	graceful.ResetSignals()
 	PgStart()
 	RedisStart()
 	workers.Process("pins", WorkerProcessWrapper, ConfigWorkerPoolSize)

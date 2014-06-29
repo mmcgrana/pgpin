@@ -168,14 +168,17 @@ func (s stringPattern) match(r *http.Request, c *C, dryrun bool) bool {
 		matches = make(map[string]string, len(s.pats))
 	}
 	for i := 0; i < len(s.pats); i++ {
-		if !strings.HasPrefix(path, s.literals[i]) {
+		sli := s.literals[i]
+		if !strings.HasPrefix(path, sli) {
 			return false
 		}
-		path = path[len(s.literals[i]):]
+		path = path[len(sli):]
 
-		m := strings.IndexRune(path, '/')
-		if m == -1 {
-			m = len(path)
+		m := 0
+		for ; m < len(path); m++ {
+			if path[m] == '/' {
+				break
+			}
 		}
 		if m == 0 {
 			// Empty strings are not matches, otherwise routes like

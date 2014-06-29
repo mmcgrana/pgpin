@@ -30,23 +30,19 @@
 		},
 		{
 			"ImportPath": "github.com/lib/pq",
-			"Rev": "50a04ed4e5268fb34ca6d885202b569ef89c0a7a"
+			"Rev": "b549d8792f245c2dcee7702ddcd844280b8ecb10"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
-			"Rev": "410219ae829b24af99a4d48a79858f23d0be42ee"
-		},
-		{
-			"ImportPath": "github.com/zenazn/goji/bind",
-			"Rev": "f70d2a33c1813a235a0f5f84bb5c2ce80aef57c3"
+			"Rev": "5cc789b89e1b0289394556166a1fccd55c93d868"
 		},
 		{
 			"ImportPath": "github.com/zenazn/goji/graceful",
-			"Rev": "f70d2a33c1813a235a0f5f84bb5c2ce80aef57c3"
+			"Rev": "e3228e8322d760a7aad832bce70b7e11a3b2536c"
 		},
 		{
 			"ImportPath": "github.com/zenazn/goji/web",
-			"Rev": "f70d2a33c1813a235a0f5f84bb5c2ce80aef57c3"
+			"Rev": "e3228e8322d760a7aad832bce70b7e11a3b2536c"
 		}
 	]
 }
