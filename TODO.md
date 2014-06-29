@@ -23,3 +23,4 @@
 * Investigate CLI
 * Investigate go client
 * Investigate web interface
+* Go 1.3, better graceful handling?
