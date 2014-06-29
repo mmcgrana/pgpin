@@ -14,7 +14,7 @@ apt-get update
 apt-get install -y --no-install-recommends build-essential curl git-core mercurial bzr
 
 mkdir -p /opt/go
-curl -s https://storage.googleapis.com/golang/go1.2.2.linux-amd64.tar.gz | tar xzf - -C /opt/go --strip-components=1
+curl -s https://storage.googleapis.com/golang/go1.3.linux-amd64.tar.gz | tar xzf - -C /opt/go --strip-components=1
 
 cat >> /home/vagrant/.profile <<EOF
 export GOROOT=/opt/go
