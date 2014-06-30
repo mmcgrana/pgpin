@@ -21,6 +21,7 @@ var (
 	ConfigSchedulerTickInterval    = 10 * time.Second
 	ConfigTestLogs                 = env.StringDefault("TEST_LOGS", "false") != "true"
 	ConfigWebPort                  = env.IntDefault("PORT", 5000)
-	ConfigWebTimeout               = time.Second * 10
+	ConfigWebTimeout               = time.Second * 5
+	ConfigWebDrainInterval         = time.Second * 10
 	ConfigWorkerPoolSize           = 5
 )

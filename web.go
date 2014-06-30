@@ -5,10 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/zenazn/goji/graceful"
+	"github.com/stretchr/graceful"
 	"github.com/zenazn/goji/web"
 	"log"
-	"net"
 	"net/http"
 	"runtime/debug"
 	"time"
@@ -270,8 +269,14 @@ func WebTriggerPanic(resp http.ResponseWriter, req *http.Request) {
 	panic("panic")
 }
 
+func WebTriggerSleep(resp http.ResponseWriter, req *http.Request) {
+	time.Sleep(ConfigWebTimeout - (100 * time.Millisecond))
+	status := &Status{Message: "sleepy"}
+	WebRespond(resp, 200, status, nil)
+}
+
 func WebTriggerTimeout(resp http.ResponseWriter, req *http.Request) {
-	time.Sleep(ConfigWebTimeout + (10 * time.Millisecond))
+	time.Sleep(ConfigWebTimeout + (100 * time.Millisecond))
 	status := &Status{Message: "late"}
 	WebRespond(resp, 200, status, nil)
 }
@@ -309,6 +314,7 @@ func WebBuild() {
 	WebMux.Get("/status", WebStatus)
 	WebMux.Get("/error", WebTriggerError)
 	WebMux.Get("/panic", WebTriggerPanic)
+	WebMux.Get("/sleep", WebTriggerSleep)
 	WebMux.Get("/timeout", WebTriggerTimeout)
 	WebMux.NotFound(WebNotFound)
 }
@@ -318,10 +324,6 @@ func WebStart() {
 	PgStart()
 	RedisStart()
 	WebBuild()
-	listener, err := net.Listen("tcp", fmt.Sprintf(":%d", ConfigWebPort))
-	Must(err)
-	graceful.HandleSignals()
-	err = graceful.Serve(listener, WebMux)
-	Must(err)
-	graceful.Wait()
+	addr := fmt.Sprintf(":%d", ConfigWebPort)
+	graceful.Run(addr, ConfigWebDrainInterval, WebMux)
 }

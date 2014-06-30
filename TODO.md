@@ -22,4 +22,4 @@
 * Investigate CLI
 * Investigate go client
 * Investigate web interface
-* Take advantage of 1.3 graceful web handling
+* SIGTERM web graceful support https://github.com/stretchr/graceful/issues/20

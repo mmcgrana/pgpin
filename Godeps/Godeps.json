@@ -33,12 +33,12 @@
 			"Rev": "b549d8792f245c2dcee7702ddcd844280b8ecb10"
 		},
 		{
-			"ImportPath": "github.com/stretchr/testify/assert",
-			"Rev": "5cc789b89e1b0289394556166a1fccd55c93d868"
+			"ImportPath": "github.com/stretchr/graceful",
+			"Rev": "95dd48d33eef0fa30e606bab6ac3ccdb802a28c4"
 		},
 		{
-			"ImportPath": "github.com/zenazn/goji/graceful",
-			"Rev": "e3228e8322d760a7aad832bce70b7e11a3b2536c"
+			"ImportPath": "github.com/stretchr/testify/assert",
+			"Rev": "5cc789b89e1b0289394556166a1fccd55c93d868"
 		},
 		{
 			"ImportPath": "github.com/zenazn/goji/web",
