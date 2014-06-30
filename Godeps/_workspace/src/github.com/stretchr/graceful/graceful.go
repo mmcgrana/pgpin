@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 )
 
@@ -17,9 +18,12 @@ import (
 func Run(addr string, timeout time.Duration, n http.Handler) {
 	srv := &http.Server{Addr: addr, Handler: n}
 	err := ListenAndServe(srv, timeout)
+
 	if err != nil {
-		logger := log.New(os.Stdout, "[graceful] ", 0)
-		logger.Fatal(err)
+		if opErr, ok := err.(*net.OpError); !ok || (ok && opErr.Op != "accept") {
+			logger := log.New(os.Stdout, "[graceful] ", 0)
+			logger.Fatal(err)
+		}
 	}
 }
 
@@ -127,7 +131,7 @@ func run(server *http.Server, listener net.Listener, timeout time.Duration, c ch
 	}()
 
 	// Set up the interrupt catch
-	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
 		for _ = range c {
 			server.SetKeepAlivesEnabled(false)

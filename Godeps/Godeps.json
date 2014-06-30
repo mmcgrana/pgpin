@@ -34,7 +34,7 @@
 		},
 		{
 			"ImportPath": "github.com/stretchr/graceful",
-			"Rev": "95dd48d33eef0fa30e606bab6ac3ccdb802a28c4"
+			"Rev": "68d4bcc41bfe16abf9cde7435441b21a35750d55"
 		},
 		{
 			"ImportPath": "github.com/stretchr/testify/assert",
